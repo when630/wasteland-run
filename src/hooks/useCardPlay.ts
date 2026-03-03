@@ -60,6 +60,8 @@ export const useCardPlay = () => {
         addPlayerShield(effect.amount);
       } else if (effect.type === 'RESIST' && effect.amount) {
         addPlayerResist(effect.amount);
+      } else if (effect.type === 'ADD_AMMO' && effect.amount) {
+        addAmmo(effect.amount);
       }
     });
 

@@ -34,11 +34,29 @@ export const STARTING_CARDS: Partial<Card>[] = [
     description: '특수 방어도 5를 얻습니다.',
     effects: [{ type: 'RESIST', amount: 5 }],
   },
+  {
+    baseId: 'rusty_pistol',
+    name: '녹슨 권총',
+    type: CardType.SPECIAL_ATTACK,
+    costAp: 1,
+    costAmmo: 1,
+    description: '특수 피해 15를 줍니다.', // 관통 등 복잡한 설정 전에 우선 수치로 차별화
+    effects: [{ type: 'DAMAGE', amount: 15 }],
+  },
+  {
+    baseId: 'scavenge',
+    name: '잔해 뒤지기',
+    type: CardType.UTILITY,
+    costAp: 1,
+    costAmmo: 0,
+    description: '탄약을 2개 얻습니다.',
+    effects: [{ type: 'ADD_AMMO', amount: 2 }],
+  },
 ];
 
 /**
  * 10장짜리 기본덱 세트를 생성하는 헬퍼 함수
- * 물리 공격 x 4, 물리 방어 x 3, 특수 방어 x 1, 특수 공격/변화는 나중에 2추가 예정
+ * 물리 공격 x 4, 물리 방어 x 3, 특수 방어 x 1, 특수 공격 x 1, 보조 x 1
  */
 export const createStartingDeck = (): Card[] => {
   const deck: Card[] = [];
@@ -51,8 +69,14 @@ export const createStartingDeck = (): Card[] => {
   for (let i = 0; i < 3; i++) {
     deck.push({ ...STARTING_CARDS[1], id: generateUniqueId() } as Card);
   }
-  // 특수 방어 1장 (시작 덱 용)
+  // 특수 방어 1장
   deck.push({ ...STARTING_CARDS[2], id: generateUniqueId() } as Card);
+
+  // 특수 공격(녹슨 권총) 1장
+  deck.push({ ...STARTING_CARDS[3], id: generateUniqueId() } as Card);
+
+  // 변화(잔해 뒤지기) 1장
+  deck.push({ ...STARTING_CARDS[4], id: generateUniqueId() } as Card);
 
   return deck;
 };
