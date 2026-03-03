@@ -1,10 +1,12 @@
 import React from 'react';
 import { useRunStore } from '../../store/useRunStore';
 import { useBattleStore } from '../../store/useBattleStore';
+import { useDeckStore } from '../../store/useDeckStore';
 
 export const HUD: React.FC = () => {
   const { playerHp, playerMaxHp, gold } = useRunStore();
   const { playerStatus } = useBattleStore();
+  const { drawPile, hand, discardPile, exhaustPile, setViewingPile } = useDeckStore();
 
   return (
     <div style={{
@@ -33,6 +35,23 @@ export const HUD: React.FC = () => {
       </div>
       <div>
         <span style={{ color: '#ffd700' }}>Gold:</span> {gold}
+      </div>
+      <div style={{ flex: 1 }} /> {/* 우측 정렬을 위한 스페이서 */}
+      <div
+        onClick={() => setViewingPile('DECK')}
+        style={{
+          backgroundColor: '#333',
+          padding: '5px 15px',
+          borderRadius: '4px',
+          border: '1px solid #777',
+          cursor: 'pointer',
+          userSelect: 'none',
+          transition: 'background-color 0.2s'
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#555'}
+        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#333'}
+      >
+        <span>전체 보유 덱: <strong>{drawPile.length + hand.length + discardPile.length + exhaustPile.length}</strong>장</span>
       </div>
     </div>
   );

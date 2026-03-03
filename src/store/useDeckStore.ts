@@ -2,17 +2,21 @@ import { create } from 'zustand';
 import { Card } from '../types/gameTypes';
 import { customShuffle } from '../utils/rng';
 
+export type PileType = 'NONE' | 'DECK' | 'DRAW' | 'DISCARD' | 'EXHAUST';
+
 interface DeckState {
   drawPile: Card[];
   hand: Card[];
   discardPile: Card[];
   exhaustPile: Card[];
+  viewingPile: PileType; // 현재 열려있는 덱 뷰어의 종류
 
   // Actions
   initDeck: (deckArray: Card[]) => void;
   drawCards: (count: number) => void;
   playCardFromHand: (cardId: string) => void;
   discardHand: () => void;
+  setViewingPile: (pile: PileType) => void;
 }
 
 export const useDeckStore = create<DeckState>((set, get) => ({
@@ -20,6 +24,7 @@ export const useDeckStore = create<DeckState>((set, get) => ({
   hand: [],
   discardPile: [],
   exhaustPile: [], // 이번 전투 중 영구히 사용 불가능한 상태
+  viewingPile: 'NONE',
 
   // 새로운 런이나 전투 시작 시 덱을 받고 섞음
   initDeck: (deckArray: Card[]) => {
@@ -95,4 +100,7 @@ export const useDeckStore = create<DeckState>((set, get) => ({
       discardPile: [...state.discardPile, ...state.hand],
     }));
   },
+
+  // 특정 형태의 덱 뷰어 띄우기 (또는 NONE으로 닫기)
+  setViewingPile: (pile: PileType) => set({ viewingPile: pile }),
 }));

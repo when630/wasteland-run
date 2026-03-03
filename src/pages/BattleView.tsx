@@ -3,6 +3,8 @@ import { BattleStage } from '../components/pixi/BattleStage';
 import { HUD } from '../components/ui/HUD';
 import { Hand } from '../components/ui/Hand';
 import { ResourcePanel } from '../components/ui/ResourcePanel';
+import { DeckPiles } from '../components/ui/DeckPiles';
+import { CardViewerModal } from '../components/ui/CardViewerModal';
 import { useDeckStore } from '../store/useDeckStore';
 import { useBattleStore } from '../store/useBattleStore';
 import { createStartingDeck } from '../assets/data/cards';
@@ -67,8 +69,12 @@ export const BattleView: React.FC = () => {
           <HUD />
           <ResourcePanel />
           <Hand />
+          <DeckPiles />
         </div>
       </div>
+
+      {/* 3. 모달 UI: 상태 변경 시 화면 전체를 덮는 가장 높은 레이어 */}
+      <CardViewerModal />
     </div>
   );
 };
