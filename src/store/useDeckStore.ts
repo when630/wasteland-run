@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Card } from '../types/gameTypes';
+import type { Card } from '../types/gameTypes';
 import { customShuffle } from '../utils/rng';
 
 export type PileType = 'NONE' | 'DECK' | 'DRAW' | 'DISCARD' | 'EXHAUST';
@@ -19,7 +19,7 @@ interface DeckState {
   setViewingPile: (pile: PileType) => void;
 }
 
-export const useDeckStore = create<DeckState>((set, get) => ({
+export const useDeckStore = create<DeckState>((set) => ({
   drawPile: [],
   hand: [],
   discardPile: [],

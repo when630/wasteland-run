@@ -1,12 +1,14 @@
 // src/types/gameTypes.ts
 
-export enum CardType {
-  PHYSICAL_ATTACK = 'PHYSICAL_ATTACK',
-  SPECIAL_ATTACK = 'SPECIAL_ATTACK',
-  PHYSICAL_DEFENSE = 'PHYSICAL_DEFENSE',
-  SPECIAL_DEFENSE = 'SPECIAL_DEFENSE',
-  UTILITY = 'UTILITY',
-}
+export const CardType = {
+  PHYSICAL_ATTACK: 'PHYSICAL_ATTACK',
+  SPECIAL_ATTACK: 'SPECIAL_ATTACK',
+  PHYSICAL_DEFENSE: 'PHYSICAL_DEFENSE',
+  SPECIAL_DEFENSE: 'SPECIAL_DEFENSE',
+  UTILITY: 'UTILITY',
+} as const;
+
+export type CardType = typeof CardType[keyof typeof CardType];
 
 export interface CardEffect {
   type: 'DAMAGE' | 'SHIELD' | 'RESIST' | 'DRAW' | 'ADD_AMMO' | 'HEAL' | 'BUFF' | 'DEBUFF';
