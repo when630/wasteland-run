@@ -9,13 +9,17 @@ import { useDeckStore } from '../store/useDeckStore';
 import { useBattleStore } from '../store/useBattleStore';
 import { createStartingDeck } from '../assets/data/cards';
 import { createEnemy } from '../assets/data/enemies';
+import { useRunStore } from '../store/useRunStore';
 
 export const BattleView: React.FC = () => {
   const { initDeck, drawCards } = useDeckStore();
-  const { currentTurn, battleResult, startPlayerTurn, spawnEnemies, executeEnemyTurns } = useBattleStore();
+  const { currentTurn, battleResult, startPlayerTurn, spawnEnemies, executeEnemyTurns, resetBattle } = useBattleStore();
+  const { setScene } = useRunStore();
 
   // 게임(전투 뷰) 진입 시 초기 덱과 몬스터를 세팅합니다
   useEffect(() => {
+    resetBattle(); // 🌟 이전 전투 상태(VICTORY, DEFEAT 등) 초기화
+
     // 덱 세팅 및 5장 드로우
     const startingDeck = createStartingDeck();
     initDeck(startingDeck);
@@ -100,7 +104,14 @@ export const BattleView: React.FC = () => {
               : '황무지의 이슬로 사라졌습니다...'}
           </p>
           <button
-            onClick={() => window.location.reload()} // 임시: 전체 리로드 (추후 RunStore 초기화 로직 연동)
+            onClick={() => {
+              if (battleResult === 'VICTORY') {
+                setScene('MAP'); // 승리 시 맵으로 반환
+                // 추후: BattleStore 리셋 로직 필요
+              } else {
+                window.location.reload(); // 패배 시 임시 전면 리부팅 유지
+              }
+            }}
             style={{
               padding: '15px 40px', fontSize: '20px', fontWeight: 'bold',
               backgroundColor: '#444', color: 'white', border: '2px solid #555',

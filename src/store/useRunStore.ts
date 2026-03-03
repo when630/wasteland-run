@@ -5,11 +5,14 @@ interface RunState {
   playerMaxHp: number;
   gold: number;
   currentMapNode: string | null;
+  currentScene: 'MAP' | 'BATTLE' | 'REST' | 'EVENT' | 'SHOP' | 'BOSS'; // 🌟 전역 씬 상태
+
   // Actions
   healPlayer: (amount: number) => void;
   damagePlayer: (amount: number) => void;
   addGold: (amount: number) => void;
   setMapNode: (nodeId: string) => void;
+  setScene: (scene: RunState['currentScene']) => void; // 🌟 씬 전환 액션
 }
 
 export const useRunStore = create<RunState>((set) => ({
@@ -17,6 +20,7 @@ export const useRunStore = create<RunState>((set) => ({
   playerMaxHp: 70,
   gold: 0,
   currentMapNode: null,
+  currentScene: 'MAP', // 기본 씬은 맵으로 시작
 
   healPlayer: (amount: number) => set((state) => ({
     playerHp: Math.min(state.playerHp + amount, state.playerMaxHp)
@@ -32,5 +36,9 @@ export const useRunStore = create<RunState>((set) => ({
 
   setMapNode: (nodeId: string) => set({
     currentMapNode: nodeId
+  }),
+
+  setScene: (scene) => set({
+    currentScene: scene
   })
 }));

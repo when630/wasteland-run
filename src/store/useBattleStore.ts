@@ -30,6 +30,7 @@ interface BattleState {
   consumeAp: (amount: number) => boolean;
   addAmmo: (amount: number) => void;
   spawnEnemies: (enemyArray: Enemy[]) => void;
+  resetBattle: () => void;
 
   // Combat Actions
   addPlayerShield: (amount: number) => void;
@@ -48,6 +49,15 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   playerStatus: { shield: 0, resist: 0 },
   enemies: [],
   targetingCardId: null,
+
+  resetBattle: () => set({
+    currentTurn: 'PLAYER',
+    battleResult: 'NONE',
+    turnCount: 1,
+    playerActionPoints: 3,
+    playerStatus: { shield: 0, resist: 0 },
+    targetingCardId: null
+  }),
 
   startPlayerTurn: () => {
     // 플레이어 턴 시작 전 사망 여부 다시 검증 (중복 체크)
