@@ -21,8 +21,11 @@ export const BattleView: React.FC = () => {
     initDeck(startingDeck);
     drawCards(5);
 
-    // 1스테이지 튜토리얼 몬스터 소환
-    spawnEnemies([createEnemy('scrap_collector')]);
+    // 1스테이지 튜토리얼 몬스터 다중 소환
+    spawnEnemies([
+      createEnemy('scrap_collector'),
+      createEnemy('acid_dog')
+    ]);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

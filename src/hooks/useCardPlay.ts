@@ -10,11 +10,12 @@ export const useCardPlay = () => {
   const {
     currentTurn, playerActionPoints, playerAmmo,
     useAp, addAmmo, enemies,
-    applyDamageToEnemy, addPlayerShield, addPlayerResist
+    applyDamageToEnemy, addPlayerShield, addPlayerResist,
+    targetingCardId, setTargetingCard
   } = useBattleStore();
   const { hand, playCardFromHand } = useDeckStore();
 
-  const playCard = (cardId: string) => {
+  const playCard = (cardId: string, targetEnemyId?: string) => {
     // 1. 플레이어 턴 검사
     if (currentTurn !== 'PLAYER') {
       console.warn('플레이어 턴이 아닙니다.');
@@ -28,17 +29,27 @@ export const useCardPlay = () => {
       return false;
     }
 
-    // 3. 코스트(AP/Ammo) 검사
+    // 3. 타겟팅 필요성 검증 (DAMAGE, DEBUFF 등은 대상을 지정해야 함)
+    const needsTarget = card.effects.some(e => e.type === 'DAMAGE' || e.type === 'DEBUFF');
+    if (needsTarget && !targetEnemyId) {
+      // 대상을 고르지 않은 상태에서 카드를 클릭했다면 타겟팅 모드로 진입
+      setTargetingCard(cardId);
+      return false;
+    }
+
+    // 4. 코스트(AP/Ammo) 검사
     if (playerActionPoints < card.costAp) {
       console.warn(`AP가 부족합니다. (필요: ${card.costAp}, 보유: ${playerActionPoints})`);
+      setTargetingCard(null); // 혹시 모를 타겟 취소
       return false;
     }
     if (playerAmmo < card.costAmmo) {
       console.warn(`탄약이 부족합니다. (필요: ${card.costAmmo}, 보유: ${playerAmmo})`);
+      setTargetingCard(null);
       return false;
     }
 
-    // 4. 자원 차감
+    // 5. 자원 차감
     const apUsed = useAp(card.costAp);
     if (!apUsed) return false; // 혹시 모를 내부 검증 실패 대비
 
@@ -47,9 +58,8 @@ export const useCardPlay = () => {
       addAmmo(-card.costAmmo);
     }
 
-    // 5. CardEffect 기반의 실제 데미지/방어 퍼포먼스 발동 처리
-    // 현재는 단일 적(enemies[0]) 대상 타겟팅만 지원하도록 하드코딩 (차후 다중 타겟 시스템 확장)
-    const targetEnemy = enemies.length > 0 ? enemies[0] : null;
+    // 6. CardEffect 기반의 실제 퍼포먼스 발동 처리
+    const targetEnemy = targetEnemyId ? enemies.find(e => e.id === targetEnemyId) : null;
 
     card.effects.forEach((effect) => {
       if (effect.type === 'DAMAGE' && effect.amount && targetEnemy) {
@@ -67,7 +77,10 @@ export const useCardPlay = () => {
 
     console.log(`[Card Played] ${card.name} 사용! (효과 처리 완료)`);
 
-    // 6. 카드 사용 처리 (비우기/소멸)
+    // 7. 타겟팅 모드 및 카드 사용 처리 (비우기/소멸)
+    if (targetingCardId === cardId) {
+      setTargetingCard(null);
+    }
     playCardFromHand(cardId);
 
     return true;

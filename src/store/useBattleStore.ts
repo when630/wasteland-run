@@ -20,6 +20,7 @@ interface BattleState {
   playerAmmo: number;
   playerStatus: PlayerBattleStatus;
   enemies: Enemy[];
+  targetingCardId: string | null;
 
   // Actions
   startPlayerTurn: () => void;
@@ -33,6 +34,7 @@ interface BattleState {
   addPlayerResist: (amount: number) => void;
   applyDamageToEnemy: (enemyId: string, amount: number, type: DamageType) => void;
   executeEnemyTurns: () => void; // 적 AI 행동 실행 트리거
+  setTargetingCard: (cardId: string | null) => void;
 }
 
 export const useBattleStore = create<BattleState>((set, get) => ({
@@ -42,13 +44,15 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   playerAmmo: 0,
   playerStatus: { shield: 0, resist: 0 },
   enemies: [],
+  targetingCardId: null,
 
   startPlayerTurn: () => set((state) => ({
     currentTurn: 'PLAYER',
     playerActionPoints: 3,
     turnCount: state.turnCount + 1,
     // 턴 시작 시 이전 턴에 쌓아둔 방어/저항력 수치를 초기화 (일회성 휘발)
-    playerStatus: { shield: 0, resist: 0 }
+    playerStatus: { shield: 0, resist: 0 },
+    targetingCardId: null // 턴 바뀔 때 타겟팅 초기화
   })),
 
   endPlayerTurn: () => set({ currentTurn: 'ENEMY' }),
@@ -67,6 +71,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   })),
 
   spawnEnemies: (enemyArray: Enemy[]) => set({ enemies: enemyArray }),
+  setTargetingCard: (cardId: string | null) => set({ targetingCardId: cardId }),
 
   /* --- 전투 액션 함수 --- */
 
@@ -154,6 +159,13 @@ export const useBattleStore = create<BattleState>((set, get) => ({
             } else {
               console.log(`[피격 차단] 방어막으로 적군 데미지 차단 성공!`);
             }
+          } else if (enemy.currentIntent.type === 'BUFF' && enemy.currentIntent.amount) {
+            // 적군의 자체 버프 (예: 방어도 증가)
+            return {
+              ...enemy,
+              shield: enemy.shield + enemy.currentIntent.amount,
+              currentIntent: determineNextIntent(enemy.baseId)
+            };
           }
           // 행동 종료 후 다음 의도 부여
           return {

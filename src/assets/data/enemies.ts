@@ -7,7 +7,16 @@ export const BASE_ENEMIES: Record<string, Omit<Enemy, 'id' | 'currentHp' | 'shie
     name: '고철 수집가',
     maxHp: 45,
   },
-  // TODO: 추후 녹슨 자동인형, 돌연변이 들개 등 추가
+  acid_dog: {
+    baseId: 'acid_dog',
+    name: '산성 침 들개',
+    maxHp: 25,
+  },
+  waste_slime: {
+    baseId: 'waste_slime',
+    name: '폐기물 슬라임',
+    maxHp: 60,
+  }
 };
 
 /**
@@ -23,6 +32,22 @@ export const determineNextIntent = (baseId: string): Intent => {
         return { type: 'ATTACK', amount: 5, description: '투박한 타격 5' };
       } else {
         return { type: 'ATTACK', amount: 7, description: '강하게 후려치기 7' };
+      }
+    }
+    case 'acid_dog': {
+      // 70% 특수피해 4, 30% 특수피해 6
+      if (rand < 0.7) {
+        return { type: 'ATTACK', amount: 4, description: '산성 침 4' }; // 차후 디버프 부여로 발전 가능
+      } else {
+        return { type: 'ATTACK', amount: 6, description: '물어뜯기 6' };
+      }
+    }
+    case 'waste_slime': {
+      // 50% 확률로 자기방어(버프), 50% 확률로 물리공격 3
+      if (rand < 0.5) {
+        return { type: 'BUFF', amount: 5, description: '단단해지기 (방어도 5)' };
+      } else {
+        return { type: 'ATTACK', amount: 3, description: '짓누르기 3' };
       }
     }
     default:
