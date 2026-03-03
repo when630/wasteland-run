@@ -4,6 +4,9 @@ import { MapView } from './pages/MapView';
 import { RestView } from './pages/RestView';
 import { EventView } from './pages/EventView';
 import { useRunStore } from './store/useRunStore';
+import { useDeckStore } from './store/useDeckStore';
+import { createStartingDeck } from './assets/data/cards';
+import { useEffect } from 'react';
 
 function SceneManager() {
   const { currentScene } = useRunStore();
@@ -26,6 +29,15 @@ function SceneManager() {
 }
 
 function App() {
+  const { masterDeck, setMasterDeck } = useDeckStore();
+
+  useEffect(() => {
+    // 앱 최초 실행 시 기본 덱이 없으면 지급 (런 시작 연동)
+    if (masterDeck.length === 0) {
+      setMasterDeck(createStartingDeck());
+    }
+  }, [masterDeck.length, setMasterDeck]);
+
   return (
     <BrowserRouter>
       <Routes>

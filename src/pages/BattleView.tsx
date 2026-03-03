@@ -4,6 +4,7 @@ import { HUD } from '../components/ui/HUD';
 import { Hand } from '../components/ui/Hand';
 import { ResourcePanel } from '../components/ui/ResourcePanel';
 import { DeckPiles } from '../components/ui/DeckPiles';
+import { CardRewardModal } from '../components/ui/CardRewardModal';
 // import { CardViewerModal } from '../components/ui/CardViewerModal';
 import { useDeckStore } from '../store/useDeckStore';
 import { useBattleStore } from '../store/useBattleStore';
@@ -12,21 +13,32 @@ import { createEnemy } from '../assets/data/enemies';
 import { useRunStore } from '../store/useRunStore';
 
 export const BattleView: React.FC = () => {
-  const { initDeck, drawCards } = useDeckStore();
+  const { initDeck, drawCards, masterDeck, setMasterDeck } = useDeckStore();
   const { currentTurn, battleResult, startPlayerTurn, spawnEnemies, executeEnemyTurns, resetBattle } = useBattleStore();
-  const { setScene, addGold } = useRunStore();
+  const { setScene, addGold, currentScene } = useRunStore();
 
-  // 보상 획득 여부 로컬 1회성 플래그
-  const [rewardClaimed, setRewardClaimed] = useState(false);
+  // 보상 획득 여부 로컬 플래그 분리
+  const [goldClaimed, setGoldClaimed] = useState(false);
+  const [cardClaimed, setCardClaimed] = useState(false);
+  const [relicClaimed, setRelicClaimed] = useState(false);
+
+  // 모달 활성화 상태
+  const [isCardModalOpen, setIsCardModalOpen] = useState(false);
 
   // 게임(전투 뷰) 진입 시 초기 덱과 몬스터를 세팅합니다
   useEffect(() => {
     resetBattle(); // 🌟 이전 전투 상태(VICTORY, DEFEAT 등) 초기화
-    setRewardClaimed(false); // 보상 수령 플래그 초기화
+    setGoldClaimed(false); // 보상 수령 플래그 초기화
+    setCardClaimed(false);
+    setRelicClaimed(false);
 
-    // 덱 세팅 및 5장 드로우
-    const startingDeck = createStartingDeck();
-    initDeck(startingDeck);
+    // 런 최초 진입(또는 첫 전투) 시 masterDeck이 비어있으면 기본 덱 지급
+    if (masterDeck.length === 0) {
+      setMasterDeck(createStartingDeck());
+    }
+
+    // 전투용 드로우 파일(drawPile) 셔플 및 5장 드로우
+    initDeck();
     drawCards(5);
 
     // 1스테이지 튜토리얼 몬스터 다중 소환
@@ -59,6 +71,14 @@ export const BattleView: React.FC = () => {
       };
     }
   }, [currentTurn, startPlayerTurn, drawCards, executeEnemyTurns]);
+
+  // 보상 획득용 버튼 스타일 변수
+  const rewardBtnStyle: React.CSSProperties = {
+    padding: '12px 24px', fontSize: '18px', fontWeight: 'bold', width: '100%',
+    backgroundColor: '#4a3a10', color: '#ffd700', border: '2px solid #cca500',
+    borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s',
+    display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px'
+  };
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
@@ -98,46 +118,69 @@ export const BattleView: React.FC = () => {
           <h1 style={{
             fontSize: '48px',
             color: battleResult === 'VICTORY' ? '#44ff44' : '#ff4444',
-            marginBottom: '20px'
+            marginBottom: '10px'
           }}>
             {battleResult === 'VICTORY' ? '전투 승리!' : '사망 (Game Over)'}
           </h1>
-          <p style={{ fontSize: '20px', color: '#ccc', marginBottom: '20px' }}>
+          <p style={{ fontSize: '18px', color: '#ccc', marginBottom: '30px' }}>
             {battleResult === 'VICTORY'
-              ? '수고하셨습니다. 보상을 획득하고 다음 구역으로 이동하세요.'
+              ? '수고하셨습니다. 보상을 챙기거나 스킵하고 넘어갈 수 있습니다.'
               : '황무지의 이슬로 사라졌습니다...'}
           </p>
 
           {/* 보상(전리품) 선택 영역 */}
-          {battleResult === 'VICTORY' && !rewardClaimed && (
+          {battleResult === 'VICTORY' && (
             <div style={{
-              margin: '20px 0 40px 0', padding: '30px',
+              margin: '0 0 30px 0', padding: '20px', width: '360px',
               backgroundColor: '#2a1f1a', borderRadius: '12px', border: '2px solid #aa7700',
-              display: 'flex', flexDirection: 'column', alignItems: 'center'
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px'
             }}>
-              <h3 style={{ margin: '0 0 20px 0', color: '#ffd700', fontSize: '24px' }}>🎁 전리품 발견</h3>
-              <button
-                onClick={() => {
-                  addGold(30);
-                  setRewardClaimed(true);
-                }}
-                style={{
-                  padding: '15px 30px', fontSize: '20px', fontWeight: 'bold',
-                  backgroundColor: '#4a3a10', color: '#ffd700', border: '2px solid #cca500',
-                  borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#5a4a20'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4a3a10'}
-              >
-                💰 30 골드 획득
-              </button>
-            </div>
-          )}
+              <h3 style={{ margin: '0 0 5px 0', color: '#ffd700', fontSize: '24px' }}>🎁 전리품 발견</h3>
 
-          {battleResult === 'VICTORY' && rewardClaimed && (
-            <p style={{ fontSize: '18px', color: '#88ff88', marginBottom: '40px' }}>
-              ✓ 모든 보상을 남김없이 획득했습니다.
-            </p>
+              {!goldClaimed && (
+                <button
+                  onClick={() => {
+                    const goldAmount = currentScene === 'BOSS' ? 100 : currentScene === 'ELITE' ? 50 : 20;
+                    addGold(goldAmount);
+                    setGoldClaimed(true);
+                  }}
+                  style={rewardBtnStyle}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#5a4a20'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4a3a10'}
+                >
+                  💰 {currentScene === 'BOSS' ? 100 : currentScene === 'ELITE' ? 50 : 20} 골드 획득
+                </button>
+              )}
+
+              {!cardClaimed && (
+                <button
+                  onClick={() => setIsCardModalOpen(true)}
+                  style={{ ...rewardBtnStyle, color: '#fff', borderColor: '#4a70b0', backgroundColor: '#2a3a50' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3a4a60'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2a3a50'}
+                >
+                  🃏 새 카드 1장 선택 (3택 1)
+                </button>
+              )}
+
+              {(currentScene === 'ELITE' || currentScene === 'BOSS') && !relicClaimed && (
+                <button
+                  onClick={() => {
+                    alert(`${currentScene === 'BOSS' ? '보스' : '일반'} 유물 획득 화면이 뜰 예정입니다.`);
+                    setRelicClaimed(true);
+                  }}
+                  style={{ ...rewardBtnStyle, color: '#ffaaaa', borderColor: '#b04a4a', backgroundColor: '#502a2a' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#603a3a'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#502a2a'}
+                >
+                  📦 {currentScene === 'BOSS' ? '보스 유물' : '일반 유물'} 획득
+                </button>
+              )}
+
+              {goldClaimed && cardClaimed && (!(currentScene === 'ELITE' || currentScene === 'BOSS') || relicClaimed) && (
+                <span style={{ color: '#88ff88', marginTop: '10px' }}>✓ 모든 보상을 남김없이 획득했습니다.</span>
+              )}
+            </div>
           )}
 
           <button
@@ -148,18 +191,32 @@ export const BattleView: React.FC = () => {
                 window.location.reload(); // 패배 시 임시 전면 리부팅 유지
               }
             }}
-            disabled={battleResult === 'VICTORY' && !rewardClaimed}
+            //disabled={battleResult === 'VICTORY' && !rewardClaimed} (스킵 허용을 위해 제거)
             style={{
               padding: '15px 40px', fontSize: '20px', fontWeight: 'bold',
-              backgroundColor: (battleResult === 'VICTORY' && !rewardClaimed) ? '#222' : '#444',
-              color: (battleResult === 'VICTORY' && !rewardClaimed) ? '#666' : 'white',
-              border: '2px solid #555', borderRadius: '8px',
-              cursor: (battleResult === 'VICTORY' && !rewardClaimed) ? 'not-allowed' : 'pointer'
+              backgroundColor: '#444', color: 'white',
+              border: '2px solid #555', borderRadius: '8px', cursor: 'pointer',
+              transition: 'all 0.2s'
             }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#555'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#444'}
           >
-            {battleResult === 'VICTORY' ? '계속하기 (맵 이동)' : '다시 시작'}
+            {battleResult === 'VICTORY' ? '계속하기 (보상 스킵 및 맵 이동)' : '다시 시작'}
           </button>
         </div>
+      )}
+
+      {/* 카드 3택 1 보상 모달 렌더링 */}
+      {isCardModalOpen && (
+        <CardRewardModal
+          onClose={() => {
+            setIsCardModalOpen(false);
+            setCardClaimed(true); // 건너뛰든 카드를 고르든 닫히면 보상을 처리한 것으로 간주
+          }}
+          onCardSelected={() => {
+            // 카드 선택 시의 부가 처리(애니메이션 등)가 필요하면 여기 작성
+          }}
+        />
       )}
     </div>
   );

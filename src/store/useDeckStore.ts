@@ -5,6 +5,7 @@ import { customShuffle } from '../utils/rng';
 export type PileType = 'NONE' | 'DECK' | 'DRAW' | 'DISCARD' | 'EXHAUST';
 
 interface DeckState {
+  masterDeck: Card[]; // 🌟 플레이어가 런 시작부터 끝까지 보유하는 '진짜 덱' 원본 데이터
   drawPile: Card[];
   hand: Card[];
   discardPile: Card[];
@@ -12,6 +13,8 @@ interface DeckState {
   viewingPile: PileType; // 현재 열려있는 덱 뷰어의 종류
 
   // Actions
+  setMasterDeck: (deckArray: Card[]) => void;
+  addCardToMasterDeck: (card: Omit<Card, 'id'>) => void;
   initDeck: (deckArray: Card[]) => void;
   drawCards: (count: number) => void;
   playCardFromHand: (cardId: string) => void;
@@ -20,21 +23,31 @@ interface DeckState {
 }
 
 export const useDeckStore = create<DeckState>((set) => ({
+  masterDeck: [],
   drawPile: [],
   hand: [],
   discardPile: [],
   exhaustPile: [], // 이번 전투 중 영구히 사용 불가능한 상태
   viewingPile: 'NONE',
 
-  // 새로운 런이나 전투 시작 시 덱을 받고 섞음
-  initDeck: (deckArray: Card[]) => {
-    set({
-      drawPile: customShuffle(deckArray),
-      hand: [],
-      discardPile: [],
-      exhaustPile: [],
-    });
-  },
+  setMasterDeck: (deckArray: Card[]) => set({ masterDeck: deckArray }),
+
+  // 전리품 등에서 새 카드를 획득했을 때 (고유 ID 생성하여 푸시)
+  addCardToMasterDeck: (cardBlueprint: Omit<Card, 'id'>) => set((state) => {
+    const newCard: Card = {
+      ...cardBlueprint,
+      id: `${cardBlueprint.type}-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+    };
+    return { masterDeck: [...state.masterDeck, newCard] };
+  }),
+
+  // 새로운 전투 시작 시 masterDeck의 복사본을 받아 셔플하여 drawPile로 세팅
+  initDeck: () => set((state) => ({
+    drawPile: customShuffle([...state.masterDeck]),
+    hand: [],
+    discardPile: [],
+    exhaustPile: [],
+  })),
 
   // 덱(Draw Pile)에서 핸드(Hand)로 카드 이동 처리
   drawCards: (count: number) => {
