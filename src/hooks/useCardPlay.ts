@@ -9,13 +9,13 @@ import { useDeckStore } from '../store/useDeckStore';
 export const useCardPlay = () => {
   const {
     currentTurn, playerActionPoints, playerAmmo,
-    useAp, addAmmo, enemies,
+    consumeAp, addAmmo, enemies,
     applyDamageToEnemy, addPlayerShield, addPlayerResist,
     targetingCardId, setTargetingCard
   } = useBattleStore();
   const { hand, playCardFromHand } = useDeckStore();
 
-  const playCard = (cardId: string, targetEnemyId?: string) => {
+  const playCard = (cardId: string, targetId?: string) => {
     // 1. 플레이어 턴 검사
     if (currentTurn !== 'PLAYER') {
       console.warn('플레이어 턴이 아닙니다.');
@@ -29,15 +29,26 @@ export const useCardPlay = () => {
       return false;
     }
 
-    // 3. 타겟팅 필요성 검증 (DAMAGE, DEBUFF 등은 대상을 지정해야 함)
-    const needsTarget = card.effects.some(e => e.type === 'DAMAGE' || e.type === 'DEBUFF');
-    if (needsTarget && !targetEnemyId) {
-      // 대상을 고르지 않은 상태에서 카드를 클릭했다면 타겟팅 모드로 진입
+    // 3. 무조건 타겟팅 모드 진입 (대상을 아직 지정하지 않은 경우)
+    if (!targetId) {
       setTargetingCard(cardId);
       return false;
     }
 
-    // 4. 코스트(AP/Ammo) 검사
+    // 4. 대상 유형 검증 (공격형은 적에게, 방어/버프형은 나에게)
+    const needsEnemyTarget = card.effects.some(e => e.type === 'DAMAGE' || e.type === 'DEBUFF');
+    if (needsEnemyTarget && targetId === 'PLAYER') {
+      console.warn('이 카드는 적에게 사용해야 합니다.');
+      setTargetingCard(null);
+      return false;
+    }
+    if (!needsEnemyTarget && targetId !== 'PLAYER') {
+      console.warn('이 카드는 플레이어 자신에게 사용해야 합니다.');
+      setTargetingCard(null);
+      return false;
+    }
+
+    // 5. 코스트(AP/Ammo) 검사
     if (playerActionPoints < card.costAp) {
       console.warn(`AP가 부족합니다. (필요: ${card.costAp}, 보유: ${playerActionPoints})`);
       setTargetingCard(null); // 혹시 모를 타겟 취소
@@ -49,8 +60,8 @@ export const useCardPlay = () => {
       return false;
     }
 
-    // 5. 자원 차감
-    const apUsed = useAp(card.costAp);
+    // 6. 자원 차감
+    const apUsed = consumeAp(card.costAp);
     if (!apUsed) return false; // 혹시 모를 내부 검증 실패 대비
 
     // 탄약 소모 로직
@@ -58,8 +69,8 @@ export const useCardPlay = () => {
       addAmmo(-card.costAmmo);
     }
 
-    // 6. CardEffect 기반의 실제 퍼포먼스 발동 처리
-    const targetEnemy = targetEnemyId ? enemies.find(e => e.id === targetEnemyId) : null;
+    // 7. CardEffect 기반의 실제 퍼포먼스 발동 처리
+    const targetEnemy = (targetId && targetId !== 'PLAYER') ? enemies.find(e => e.id === targetId) : null;
 
     card.effects.forEach((effect) => {
       if (effect.type === 'DAMAGE' && effect.amount && targetEnemy) {
@@ -77,7 +88,7 @@ export const useCardPlay = () => {
 
     console.log(`[Card Played] ${card.name} 사용! (효과 처리 완료)`);
 
-    // 7. 타겟팅 모드 및 카드 사용 처리 (비우기/소멸)
+    // 8. 타겟팅 모드 및 카드 사용 처리 (비우기/소멸)
     if (targetingCardId === cardId) {
       setTargetingCard(null);
     }

@@ -4,7 +4,7 @@ import { HUD } from '../components/ui/HUD';
 import { Hand } from '../components/ui/Hand';
 import { ResourcePanel } from '../components/ui/ResourcePanel';
 import { DeckPiles } from '../components/ui/DeckPiles';
-import { CardViewerModal } from '../components/ui/CardViewerModal';
+// import { CardViewerModal } from '../components/ui/CardViewerModal';
 import { useDeckStore } from '../store/useDeckStore';
 import { useBattleStore } from '../store/useBattleStore';
 import { createStartingDeck } from '../assets/data/cards';
@@ -12,7 +12,7 @@ import { createEnemy } from '../assets/data/enemies';
 
 export const BattleView: React.FC = () => {
   const { initDeck, drawCards } = useDeckStore();
-  const { currentTurn, startPlayerTurn, spawnEnemies, executeEnemyTurns } = useBattleStore();
+  const { currentTurn, battleResult, startPlayerTurn, spawnEnemies, executeEnemyTurns } = useBattleStore();
 
   // 게임(전투 뷰) 진입 시 초기 덱과 몬스터를 세팅합니다
   useEffect(() => {
@@ -76,8 +76,41 @@ export const BattleView: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. 모달 UI: 상태 변경 시 화면 전체를 덮는 가장 높은 레이어 */}
-      <CardViewerModal />
+      {/* 4. 전투 결과 팝업 오버레이 (승리/패배) */}
+      {battleResult !== 'NONE' && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, width: '100vw', height: '100vh',
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          zIndex: 200, // 모달보다 더 위로
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          color: 'white'
+        }}>
+          <h1 style={{
+            fontSize: '48px',
+            color: battleResult === 'VICTORY' ? '#44ff44' : '#ff4444',
+            marginBottom: '20px'
+          }}>
+            {battleResult === 'VICTORY' ? '전투 승리!' : '사망 (Game Over)'}
+          </h1>
+          <p style={{ fontSize: '20px', color: '#ccc', marginBottom: '40px' }}>
+            {battleResult === 'VICTORY'
+              ? '보상을 획득하고 다음 구역으로 이동합니다.'
+              : '황무지의 이슬로 사라졌습니다...'}
+          </p>
+          <button
+            onClick={() => window.location.reload()} // 임시: 전체 리로드 (추후 RunStore 초기화 로직 연동)
+            style={{
+              padding: '15px 40px', fontSize: '20px', fontWeight: 'bold',
+              backgroundColor: '#444', color: 'white', border: '2px solid #555',
+              borderRadius: '8px', cursor: 'pointer'
+            }}
+          >
+            {battleResult === 'VICTORY' ? '계속하기' : '다시 시작'}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

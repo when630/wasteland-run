@@ -15,4 +15,5 @@ export interface Enemy {
   shield: number;      // 물리 방어도 (피격 시 우선 깎임)
   resist: number;      // 특수 방어도 (특수 공격 피격 시 우선 깎임)
   currentIntent: Intent | null; // 현재 턴에 하려는 행동
+  visualEffect?: { type: 'DAMAGE' | 'BUFF'; tick: number }; // 피격, 버프 등 시각적 애니메이션 발현 시점 타이머
 }

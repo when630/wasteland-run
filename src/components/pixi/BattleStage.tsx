@@ -3,12 +3,15 @@ import { Stage, Container, Sprite, Text } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import { useBattleStore } from '../../store/useBattleStore';
 import { useRunStore } from '../../store/useRunStore';
+import { useDeckStore } from '../../store/useDeckStore';
 import { useCardPlay } from '../../hooks/useCardPlay';
+import { AnimatedEnemy } from './AnimatedEnemy';
 
 export const BattleStage: React.FC = () => {
   // 스토어에서 런 상태 및 전투 상태 가져오기
   const { playerHp, playerMaxHp } = useRunStore();
   const { currentTurn, enemies, playerStatus, targetingCardId } = useBattleStore();
+  const { hand } = useDeckStore();
   const { playCard } = useCardPlay();
 
   // 타입 충돌을 피하기 위해 useMemo로 텍스처와 스타일 인스턴스 생성
@@ -74,6 +77,12 @@ export const BattleStage: React.FC = () => {
 
   const { width: screenWidth, height: screenHeight, scale } = dimensions;
 
+  // 타겟팅 모드 시 어떤 카드를 선택했는지 안내 문구 작성
+  const targetingCard = targetingCardId ? hand.find(c => c.id === targetingCardId) : null;
+  const targetGuideText = targetingCard
+    ? `선택된 카드: [${targetingCard.name}]\n공격 대상을 클릭하세요!`
+    : (currentTurn === 'PLAYER' ? "Your Turn" : "Enemy Turn");
+
   return (
     <Stage
       width={screenWidth}
@@ -85,111 +94,82 @@ export const BattleStage: React.FC = () => {
         x={(screenWidth - 1920 * scale) / 2}
         y={(screenHeight - 1080 * scale) / 2}
       >
-        {/* 플레이어 (좌측) */}
-        <Sprite
-          texture={placeholderTexture as any}
+        {/* 플레이어 (좌측) 구역을 Container로 묶어 클릭(타겟팅) 상호작용 추가 */}
+        <Container
           x={1920 * 0.25}
           y={1080 * 0.6}
-          width={150}
-          height={220}
-          anchor={0.5}
-          tint={0x00ff00} // 녹색 임시 플레이어
-        />
-        <Text
-          text="Player"
-          x={1920 * 0.25}
-          y={1080 * 0.6 - 150}
-          anchor={0.5}
-          style={defaultTextStyle}
-        />
-        {/* 플레이어 체력 */}
-        <Text
-          text={`HP: ${playerHp} / ${playerMaxHp}`}
-          x={1920 * 0.25}
-          y={1080 * 0.6 + 140}
-          anchor={0.5}
-          style={hpTextStyle}
-        />
-        {/* 플레이어 방어 버프 */}
-        {(playerStatus.shield > 0 || playerStatus.resist > 0) && (
+          interactive={targetingCardId !== null}
+          pointerdown={() => {
+            if (targetingCardId) {
+              playCard(targetingCardId, 'PLAYER');
+            }
+          }}
+          cursor={targetingCardId !== null ? 'crosshair' : 'default'}
+        >
+          <Sprite
+            texture={placeholderTexture}
+            width={150}
+            height={220}
+            anchor={0.5}
+            tint={0x00ff00} // 녹색 임시 플레이어
+          />
           <Text
-            text={`[S: ${playerStatus.shield} | R: ${playerStatus.resist}]`}
-            x={1920 * 0.25}
-            y={1080 * 0.6 + 170}
+            text="Player"
+            y={-150}
             anchor={0.5}
             style={defaultTextStyle}
           />
-        )}
+          {/* 플레이어 체력 */}
+          <Text
+            text={`HP: ${playerHp} / ${playerMaxHp}`}
+            y={140}
+            anchor={0.5}
+            style={hpTextStyle}
+          />
+          {/* 플레이어 방어 버프 */}
+          {(playerStatus.shield > 0 || playerStatus.resist > 0) && (
+            <Text
+              text={`[S: ${playerStatus.shield} | R: ${playerStatus.resist}]`}
+              y={170}
+              anchor={0.5}
+              style={defaultTextStyle}
+            />
+          )}
+        </Container>
 
         {/* 적 다중 렌더링 배열 */}
         {enemies.map((enemyObj, index) => {
-          if (enemyObj.currentHp <= 0) return null; // 죽은 몬스터는 Canvas에서 삭제
+          // 죽은 몬스터는 AnimatedEnemy 내부에서 alpha가 0이 되며 서서히 사라짐
+          // if (enemyObj.currentHp <= 0) return null; 
 
           // 다중 배치를 위한 위치 지정 (화면 우측에 좌우로 배열)
-          // 플레이어와 동일한 높이 레벨 적용, 간격은 0.15 비율로 축소
           const baseY = 1080 * 0.6;
           const baseX = 1920 * (0.65 + index * 0.15);
           const isTargeting = targetingCardId !== null;
 
           return (
-            <Container
+            <AnimatedEnemy
               key={enemyObj.id}
-              x={baseX}
-              y={baseY}
-              interactive={isTargeting}
-              pointerdown={() => {
+              enemy={enemyObj}
+              baseX={baseX}
+              baseY={baseY}
+              isTargeting={isTargeting}
+              onPointerDown={() => {
                 if (targetingCardId) {
                   playCard(targetingCardId, enemyObj.id);
                 }
               }}
-              cursor={isTargeting ? 'crosshair' : 'default'}
-            >
-              <Sprite
-                texture={placeholderTexture as any}
-                width={150}
-                height={200}
-                anchor={0.5}
-                tint={0xff0000} // 빨간색 임시 적
-              />
-              {/* 적 이름 */}
-              <Text
-                text={enemyObj.name}
-                y={-140}
-                anchor={0.5}
-                style={defaultTextStyle}
-              />
-              {/* 적 체력 */}
-              <Text
-                text={`HP: ${enemyObj.currentHp} / ${enemyObj.maxHp}`}
-                y={-110}
-                anchor={0.5}
-                style={enemyHpTextStyle}
-              />
-              {/* 적 방어력 */}
-              {(enemyObj.shield > 0 || enemyObj.resist > 0) && (
-                <Text
-                  text={`[S: ${enemyObj.shield} | R: ${enemyObj.resist}]`}
-                  y={-80}
-                  anchor={0.5}
-                  style={defaultTextStyle}
-                />
-              )}
-              {/* 적 의도(Intent) */}
-              {enemyObj.currentIntent && (
-                <Text
-                  text={`의도: ${enemyObj.currentIntent.description}`}
-                  y={-170}
-                  anchor={0.5}
-                  style={intentTextStyle}
-                />
-              )}
-            </Container>
+              defaultTextStyle={defaultTextStyle}
+              hpTextStyle={enemyHpTextStyle}
+              intentTextStyle={intentTextStyle}
+              texture={placeholderTexture}
+            />
           );
         })}
 
         {/* 중앙 상태 텍스트 (피드백용) */}
         <Text
-          text={targetingCardId ? "공격 대상을 클릭하세요!" : (currentTurn === 'PLAYER' ? "Your Turn" : "Enemy Turn")}
+          text={targetGuideText}
           x={1920 * 0.5}
           y={1080 * 0.3}
           anchor={0.5}

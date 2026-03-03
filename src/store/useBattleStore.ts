@@ -4,6 +4,7 @@ import { useRunStore } from './useRunStore';
 import { determineNextIntent } from '../assets/data/enemies';
 
 type TurnState = 'PLAYER' | 'ENEMY' | 'RESOLVE';
+type BattleResult = 'NONE' | 'VICTORY' | 'DEFEAT';
 
 // 이펙트 판정 용 타입
 export type DamageType = 'PHYSICAL' | 'SPECIAL' | 'PIERCING';
@@ -15,6 +16,7 @@ interface PlayerBattleStatus {
 
 interface BattleState {
   currentTurn: TurnState;
+  battleResult: BattleResult;
   turnCount: number;
   playerActionPoints: number;
   playerAmmo: number;
@@ -25,7 +27,7 @@ interface BattleState {
   // Actions
   startPlayerTurn: () => void;
   endPlayerTurn: () => void;
-  useAp: (amount: number) => boolean;
+  consumeAp: (amount: number) => boolean;
   addAmmo: (amount: number) => void;
   spawnEnemies: (enemyArray: Enemy[]) => void;
 
@@ -39,6 +41,7 @@ interface BattleState {
 
 export const useBattleStore = create<BattleState>((set, get) => ({
   currentTurn: 'PLAYER',
+  battleResult: 'NONE',
   turnCount: 1,
   playerActionPoints: 3,
   playerAmmo: 0,
@@ -46,18 +49,25 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   enemies: [],
   targetingCardId: null,
 
-  startPlayerTurn: () => set((state) => ({
-    currentTurn: 'PLAYER',
-    playerActionPoints: 3,
-    turnCount: state.turnCount + 1,
-    // 턴 시작 시 이전 턴에 쌓아둔 방어/저항력 수치를 초기화 (일회성 휘발)
-    playerStatus: { shield: 0, resist: 0 },
-    targetingCardId: null // 턴 바뀔 때 타겟팅 초기화
-  })),
+  startPlayerTurn: () => {
+    // 플레이어 턴 시작 전 사망 여부 다시 검증 (중복 체크)
+    if (useRunStore.getState().playerHp <= 0) {
+      set({ battleResult: 'DEFEAT' });
+      return;
+    }
+
+    set((state) => ({
+      currentTurn: 'PLAYER',
+      playerActionPoints: 3,
+      turnCount: state.turnCount + 1,
+      playerStatus: { shield: 0, resist: 0 },
+      targetingCardId: null
+    }));
+  },
 
   endPlayerTurn: () => set({ currentTurn: 'ENEMY' }),
 
-  useAp: (amount: number) => {
+  consumeAp: (amount: number) => {
     const { playerActionPoints } = get();
     if (playerActionPoints >= amount) {
       set({ playerActionPoints: playerActionPoints - amount });
@@ -123,8 +133,16 @@ export const useBattleStore = create<BattleState>((set, get) => ({
           shield: newShield,
           resist: newResist,
           currentHp: newHp,
+          visualEffect: { type: 'DAMAGE' as const, tick: Date.now() } // 🌟 피격 애니메이션 트리거
         };
       });
+
+      // 2. Victory 판정: 남은 적들의 hp가 전부 0인가?
+      const isVictory = newEnemies.every(e => e.currentHp <= 0);
+
+      if (isVictory) {
+        return { enemies: newEnemies, battleResult: 'VICTORY' };
+      }
 
       return { enemies: newEnemies };
     });
@@ -164,21 +182,27 @@ export const useBattleStore = create<BattleState>((set, get) => ({
             return {
               ...enemy,
               shield: enemy.shield + enemy.currentIntent.amount,
-              currentIntent: determineNextIntent(enemy.baseId)
+              currentIntent: determineNextIntent(enemy.baseId),
+              visualEffect: { type: 'BUFF' as const, tick: Date.now() } // 🌟 버프 애니메이션 트리거
             };
           }
           // 행동 종료 후 다음 의도 부여
           return {
             ...enemy,
-            currentIntent: determineNextIntent(enemy.baseId)
+            currentIntent: determineNextIntent(enemy.baseId),
+            visualEffect: undefined // 일반 턴 종료 시 이펙트 해제
           };
         }
         return enemy; // 죽거나 상태이상이면 스킵
       });
 
+      // 3. 패배 판정: 플레이어의 런 스토어 상 체력이 0 이하인가?
+      const isDefeat = useRunStore.getState().playerHp <= 0;
+
       return {
         enemies: newEnemies,
-        playerStatus: { ...state.playerStatus, shield: currentShield }
+        playerStatus: { ...state.playerStatus, shield: currentShield },
+        battleResult: isDefeat ? 'DEFEAT' : 'NONE' // 임시: NONE 외 기존 유지 필요 시 분기 고려
       };
     });
   }
