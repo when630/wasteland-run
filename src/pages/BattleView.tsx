@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BattleStage } from '../components/pixi/BattleStage';
 import { HUD } from '../components/ui/HUD';
 import { Hand } from '../components/ui/Hand';
@@ -14,11 +14,15 @@ import { useRunStore } from '../store/useRunStore';
 export const BattleView: React.FC = () => {
   const { initDeck, drawCards } = useDeckStore();
   const { currentTurn, battleResult, startPlayerTurn, spawnEnemies, executeEnemyTurns, resetBattle } = useBattleStore();
-  const { setScene } = useRunStore();
+  const { setScene, addGold } = useRunStore();
+
+  // 보상 획득 여부 로컬 1회성 플래그
+  const [rewardClaimed, setRewardClaimed] = useState(false);
 
   // 게임(전투 뷰) 진입 시 초기 덱과 몬스터를 세팅합니다
   useEffect(() => {
     resetBattle(); // 🌟 이전 전투 상태(VICTORY, DEFEAT 등) 초기화
+    setRewardClaimed(false); // 보상 수령 플래그 초기화
 
     // 덱 세팅 및 5장 드로우
     const startingDeck = createStartingDeck();
@@ -98,27 +102,62 @@ export const BattleView: React.FC = () => {
           }}>
             {battleResult === 'VICTORY' ? '전투 승리!' : '사망 (Game Over)'}
           </h1>
-          <p style={{ fontSize: '20px', color: '#ccc', marginBottom: '40px' }}>
+          <p style={{ fontSize: '20px', color: '#ccc', marginBottom: '20px' }}>
             {battleResult === 'VICTORY'
-              ? '보상을 획득하고 다음 구역으로 이동합니다.'
+              ? '수고하셨습니다. 보상을 획득하고 다음 구역으로 이동하세요.'
               : '황무지의 이슬로 사라졌습니다...'}
           </p>
+
+          {/* 보상(전리품) 선택 영역 */}
+          {battleResult === 'VICTORY' && !rewardClaimed && (
+            <div style={{
+              margin: '20px 0 40px 0', padding: '30px',
+              backgroundColor: '#2a1f1a', borderRadius: '12px', border: '2px solid #aa7700',
+              display: 'flex', flexDirection: 'column', alignItems: 'center'
+            }}>
+              <h3 style={{ margin: '0 0 20px 0', color: '#ffd700', fontSize: '24px' }}>🎁 전리품 발견</h3>
+              <button
+                onClick={() => {
+                  addGold(30);
+                  setRewardClaimed(true);
+                }}
+                style={{
+                  padding: '15px 30px', fontSize: '20px', fontWeight: 'bold',
+                  backgroundColor: '#4a3a10', color: '#ffd700', border: '2px solid #cca500',
+                  borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#5a4a20'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4a3a10'}
+              >
+                💰 30 골드 획득
+              </button>
+            </div>
+          )}
+
+          {battleResult === 'VICTORY' && rewardClaimed && (
+            <p style={{ fontSize: '18px', color: '#88ff88', marginBottom: '40px' }}>
+              ✓ 모든 보상을 남김없이 획득했습니다.
+            </p>
+          )}
+
           <button
             onClick={() => {
               if (battleResult === 'VICTORY') {
                 setScene('MAP'); // 승리 시 맵으로 반환
-                // 추후: BattleStore 리셋 로직 필요
               } else {
                 window.location.reload(); // 패배 시 임시 전면 리부팅 유지
               }
             }}
+            disabled={battleResult === 'VICTORY' && !rewardClaimed}
             style={{
               padding: '15px 40px', fontSize: '20px', fontWeight: 'bold',
-              backgroundColor: '#444', color: 'white', border: '2px solid #555',
-              borderRadius: '8px', cursor: 'pointer'
+              backgroundColor: (battleResult === 'VICTORY' && !rewardClaimed) ? '#222' : '#444',
+              color: (battleResult === 'VICTORY' && !rewardClaimed) ? '#666' : 'white',
+              border: '2px solid #555', borderRadius: '8px',
+              cursor: (battleResult === 'VICTORY' && !rewardClaimed) ? 'not-allowed' : 'pointer'
             }}
           >
-            {battleResult === 'VICTORY' ? '계속하기' : '다시 시작'}
+            {battleResult === 'VICTORY' ? '계속하기 (맵 이동)' : '다시 시작'}
           </button>
         </div>
       )}

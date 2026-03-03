@@ -5,7 +5,7 @@ interface RunState {
   playerMaxHp: number;
   gold: number;
   currentMapNode: string | null;
-  currentScene: 'MAP' | 'BATTLE' | 'REST' | 'EVENT' | 'SHOP' | 'BOSS'; // 🌟 전역 씬 상태
+  currentScene: 'MAP' | 'BATTLE' | 'ELITE' | 'REST' | 'EVENT' | 'SHOP' | 'BOSS'; // 🌟 씬 타입 확장
 
   // Actions
   healPlayer: (amount: number) => void;

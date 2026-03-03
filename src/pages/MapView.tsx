@@ -26,11 +26,12 @@ export const MapView: React.FC = () => {
 
   const handleNodeClick = (nodeId: string, type: NodeType) => {
     moveToNode(nodeId);
-    if (type === 'BATTLE' || type === 'ELITE' || type === 'BOSS') {
-      setScene('BATTLE');
+
+    // BATTLE, REST, EVENT 등 선택된 노드 타입과 동일한 씬 이름으로 전환
+    if (type === 'SHOP') {
+      alert("상점은 아직 공사 중입니다! 임시로 맵에 남습니다.");
     } else {
-      // 당장 구현되지 않은 노드들은 임시 로그
-      console.log(`${type} 노드로 진입했습니다 (UI 미구현)`);
+      setScene(type);
     }
   };
 
