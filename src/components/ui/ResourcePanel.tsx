@@ -1,8 +1,15 @@
 import React from 'react';
 import { useBattleStore } from '../../store/useBattleStore';
+import { useDeckStore } from '../../store/useDeckStore';
 
 export const ResourcePanel: React.FC = () => {
   const { playerActionPoints, playerAmmo, endPlayerTurn, currentTurn } = useBattleStore();
+  const { discardHand } = useDeckStore();
+
+  const handleTurnEnd = () => {
+    discardHand();
+    endPlayerTurn();
+  };
 
   return (
     <div style={{
@@ -23,7 +30,7 @@ export const ResourcePanel: React.FC = () => {
       </div>
 
       <button
-        onClick={endPlayerTurn}
+        onClick={handleTurnEnd}
         disabled={currentTurn !== 'PLAYER'}
         style={{
           width: '100%',

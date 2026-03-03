@@ -1,10 +1,36 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BattleStage } from '../components/pixi/BattleStage';
 import { HUD } from '../components/ui/HUD';
 import { Hand } from '../components/ui/Hand';
 import { ResourcePanel } from '../components/ui/ResourcePanel';
+import { useDeckStore } from '../store/useDeckStore';
+import { useBattleStore } from '../store/useBattleStore';
+import { createStartingDeck } from '../assets/data/cards';
 
 export const BattleView: React.FC = () => {
+  const { initDeck, drawCards } = useDeckStore();
+  const { currentTurn, startPlayerTurn } = useBattleStore();
+
+  // 게임(전투 뷰) 진입 시 초기 덱 10장을 세팅하고 첫 5장을 드로우합니다.
+  useEffect(() => {
+    const startingDeck = createStartingDeck();
+    initDeck(startingDeck);
+    drawCards(5);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 턴 전환 감지 - 임시 적 턴 로직 처리 (1초 대기 후 플레이어 턴으로 복귀 및 드로우)
+  useEffect(() => {
+    if (currentTurn === 'ENEMY') {
+      const timer = setTimeout(() => {
+        startPlayerTurn();
+        drawCards(5);
+      }, 1000); // 임시 적 턴 진행 시간 (1초)
+
+      return () => clearTimeout(timer);
+    }
+  }, [currentTurn, startPlayerTurn, drawCards]);
+
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
       {/* 
