@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import type { Enemy } from '../types/enemyTypes';
+import { useRunStore } from './useRunStore';
+import { determineNextIntent } from '../assets/data/enemies';
 
 type TurnState = 'PLAYER' | 'ENEMY' | 'RESOLVE';
 
@@ -30,6 +32,7 @@ interface BattleState {
   addPlayerShield: (amount: number) => void;
   addPlayerResist: (amount: number) => void;
   applyDamageToEnemy: (enemyId: string, amount: number, type: DamageType) => void;
+  executeEnemyTurns: () => void; // 적 AI 행동 실행 트리거
 }
 
 export const useBattleStore = create<BattleState>((set, get) => ({
@@ -44,7 +47,8 @@ export const useBattleStore = create<BattleState>((set, get) => ({
     currentTurn: 'PLAYER',
     playerActionPoints: 3,
     turnCount: state.turnCount + 1,
-    // 턴 시작 시 방어도가 날아가는 하드코어 룰이라면 여기서 0으로 초기화 (현재는 유지 보류)
+    // 턴 시작 시 이전 턴에 쌓아둔 방어/저항력 수치를 초기화 (일회성 휘발)
+    playerStatus: { shield: 0, resist: 0 }
   })),
 
   endPlayerTurn: () => set({ currentTurn: 'ENEMY' }),
@@ -118,6 +122,52 @@ export const useBattleStore = create<BattleState>((set, get) => ({
       });
 
       return { enemies: newEnemies };
+    });
+  },
+
+  // 적 행동(Intent) 일괄 실행 및 다음 행동 세팅
+  executeEnemyTurns: () => {
+    set((state) => {
+      let currentShield = state.playerStatus.shield;
+
+      const newEnemies = state.enemies.map((enemy) => {
+        // 생존한 적군만 행동
+        if (enemy.currentHp > 0 && enemy.currentIntent) {
+          if (enemy.currentIntent.type === 'ATTACK' && enemy.currentIntent.amount) {
+            // 방어 로직 연산: 플레이어의 현재 남은 Shield부터 깎음
+            let damageToPlayer = enemy.currentIntent.amount;
+
+            if (currentShield > 0) {
+              if (currentShield >= damageToPlayer) {
+                currentShield -= damageToPlayer;
+                damageToPlayer = 0;
+              } else {
+                damageToPlayer -= currentShield;
+                currentShield = 0;
+              }
+            }
+
+            // 남은 데미지가 있다면 런 스토어의 전역 체력 차감
+            if (damageToPlayer > 0) {
+              useRunStore.getState().damagePlayer(damageToPlayer);
+              console.log(`[피격] 플레이어가 ${damageToPlayer} 물리 피해를 입었습니다.`);
+            } else {
+              console.log(`[피격 차단] 방어막으로 적군 데미지 차단 성공!`);
+            }
+          }
+          // 행동 종료 후 다음 의도 부여
+          return {
+            ...enemy,
+            currentIntent: determineNextIntent(enemy.baseId)
+          };
+        }
+        return enemy; // 죽거나 상태이상이면 스킵
+      });
+
+      return {
+        enemies: newEnemies,
+        playerStatus: { ...state.playerStatus, shield: currentShield }
+      };
     });
   }
 }));

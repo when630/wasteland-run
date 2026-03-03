@@ -1,5 +1,5 @@
-import { Enemy } from '../types/enemyTypes';
-import { generateUniqueId } from '../utils/rng';
+import type { Enemy, Intent } from '../../types/enemyTypes';
+import { generateUniqueId } from '../../utils/rng';
 
 export const BASE_ENEMIES: Record<string, Omit<Enemy, 'id' | 'currentHp' | 'shield' | 'resist' | 'currentIntent'>> = {
   scrap_collector: {
@@ -8,6 +8,26 @@ export const BASE_ENEMIES: Record<string, Omit<Enemy, 'id' | 'currentHp' | 'shie
     maxHp: 45,
   },
   // TODO: 추후 녹슨 자동인형, 돌연변이 들개 등 추가
+};
+
+/**
+ * 몬스터의 baseId에 따라 다음 턴 행동(Intent)을 결정하여 반환하는 함수
+ */
+export const determineNextIntent = (baseId: string): Intent => {
+  const rand = Math.random();
+
+  switch (baseId) {
+    case 'scrap_collector': {
+      // 60% 확률로 5 피해, 40% 확률로 7 피해
+      if (rand < 0.6) {
+        return { type: 'ATTACK', amount: 5, description: '투박한 타격 5' };
+      } else {
+        return { type: 'ATTACK', amount: 7, description: '강하게 후려치기 7' };
+      }
+    }
+    default:
+      return { type: 'UNKNOWN', description: '???' };
+  }
 };
 
 /**
@@ -23,10 +43,6 @@ export const createEnemy = (baseId: string): Enemy => {
     currentHp: baseDef.maxHp,
     shield: 0,
     resist: 0,
-    currentIntent: {
-      type: 'ATTACK',
-      amount: 5,
-      description: '물리 атака 5', // 초기 의도 하드코딩 (나중에 AI 스크립트 연결 시 동적화)
-    }
+    currentIntent: determineNextIntent(baseId) // 초기 랜덤 의도 부여
   };
 };

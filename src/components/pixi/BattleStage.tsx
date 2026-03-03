@@ -2,10 +2,12 @@ import React, { useMemo } from 'react';
 import { Stage, Container, Sprite, Text } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import { useBattleStore } from '../../store/useBattleStore';
+import { useRunStore } from '../../store/useRunStore';
 
 export const BattleStage: React.FC = () => {
-  // 스토어에서 현재 턴과 적 목록 가져오기
-  const { currentTurn, enemies } = useBattleStore();
+  // 스토어에서 런 상태 및 전투 상태 가져오기
+  const { playerHp, playerMaxHp } = useRunStore();
+  const { currentTurn, enemies, playerStatus } = useBattleStore();
 
   // 테스트용 1번 적
   const enemy = enemies.length > 0 ? enemies[0] : null;
@@ -19,7 +21,13 @@ export const BattleStage: React.FC = () => {
   }), []);
 
   const hpTextStyle = useMemo(() => new PIXI.TextStyle({
-    fill: 0xff4444,
+    fill: 0x44ff44, // 플레이어 체력은 녹색 톤으로
+    fontSize: 20,
+    fontWeight: 'bold',
+  }), []);
+
+  const enemyHpTextStyle = useMemo(() => new PIXI.TextStyle({
+    fill: 0xff4444, // 적 체력은 붉은 톤
     fontSize: 20,
     fontWeight: 'bold',
   }), []);
@@ -95,6 +103,24 @@ export const BattleStage: React.FC = () => {
           anchor={0.5}
           style={defaultTextStyle}
         />
+        {/* 플레이어 체력 */}
+        <Text
+          text={`HP: ${playerHp} / ${playerMaxHp}`}
+          x={1920 * 0.25}
+          y={1080 * 0.6 + 140}
+          anchor={0.5}
+          style={hpTextStyle}
+        />
+        {/* 플레이어 방어 버프 */}
+        {(playerStatus.shield > 0 || playerStatus.resist > 0) && (
+          <Text
+            text={`[S: ${playerStatus.shield} | R: ${playerStatus.resist}]`}
+            x={1920 * 0.25}
+            y={1080 * 0.6 + 170}
+            anchor={0.5}
+            style={defaultTextStyle}
+          />
+        )}
 
         {/* 적 1 (우측) 데이터 렌더링 */}
         {enemy && (
@@ -122,7 +148,7 @@ export const BattleStage: React.FC = () => {
               x={1920 * 0.75}
               y={1080 * 0.6 - 140}
               anchor={0.5}
-              style={hpTextStyle}
+              style={enemyHpTextStyle}
             />
             {/* 적 방어력 */}
             {(enemy.shield > 0 || enemy.resist > 0) && (

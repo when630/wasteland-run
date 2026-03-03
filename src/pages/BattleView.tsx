@@ -10,7 +10,7 @@ import { createEnemy } from '../assets/data/enemies';
 
 export const BattleView: React.FC = () => {
   const { initDeck, drawCards } = useDeckStore();
-  const { currentTurn, startPlayerTurn, spawnEnemies } = useBattleStore();
+  const { currentTurn, startPlayerTurn, spawnEnemies, executeEnemyTurns } = useBattleStore();
 
   // 게임(전투 뷰) 진입 시 초기 덱과 몬스터를 세팅합니다
   useEffect(() => {
@@ -25,17 +25,27 @@ export const BattleView: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 턴 전환 감지 - 임시 적 턴 로직 처리 (1초 대기 후 플레이어 턴으로 복귀 및 드로우)
+  // 턴 전환 감지 및 적 턴 행동(AI) 처리
   useEffect(() => {
     if (currentTurn === 'ENEMY') {
-      const timer = setTimeout(() => {
+      // 1. 적군 행동(Intent) 연산 실행
+      // 애니메이션 대기 느낌을 주기 위해 살짝 딜레이(0.5초) 후 행동 실행
+      const actionTimer = setTimeout(() => {
+        executeEnemyTurns();
+      }, 500);
+
+      // 2. 적군 행동이 끝나면 플레이어 턴으로 복귀 및 새 카드 드로우 (1.5초 뒤)
+      const turnTimer = setTimeout(() => {
         startPlayerTurn();
         drawCards(5);
-      }, 1000); // 임시 적 턴 진행 시간 (1초)
+      }, 1500);
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(actionTimer);
+        clearTimeout(turnTimer);
+      };
     }
-  }, [currentTurn, startPlayerTurn, drawCards]);
+  }, [currentTurn, startPlayerTurn, drawCards, executeEnemyTurns]);
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
