@@ -6,16 +6,22 @@ import { ResourcePanel } from '../components/ui/ResourcePanel';
 import { useDeckStore } from '../store/useDeckStore';
 import { useBattleStore } from '../store/useBattleStore';
 import { createStartingDeck } from '../assets/data/cards';
+import { createEnemy } from '../assets/data/enemies';
 
 export const BattleView: React.FC = () => {
   const { initDeck, drawCards } = useDeckStore();
-  const { currentTurn, startPlayerTurn } = useBattleStore();
+  const { currentTurn, startPlayerTurn, spawnEnemies } = useBattleStore();
 
-  // 게임(전투 뷰) 진입 시 초기 덱 10장을 세팅하고 첫 5장을 드로우합니다.
+  // 게임(전투 뷰) 진입 시 초기 덱과 몬스터를 세팅합니다
   useEffect(() => {
+    // 덱 세팅 및 5장 드로우
     const startingDeck = createStartingDeck();
     initDeck(startingDeck);
     drawCards(5);
+
+    // 1스테이지 튜토리얼 몬스터 소환
+    spawnEnemies([createEnemy('scrap_collector')]);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

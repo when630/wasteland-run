@@ -1,8 +1,10 @@
 import React from 'react';
 import { useRunStore } from '../../store/useRunStore';
+import { useBattleStore } from '../../store/useBattleStore';
 
 export const HUD: React.FC = () => {
   const { playerHp, playerMaxHp, gold } = useRunStore();
+  const { playerStatus } = useBattleStore();
 
   return (
     <div style={{
@@ -27,7 +29,7 @@ export const HUD: React.FC = () => {
         <span style={{ color: '#ff4444' }}>HP:</span> {playerHp} / {playerMaxHp}
       </div>
       <div style={{ marginRight: '20px' }}>
-        <span style={{ color: '#4499ff' }}>Shield:</span> 0 | <span style={{ color: '#9944ff' }}>Resist:</span> 0
+        <span style={{ color: '#4499ff' }}>Shield:</span> {playerStatus.shield} | <span style={{ color: '#9944ff' }}>Resist:</span> {playerStatus.resist}
       </div>
       <div>
         <span style={{ color: '#ffd700' }}>Gold:</span> {gold}
