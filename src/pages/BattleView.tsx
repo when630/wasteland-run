@@ -5,7 +5,7 @@ import { Hand } from '../components/ui/Hand';
 import { ResourcePanel } from '../components/ui/ResourcePanel';
 import { DeckPiles } from '../components/ui/DeckPiles';
 import { CardRewardModal } from '../components/ui/CardRewardModal';
-// import { CardViewerModal } from '../components/ui/CardViewerModal';
+import { CardViewerModal } from '../components/ui/CardViewerModal';
 import { useDeckStore } from '../store/useDeckStore';
 import { useBattleStore } from '../store/useBattleStore';
 import { createStartingDeck } from '../assets/data/cards';
@@ -154,7 +154,10 @@ export const BattleView: React.FC = () => {
 
               {!cardClaimed && (
                 <button
-                  onClick={() => setIsCardModalOpen(true)}
+                  onClick={() => {
+                    console.log('[BattleView] 카드 모달 오픈 버튼 클릭됨');
+                    setIsCardModalOpen(true);
+                  }}
                   style={{ ...rewardBtnStyle, color: '#fff', borderColor: '#4a70b0', backgroundColor: '#2a3a50' }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3a4a60'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2a3a50'}
@@ -218,6 +221,9 @@ export const BattleView: React.FC = () => {
           }}
         />
       )}
+
+      {/* 덱 내용물을 보는 공용 뷰어 모달 */}
+      <CardViewerModal />
     </div>
   );
 };

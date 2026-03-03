@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDeckStore } from '../../store/useDeckStore';
 import type { Card } from '../../types/gameTypes';
 import { STARTING_CARDS } from '../../assets/data/cards';
@@ -9,18 +9,20 @@ interface CardRewardModalProps {
 }
 
 export const CardRewardModal: React.FC<CardRewardModalProps> = ({ onClose, onCardSelected }) => {
+  console.log('[CardRewardModal] component mounted/rendered'); // 디버그 목적
   const { addCardToMasterDeck } = useDeckStore();
-  const [rewardCards, setRewardCards] = useState<Card[]>([]);
 
-  // 컴포넌트 마운트 시 카드 3장 무작위 뽑기
-  useEffect(() => {
-    // 런 최초 지급용으로 만들어둔 STARTING_CARDS 배열에서 임시로 3장을 무작위 추출합니다.
+  // 초기 렌더링 시점에 무작위 카드 3장을 즉시 추출하여 useState에 할당
+  const [rewardCards] = useState<Card[]>(() => {
+    console.log('[CardRewardModal] STARTING_CARDS loaded:', STARTING_CARDS);
     const shuffled = [...STARTING_CARDS].sort(() => 0.5 - Math.random()) as Card[];
-    setRewardCards(shuffled.slice(0, 3));
-  }, []);
+    console.log('[CardRewardModal] rewardCards initialized to:', shuffled.slice(0, 3));
+    return shuffled.slice(0, 3);
+  });
 
   const handleSelectCard = (card: Card) => {
     // ID를 제거한 블루프린트 형태로 덱에 추가 (내부적으로 새 ID 발급됨)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, ...cardBlueprint } = card;
     addCardToMasterDeck(cardBlueprint);
     onCardSelected();
@@ -30,7 +32,7 @@ export const CardRewardModal: React.FC<CardRewardModalProps> = ({ onClose, onCar
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-      backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 300,
+      backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
     }}>
       <h2 style={{ fontSize: '36px', color: '#ffdd44', marginBottom: '30px' }}>

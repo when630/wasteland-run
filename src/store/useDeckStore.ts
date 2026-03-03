@@ -15,7 +15,7 @@ interface DeckState {
   // Actions
   setMasterDeck: (deckArray: Card[]) => void;
   addCardToMasterDeck: (card: Omit<Card, 'id'>) => void;
-  initDeck: (deckArray: Card[]) => void;
+  initDeck: () => void;
   drawCards: (count: number) => void;
   playCardFromHand: (cardId: string) => void;
   discardHand: () => void;
