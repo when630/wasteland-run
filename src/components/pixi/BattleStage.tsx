@@ -125,10 +125,10 @@ export const BattleStage: React.FC = () => {
         {enemies.map((enemyObj, index) => {
           if (enemyObj.currentHp <= 0) return null; // 죽은 몬스터는 Canvas에서 삭제
 
-          // 다중 배치를 위한 위치 지정 (최대 3~4마리까지 화면 우측에 상하로 배열)
-          // 0번: 0.4(상), 1번: 0.7(하), 2번: 0.25...
-          const baseY = 1080 * (0.4 + index * 0.3);
-          const baseX = 1920 * 0.75;
+          // 다중 배치를 위한 위치 지정 (화면 우측에 좌우로 배열)
+          // 플레이어와 동일한 높이 레벨 적용, 간격은 0.15 비율로 축소
+          const baseY = 1080 * 0.6;
+          const baseX = 1920 * (0.65 + index * 0.15);
           const isTargeting = targetingCardId !== null;
 
           return (
