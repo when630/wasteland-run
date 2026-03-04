@@ -3,6 +3,7 @@ import { BattleView } from './pages/BattleView';
 import { MapView } from './pages/MapView';
 import { RestView } from './pages/RestView';
 import { EventView } from './pages/EventView';
+import { ShopView } from './pages/ShopView';
 import { useRunStore } from './store/useRunStore';
 import { useDeckStore } from './store/useDeckStore';
 import { createStartingDeck } from './assets/data/cards';
@@ -23,7 +24,8 @@ function SceneManager() {
       return <RestView />;
     case 'EVENT':
       return <EventView />;
-    // 추후 SHOP 추가
+    case 'SHOP':
+      return <ShopView />;
     default:
       return <MapView />;
   }
