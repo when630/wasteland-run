@@ -23,6 +23,8 @@ interface BattleState {
   playerStatus: PlayerBattleStatus;
   enemies: Enemy[];
   targetingCardId: string | null;
+  hasPlayedUtilityThisTurn: boolean; // 🌟 아크 심장 유물 용: 이번 턴에 변화 카드를 사용했는지 추적
+  playerVisualEffect?: { type: 'DAMAGE' | 'HEAL', tick: number }; // 🌟 플레이어 피격 연출용 상태
 
   // Actions
   startPlayerTurn: () => void;
@@ -38,6 +40,7 @@ interface BattleState {
   applyDamageToEnemy: (enemyId: string, amount: number, type: DamageType) => void;
   executeEnemyTurns: () => void; // 적 AI 행동 실행 트리거
   setTargetingCard: (cardId: string | null) => void;
+  setPlayedUtilityThisTurn: (value: boolean) => void; // 🌟 아크 심장 용 상태 업데이트
 }
 
 export const useBattleStore = create<BattleState>((set, get) => ({
@@ -49,15 +52,24 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   playerStatus: { shield: 0, resist: 0 },
   enemies: [],
   targetingCardId: null,
+  hasPlayedUtilityThisTurn: false,
 
-  resetBattle: () => set({
-    currentTurn: 'PLAYER',
-    battleResult: 'NONE',
-    turnCount: 1,
-    playerActionPoints: 3,
-    playerStatus: { shield: 0, resist: 0 },
-    targetingCardId: null
-  }),
+  resetBattle: () => {
+    const relics = useRunStore.getState().relics;
+    let startingAp = 3;
+    if (relics.includes('glow_watch')) startingAp += 1;
+    if (relics.includes('arc_heart')) startingAp += 1;
+
+    set({
+      currentTurn: 'PLAYER',
+      battleResult: 'NONE',
+      turnCount: 1,
+      playerActionPoints: startingAp,
+      playerStatus: { shield: 0, resist: 0 },
+      targetingCardId: null,
+      hasPlayedUtilityThisTurn: false
+    });
+  },
 
   startPlayerTurn: () => {
     // 플레이어 턴 시작 전 사망 여부 다시 검증 (중복 체크)
@@ -66,13 +78,22 @@ export const useBattleStore = create<BattleState>((set, get) => ({
       return;
     }
 
-    set((state) => ({
-      currentTurn: 'PLAYER',
-      playerActionPoints: 3,
-      turnCount: state.turnCount + 1,
-      playerStatus: { shield: 0, resist: 0 },
-      targetingCardId: null
-    }));
+    set((state) => {
+      const relics = useRunStore.getState().relics;
+      let startingAp = 3;
+      // glow_watch는 turnCount 1에 제한된 초동 유물이므로 여기서는 아크 심장만 적용
+      if (relics.includes('arc_heart')) startingAp += 1;
+
+      return {
+        currentTurn: 'PLAYER',
+        playerActionPoints: startingAp,
+        turnCount: state.turnCount + 1,
+        playerStatus: { shield: 0, resist: 0 },
+        targetingCardId: null,
+        hasPlayedUtilityThisTurn: false, // 🌟 매 턴 시작 시 초기화
+        playerVisualEffect: undefined
+      };
+    });
   },
 
   endPlayerTurn: () => set({ currentTurn: 'ENEMY' }),
@@ -92,6 +113,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
 
   spawnEnemies: (enemyArray: Enemy[]) => set({ enemies: enemyArray }),
   setTargetingCard: (cardId: string | null) => set({ targetingCardId: cardId }),
+  setPlayedUtilityThisTurn: (value: boolean) => set({ hasPlayedUtilityThisTurn: value }),
 
   /* --- 전투 액션 함수 --- */
 
@@ -138,6 +160,13 @@ export const useBattleStore = create<BattleState>((set, get) => ({
         let newHp = enemy.currentHp - remainingDamage;
         if (newHp < 0) newHp = 0; // 최소 HP 0 보정 (추후 사망 처리 로직 발동용)
 
+        // 🌟 유물 효과: [구시대의 구급상자] 특수(SPECIAL) 공격으로 처치 시 체력 3 회복
+        if (newHp === 0 && enemy.currentHp > 0 && type === 'SPECIAL') {
+          if (useRunStore.getState().relics.includes('old_medkit')) {
+            useRunStore.getState().healPlayer(3);
+          }
+        }
+
         return {
           ...enemy,
           shield: newShield,
@@ -162,6 +191,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   executeEnemyTurns: () => {
     set((state) => {
       let currentShield = state.playerStatus.shield;
+      let playerHitTick: number | undefined = undefined;
 
       const newEnemies = state.enemies.map((enemy) => {
         // 생존한 적군만 행동
@@ -183,6 +213,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
             // 남은 데미지가 있다면 런 스토어의 전역 체력 차감
             if (damageToPlayer > 0) {
               useRunStore.getState().damagePlayer(damageToPlayer);
+              playerHitTick = Date.now(); // 피격 이펙트 플래그 설정
               console.log(`[피격] 플레이어가 ${damageToPlayer} 물리 피해를 입었습니다.`);
             } else {
               console.log(`[피격 차단] 방어막으로 적군 데미지 차단 성공!`);
@@ -212,7 +243,8 @@ export const useBattleStore = create<BattleState>((set, get) => ({
       return {
         enemies: newEnemies,
         playerStatus: { ...state.playerStatus, shield: currentShield },
-        battleResult: isDefeat ? 'DEFEAT' : 'NONE' // 임시: NONE 외 기존 유지 필요 시 분기 고려
+        battleResult: isDefeat ? 'DEFEAT' : 'NONE', // 임시: NONE 외 기존 유지 필요 시 분기 고려
+        playerVisualEffect: playerHitTick ? { type: 'DAMAGE', tick: playerHitTick } : state.playerVisualEffect
       };
     });
   }

@@ -14,8 +14,8 @@ import { useRunStore } from '../store/useRunStore';
 
 export const BattleView: React.FC = () => {
   const { initDeck, drawCards, masterDeck, setMasterDeck } = useDeckStore();
-  const { currentTurn, battleResult, startPlayerTurn, spawnEnemies, executeEnemyTurns, resetBattle } = useBattleStore();
-  const { setScene, addGold, currentScene } = useRunStore();
+  const { currentTurn, battleResult, startPlayerTurn, spawnEnemies, executeEnemyTurns, resetBattle, addAmmo } = useBattleStore();
+  const { setScene, addGold, currentScene, relics } = useRunStore();
 
   // 보상 획득 여부 로컬 플래그 분리
   const [goldClaimed, setGoldClaimed] = useState(false);
@@ -47,6 +47,11 @@ export const BattleView: React.FC = () => {
       createEnemy('acid_dog')
     ]);
 
+    // 🌟 유물 효과: [피 묻은 가죽 탄띠] (전투 시작 시 탄약 +1)
+    if (relics.includes('bloody_bandolier')) {
+      addAmmo(1);
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -54,7 +59,6 @@ export const BattleView: React.FC = () => {
   useEffect(() => {
     if (currentTurn === 'ENEMY') {
       // 1. 적군 행동(Intent) 연산 실행
-      // 애니메이션 대기 느낌을 주기 위해 살짝 딜레이(0.5초) 후 행동 실행
       const actionTimer = setTimeout(() => {
         executeEnemyTurns();
       }, 500);

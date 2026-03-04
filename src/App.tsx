@@ -6,6 +6,7 @@ import { EventView } from './pages/EventView';
 import { useRunStore } from './store/useRunStore';
 import { useDeckStore } from './store/useDeckStore';
 import { createStartingDeck } from './assets/data/cards';
+import { ToastMessage } from './components/ui/ToastMessage';
 import { useEffect } from 'react';
 
 function SceneManager() {
@@ -39,13 +40,16 @@ function App() {
   }, [masterDeck.length, setMasterDeck]);
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<SceneManager />} />
-        {/* 없는 경로 접근 시 루트로 리다이렉트 */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <>
+      <ToastMessage />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<SceneManager />} />
+          {/* 없는 경로 접근 시 루트로 리다이렉트 */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Stage, Container, Sprite, Text } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import { useBattleStore } from '../../store/useBattleStore';
@@ -10,7 +10,7 @@ import { AnimatedEnemy } from './AnimatedEnemy';
 export const BattleStage: React.FC = () => {
   // 스토어에서 런 상태 및 전투 상태 가져오기
   const { playerHp, playerMaxHp } = useRunStore();
-  const { currentTurn, enemies, playerStatus, targetingCardId } = useBattleStore();
+  const { currentTurn, enemies, playerStatus, targetingCardId, playerVisualEffect } = useBattleStore();
   const { hand } = useDeckStore();
   const { playCard } = useCardPlay();
 
@@ -83,6 +83,26 @@ export const BattleStage: React.FC = () => {
     ? `선택된 카드: [${targetingCard.name}]\n공격 대상을 클릭하세요!`
     : (currentTurn === 'PLAYER' ? "Your Turn" : "Enemy Turn");
 
+  // 🌟 피격 효과 제어용 로컬 상태 및 타이머 구조
+  const [playerHitOffset, setPlayerHitOffset] = useState(0);
+  const [playerTint, setPlayerTint] = useState(0x00ff00);
+
+  useEffect(() => {
+    if (playerVisualEffect?.type === 'DAMAGE') {
+      setPlayerTint(0xff4444); // 피격 시 붉은색
+      setPlayerHitOffset(-10); // 좌측으로 먼저 덜컹
+
+      const t1 = setTimeout(() => setPlayerHitOffset(10), 50); // 우측
+      const t2 = setTimeout(() => setPlayerHitOffset(-10), 100); // 좌측
+      const t3 = setTimeout(() => {
+        setPlayerHitOffset(0); // 원위치
+        setPlayerTint(0x00ff00); // 색상 원복
+      }, 150);
+
+      return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    }
+  }, [playerVisualEffect?.tick]);
+
   return (
     <Stage
       width={screenWidth}
@@ -111,7 +131,8 @@ export const BattleStage: React.FC = () => {
             width={150}
             height={220}
             anchor={0.5}
-            tint={0x00ff00} // 녹색 임시 플레이어
+            x={playerHitOffset} // 🌟 흔들림 연출
+            tint={playerTint} // 🌟 피격 붉은 점멸 연출
           />
           <Text
             text="Player"
