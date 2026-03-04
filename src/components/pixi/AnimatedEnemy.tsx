@@ -71,6 +71,15 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
     }
   });
 
+  // 보스 분기 처리
+  const isBoss = enemy.baseId === 'brutus';
+  const width = isBoss ? 350 : 150;
+  const height = isBoss ? 450 : 200;
+  const nameYOffset = isBoss ? -260 : -140;
+  const hpYOffset = isBoss ? -230 : -110;
+  const statYOffset = isBoss ? -200 : -80;
+  const intentYOffset = isBoss ? -290 : -170;
+
   return (
     <Container
       x={baseX + offsetX}
@@ -82,22 +91,22 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
     >
       <Sprite
         texture={texture}
-        width={150}
-        height={200}
+        width={width}
+        height={height}
         anchor={0.5}
         tint={tint}
       />
       {/* 적 이름 */}
       <Text
         text={enemy.name}
-        y={-140}
+        y={nameYOffset}
         anchor={0.5}
         style={defaultTextStyle}
       />
       {/* 적 체력 */}
       <Text
         text={`HP: ${enemy.currentHp} / ${enemy.maxHp}`}
-        y={-110}
+        y={hpYOffset}
         anchor={0.5}
         style={hpTextStyle}
       />
@@ -105,7 +114,7 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
       {(enemy.shield > 0 || enemy.resist > 0) && (
         <Text
           text={`[S: ${enemy.shield} | R: ${enemy.resist}]`}
-          y={-80}
+          y={statYOffset}
           anchor={0.5}
           style={defaultTextStyle}
         />
@@ -114,7 +123,7 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
       {enemy.currentIntent && (
         <Text
           text={`의도: ${enemy.currentIntent.description}`} // 향후 이모지 부착 작업 연계
-          y={-170}
+          y={intentYOffset}
           anchor={0.5}
           style={intentTextStyle}
         />

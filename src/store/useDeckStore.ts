@@ -21,6 +21,7 @@ interface DeckState {
   playCardFromHand: (cardId: string) => void;
   discardHand: () => void;
   setViewingPile: (pile: PileType) => void;
+  addCardToDiscardPile: (cardBlueprint: Omit<Card, 'id'>) => void; // 🌟 몹의 패턴 등에 의해 강제로 카드를 욱여넣을 때 사용
 }
 
 export const useDeckStore = create<DeckState>((set) => ({
@@ -160,4 +161,13 @@ export const useDeckStore = create<DeckState>((set) => ({
 
   // 특정 형태의 덱 뷰어 띄우기 (또는 NONE으로 닫기)
   setViewingPile: (pile: PileType) => set({ viewingPile: pile }),
+
+  // 몹의 패턴/이벤트 등으로 덱(버린 카드 더미)에 강제로 카드를 한 장 삽입
+  addCardToDiscardPile: (cardBlueprint: Omit<Card, 'id'>) => set((state) => {
+    const newCard: Card = {
+      ...cardBlueprint,
+      id: `${cardBlueprint.type}-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+    };
+    return { discardPile: [...state.discardPile, newCard] };
+  }),
 }));

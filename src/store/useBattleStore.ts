@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import type { Enemy } from '../types/enemyTypes';
 import { useRunStore } from './useRunStore';
+import { useDeckStore } from './useDeckStore';
 import { determineNextIntent } from '../assets/data/enemies';
+import { STATUS_CARDS } from '../assets/data/cards';
 
 type TurnState = 'PLAYER' | 'ENEMY' | 'RESOLVE';
 type BattleResult = 'NONE' | 'VICTORY' | 'DEFEAT';
@@ -197,24 +199,47 @@ export const useBattleStore = create<BattleState>((set, get) => ({
         // 생존한 적군만 행동
         if (enemy.currentHp > 0 && enemy.currentIntent) {
           if (enemy.currentIntent.type === 'ATTACK' && enemy.currentIntent.amount) {
-            // 방어 로직 연산: 플레이어의 현재 남은 Shield부터 깎음
-            let damageToPlayer = enemy.currentIntent.amount;
 
-            if (currentShield > 0) {
-              if (currentShield >= damageToPlayer) {
-                currentShield -= damageToPlayer;
-                damageToPlayer = 0;
-              } else {
-                damageToPlayer -= currentShield;
-                currentShield = 0;
+            // 🌟 브루터스 다단 히트 처리 ('광란의 후려치기 (5x3)' 등)
+            let rawDamage = enemy.currentIntent.amount;
+            let hitCount = 1;
+
+            if (enemy.currentIntent.description.includes('5x3')) {
+              rawDamage = 5;
+              hitCount = 3;
+            }
+
+            let totalDamageToPlayer = 0;
+
+            // N 번 타격 연산
+            for (let i = 0; i < hitCount; i++) {
+              let damageToPlayer = rawDamage;
+              if (currentShield > 0) {
+                if (currentShield >= damageToPlayer) {
+                  currentShield -= damageToPlayer;
+                  damageToPlayer = 0;
+                } else {
+                  damageToPlayer -= currentShield;
+                  currentShield = 0;
+                }
               }
+              totalDamageToPlayer += damageToPlayer;
             }
 
             // 남은 데미지가 있다면 런 스토어의 전역 체력 차감
-            if (damageToPlayer > 0) {
-              useRunStore.getState().damagePlayer(damageToPlayer);
+            if (totalDamageToPlayer > 0) {
+              useRunStore.getState().damagePlayer(totalDamageToPlayer);
               playerHitTick = Date.now(); // 피격 이펙트 플래그 설정
-              console.log(`[피격] 플레이어가 ${damageToPlayer} 물리 피해를 입었습니다.`);
+              console.log(`[피격] 플레이어가 총 ${totalDamageToPlayer} 상흔을 입었습니다.`);
+
+              // 🌟 보스 패턴 기믹: 오염된 소이탄에 피격당해 데미지가 1이라도 들어왔다면 화상 카드 강제 삽입
+              if (enemy.currentIntent.description.includes('소이탄')) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { id, ...burnBlueprint } = STATUS_CARDS[0]; // id를 떼버리고 던짐
+                useDeckStore.getState().addCardToDiscardPile(burnBlueprint);
+                useRunStore.getState().setToastMessage('🔥 오염물질 피격: 덱에 [화상] 카드가 섞여들어왔습니다!');
+              }
+
             } else {
               console.log(`[피격 차단] 방어막으로 적군 데미지 차단 성공!`);
             }

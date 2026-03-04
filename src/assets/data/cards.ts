@@ -54,6 +54,19 @@ export const STARTING_CARDS: Partial<Card>[] = [
   },
 ];
 
+export const STATUS_CARDS: Card[] = [
+  {
+    baseId: 'status_burn',
+    id: 'status_burn_base',
+    name: '화상',
+    type: CardType.STATUS_BURN,
+    costAp: 1,
+    costAmmo: 0,
+    description: '[상태이상] 사용할 수 있지만 아무런 효과가 없고 손패와 덱을 막습니다.',
+    effects: [], // 아무 효과 없음
+  }
+];
+
 /**
  * 10장짜리 기본덱 세트를 생성하는 헬퍼 함수
  * 물리 공격 x 4, 물리 방어 x 3, 특수 방어 x 1, 특수 공격 x 1, 보조 x 1

@@ -23,6 +23,9 @@ export const BattleView: React.FC = () => {
   const [cardClaimed, setCardClaimed] = useState(false);
   const [relicClaimed, setRelicClaimed] = useState(false);
 
+  // 🌟 보스전 클리어 연출 진입 플래그
+  const [showBossClear, setShowBossClear] = useState(false);
+
   // 모달 활성화 상태
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [isRelicModalOpen, setIsRelicModalOpen] = useState(false);
@@ -110,13 +113,13 @@ export const BattleView: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. 전투 결과 팝업 오버레이 (승리/패배) */}
-      {battleResult !== 'NONE' && (
+      {/* 4. 전투 결과 팝업 오버레이 (승리/패배 보상창) */}
+      {battleResult !== 'NONE' && !showBossClear && (
         <div style={{
           position: 'fixed',
           top: 0, left: 0, width: '100vw', height: '100vh',
           backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          zIndex: 200, // 모달보다 더 위로
+          zIndex: 200,
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
           color: 'white'
@@ -161,7 +164,6 @@ export const BattleView: React.FC = () => {
               {!cardClaimed && (
                 <button
                   onClick={() => {
-                    console.log('[BattleView] 카드 모달 오픈 버튼 클릭됨');
                     setIsCardModalOpen(true);
                   }}
                   style={{ ...rewardBtnStyle, color: '#fff', borderColor: '#4a70b0', backgroundColor: '#2a3a50' }}
@@ -192,12 +194,17 @@ export const BattleView: React.FC = () => {
           <button
             onClick={() => {
               if (battleResult === 'VICTORY') {
-                setScene('MAP'); // 승리 시 맵으로 반환
-              } else {
-                window.location.reload(); // 패배 시 임시 전면 리부팅 유지
+                if (currentScene === 'BOSS') {
+                  // 보스전이면 맵 이동 대신 클리어 오버레이를 켬
+                  setShowBossClear(true);
+                } else {
+                  setScene('MAP');
+                }
+              }
+              else {
+                window.location.reload();
               }
             }}
-            //disabled={battleResult === 'VICTORY' && !rewardClaimed} (스킵 허용을 위해 제거)
             style={{
               padding: '15px 40px', fontSize: '20px', fontWeight: 'bold',
               backgroundColor: '#444', color: 'white',
@@ -207,8 +214,40 @@ export const BattleView: React.FC = () => {
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#555'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#444'}
           >
-            {battleResult === 'VICTORY' ? '계속하기 (보상 스킵 및 맵 이동)' : '다시 시작'}
+            {battleResult === 'VICTORY' ? (currentScene === 'BOSS' ? '엔딩 보기' : '계속하기 (보상 스킵 및 맵 이동)') : '다시 시작'}
           </button>
+        </div>
+      )}
+
+      {/* 🌟 1챕터 보스 처치 영광의 결과창 (Game Clear) */}
+      {showBossClear && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+          backgroundColor: 'rgba(0,0,0,0.95)', zIndex: 300,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          animation: 'fadeIn 2s ease-in-out'
+        }}>
+          <h1 style={{ fontSize: '64px', color: '#fbbf24', textShadow: '0 0 20px #fbbf24', marginBottom: '20px' }}>
+            🎉 1챕터 클리어!
+          </h1>
+          <p style={{ fontSize: '24px', color: '#d1d5db', textAlign: 'center', lineHeight: '1.6', maxWidth: '600px', marginBottom: '50px' }}>
+            거대한 고철 기갑수 브루터스가 굉음과 함께 쓰러졌습니다.<br />
+            당신은 매캐한 연기를 뚫고 황무지의 다음 구역으로 발걸음을 옮깁니다.
+          </p>
+          <div style={{ display: 'flex', gap: '20px' }}>
+            <button
+              onClick={() => window.location.reload()} // 임시: 나중에 챕터 2로 연결되거나 통계창 노출
+              style={{
+                padding: '20px 60px', fontSize: '24px', fontWeight: 'bold',
+                backgroundColor: '#b45309', color: '#fff', border: 'none',
+                borderRadius: '12px', cursor: 'pointer', boxShadow: '0 0 15px rgba(180,83,9,0.5)'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              처음부터 다시하기
+            </button>
+          </div>
         </div>
       )}
 
