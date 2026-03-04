@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useRunStore } from '../store/useRunStore';
+import { UpgradeCardModal } from '../components/ui/UpgradeCardModal';
 
 export const RestView: React.FC = () => {
   const { playerHp, playerMaxHp, healPlayer, setScene } = useRunStore();
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
   const handleHeal = () => {
     // 최대 체력의 30% 회복 (올림 처리)
@@ -14,9 +16,7 @@ export const RestView: React.FC = () => {
   };
 
   const handleUpgrade = () => {
-    // 추후 카드 강화 로직 연결
-    alert("아직 카드 강화 기능이 준비되지 않았습니다!");
-    setScene('MAP');
+    setIsUpgradeModalOpen(true);
   };
 
   return (
@@ -68,6 +68,16 @@ export const RestView: React.FC = () => {
           </p>
         </button>
       </div>
+
+      {isUpgradeModalOpen && (
+        <UpgradeCardModal
+          onClose={() => setIsUpgradeModalOpen(false)}
+          onUpgradeComplete={() => {
+            setIsUpgradeModalOpen(false);
+            setScene('MAP'); // 완료 후 맵 이동
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -15,6 +15,7 @@ interface DeckState {
   // Actions
   setMasterDeck: (deckArray: Card[]) => void;
   addCardToMasterDeck: (card: Omit<Card, 'id'>) => void;
+  upgradeCard: (cardId: string) => void; // 🌟 덱 압축/강화를 위한 액션
   initDeck: () => void;
   drawCards: (count: number) => void;
   playCardFromHand: (cardId: string) => void;
@@ -39,6 +40,49 @@ export const useDeckStore = create<DeckState>((set) => ({
       id: `${cardBlueprint.type}-${Date.now()}-${Math.floor(Math.random() * 1000)}`
     };
     return { masterDeck: [...state.masterDeck, newCard] };
+  }),
+
+  // 카드 영구 강화 액션
+  upgradeCard: (cardId: string) => set((state) => {
+    const newMasterDeck = state.masterDeck.map(card => {
+      if (card.id !== cardId) return card;
+
+      const upgradedCard = { ...card, isUpgraded: true };
+
+      // baseId 기획에 맞춘 개별 수치 보정 적용
+      switch (card.baseId) {
+        case 'old_pipe':
+          upgradedCard.name = '낡은 쇠파이프+';
+          upgradedCard.effects = [{ type: 'DAMAGE', amount: 9 }];
+          upgradedCard.description = '물리 피해 9를 줍니다.';
+          break;
+        case 'take_cover':
+          upgradedCard.name = '엄폐+';
+          upgradedCard.effects = [{ type: 'SHIELD', amount: 8 }];
+          upgradedCard.description = '물리 방어도 8을 얻습니다.';
+          break;
+        case 'wet_cloth':
+          upgradedCard.name = '젖은 천 두르기+';
+          upgradedCard.effects = [{ type: 'RESIST', amount: 8 }];
+          upgradedCard.description = '특수 방어도 8을 얻습니다.';
+          break;
+        case 'rusty_pistol':
+          upgradedCard.name = '녹슨 권총+';
+          upgradedCard.effects = [{ type: 'DAMAGE', amount: 19 }];
+          upgradedCard.description = '특수 피해 19를 줍니다.';
+          break;
+        case 'scavenge':
+          upgradedCard.name = '잔해 뒤지기+';
+          upgradedCard.effects = [{ type: 'ADD_AMMO', amount: 3 }];
+          upgradedCard.description = '탄약을 3개 얻습니다.';
+          break;
+        // 추후 추가될 카드들은 여기에 정의
+      }
+
+      return upgradedCard;
+    });
+
+    return { masterDeck: newMasterDeck };
   }),
 
   // 새로운 전투 시작 시 masterDeck의 복사본을 받아 셔플하여 drawPile로 세팅
