@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Card } from '../types/gameTypes';
 import { customShuffle } from '../utils/rng';
+import { useAudioStore } from './useAudioStore';
 
 export type PileType = 'NONE' | 'DECK' | 'DRAW' | 'DISCARD' | 'EXHAUST';
 
@@ -87,15 +88,19 @@ export const useDeckStore = create<DeckState>((set) => ({
   }),
 
   // 새로운 전투 시작 시 masterDeck의 복사본을 받아 셔플하여 drawPile로 세팅
-  initDeck: () => set((state) => ({
-    drawPile: customShuffle([...state.masterDeck]),
-    hand: [],
-    discardPile: [],
-    exhaustPile: [],
-  })),
+  initDeck: () => {
+    useAudioStore.getState().playDraw(); // 덱 초기 셔플음
+    set((state) => ({
+      drawPile: customShuffle([...state.masterDeck]),
+      hand: [],
+      discardPile: [],
+      exhaustPile: [],
+    }));
+  },
 
   // 덱(Draw Pile)에서 핸드(Hand)로 카드 이동 처리
   drawCards: (count: number) => {
+    if (count > 0) useAudioStore.getState().playDraw(); // 카드 뽑는 소리
     set((state) => {
       let currentDraw = [...state.drawPile];
       let currentDiscard = [...state.discardPile];

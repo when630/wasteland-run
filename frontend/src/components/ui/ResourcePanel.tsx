@@ -1,12 +1,14 @@
 import React from 'react';
 import { useBattleStore } from '../../store/useBattleStore';
 import { useDeckStore } from '../../store/useDeckStore';
+import { useAudioStore } from '../../store/useAudioStore';
 
 export const ResourcePanel: React.FC = () => {
   const { playerActionPoints, playerAmmo, endPlayerTurn, currentTurn } = useBattleStore();
   const { discardHand } = useDeckStore();
 
   const handleTurnEnd = () => {
+    useAudioStore.getState().playClick();
     discardHand();
     endPlayerTurn();
   };

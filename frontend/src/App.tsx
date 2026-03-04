@@ -13,8 +13,31 @@ import { AuthModal } from './components/ui/AuthModal';
 import { useAuthStore } from './store/useAuthStore';
 import { LeaderboardModal } from './components/ui/LeaderboardModal';
 
+import { useAudioStore } from './store/useAudioStore';
+
 function SceneManager() {
   const { currentScene } = useRunStore();
+
+  useEffect(() => {
+    const audioStore = useAudioStore.getState();
+    switch (currentScene) {
+      case 'MAP':
+      case 'REST':
+      case 'EVENT':
+      case 'SHOP':
+        audioStore.playBgm('MAP');
+        break;
+      case 'BATTLE':
+      case 'ELITE':
+        audioStore.playBgm('BATTLE');
+        break;
+      case 'BOSS':
+        audioStore.playBgm('BOSS');
+        break;
+      default:
+        audioStore.playBgm('MAP');
+    }
+  }, [currentScene]);
 
   switch (currentScene) {
     case 'MAP':

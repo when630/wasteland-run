@@ -3,6 +3,7 @@ import { useRunStore } from '../../store/useRunStore';
 import { useBattleStore } from '../../store/useBattleStore';
 import { useDeckStore } from '../../store/useDeckStore';
 import { RELICS } from '../../assets/data/relics';
+import { useAudioStore } from '../../store/useAudioStore';
 
 export const HUD: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,6 +13,7 @@ export const HUD: React.FC = () => {
   const relicsList = useRunStore(state => state.relics);
 
   const handleKillAll = () => {
+    useAudioStore.getState().playClick();
     enemies.forEach(enemy => {
       if (enemy.currentHp > 0) {
         applyDamageToEnemy(enemy.id, 9999, 'PIERCING');
@@ -76,7 +78,10 @@ export const HUD: React.FC = () => {
       {/* 🌟 메뉴 버튼 & 드롭다운 */}
       <div style={{ position: 'relative', marginRight: '15px' }}>
         <div
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          onClick={() => {
+            useAudioStore.getState().playClick();
+            setIsMenuOpen(!isMenuOpen);
+          }}
           style={{
             backgroundColor: '#444',
             padding: '5px 15px',
@@ -117,6 +122,7 @@ export const HUD: React.FC = () => {
             {/* 모든 유물 획득 버튼 */}
             <div
               onClick={() => {
+                useAudioStore.getState().playClick();
                 const { relics, addRelic } = useRunStore.getState();
                 RELICS.forEach(r => {
                   if (!relics.includes(r.id)) addRelic(r.id);

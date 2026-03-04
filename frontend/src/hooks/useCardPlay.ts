@@ -3,6 +3,8 @@ import type { DamageType } from '../store/useBattleStore';
 import { useRunStore } from '../store/useRunStore';
 import { useDeckStore } from '../store/useDeckStore';
 
+import { useAudioStore } from '../store/useAudioStore';
+
 /**
  * 카드를 플레이할 때 호출하는 커스텀 훅
  * AP, Ammo 코스트 검증, 자원 차감, 그리고 덱 상태(playCardFromHand) 변경을 한 번에 처리합니다.
@@ -34,6 +36,7 @@ export const useCardPlay = () => {
 
     // 3. 무조건 타겟팅 모드 진입 (대상을 아직 지정하지 않은 경우)
     if (!targetId) {
+      useAudioStore.getState().playClick(); // 타겟팅 시 클릭음
       setTargetingCard(cardId);
       return false;
     }
@@ -90,19 +93,30 @@ export const useCardPlay = () => {
     // 7. CardEffect 기반의 실제 퍼포먼스 발동 처리
     const targetEnemy = (finalTargetId && finalTargetId !== 'PLAYER') ? enemies.find(e => e.id === finalTargetId) : null;
 
+    let hasDamage = false;
+    let hasBuff = false;
+
     card.effects.forEach((effect) => {
       if (effect.type === 'DAMAGE' && effect.amount && targetEnemy) {
         // 물리/특수 속성은 카드 타입으로 유추
         const dType: DamageType = card.type === 'SPECIAL_ATTACK' ? 'SPECIAL' : 'PHYSICAL';
         applyDamageToEnemy(targetEnemy.id, effect.amount, dType);
+        hasDamage = true;
       } else if (effect.type === 'SHIELD' && effect.amount) {
         addPlayerShield(effect.amount);
+        hasBuff = true;
       } else if (effect.type === 'RESIST' && effect.amount) {
         addPlayerResist(effect.amount);
+        hasBuff = true;
       } else if (effect.type === 'ADD_AMMO' && effect.amount) {
         addAmmo(effect.amount);
+        hasBuff = true;
       }
     });
+
+    if (hasDamage) useAudioStore.getState().playHit();
+    else if (hasBuff) useAudioStore.getState().playHeal();
+    else useAudioStore.getState().playDraw(); // 유틸류는 드로우(휙) 소리로 대체
 
     // 🌟 유물 효과: [이중 합금 장갑판]
     if (relics.includes('alloy_plating')) {

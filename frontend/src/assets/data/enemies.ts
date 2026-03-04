@@ -10,17 +10,17 @@ export const BASE_ENEMIES: Record<string, Omit<Enemy, 'id' | 'currentHp' | 'shie
   acid_dog: {
     baseId: 'acid_dog',
     name: '산성 침 들개',
-    maxHp: 25,
+    maxHp: 28,
   },
   waste_slime: {
     baseId: 'waste_slime',
     name: '폐기물 슬라임',
-    maxHp: 60,
+    maxHp: 65,
   },
   brutus: {
     baseId: 'brutus',
     name: '고철 기갑수 브루터스',
-    maxHp: 120,
+    maxHp: 140,
     // 보스는 시작할 때 20의 쉴드가 있어야 하는데, 이건 배틀 스토어 초기화나 여기서 패시브로 설계 가능
   }
 };
@@ -68,14 +68,14 @@ export const determineNextIntent = (baseId: string): Intent => {
         return { type: 'BUFF', amount: 10, description: '🛡️ 엔진 예열 (방어도 10 회복, 괴력 획득)' };
       } else if (rand < 0.50) {
         // B패턴 (굴삭기 내려찍기)
-        return { type: 'ATTACK', amount: 16, description: '⚔️ 굴삭기 내려찍기 16' };
+        return { type: 'ATTACK', amount: 18, description: '⚔️ 굴삭기 내려찍기 18' };
       } else if (rand < 0.75) {
         // C패턴 (소이탄)
         // 특수 공격 대신 이펙트만 구분하고, 실제 전투 스토어에서 이 설명이나 amount를 보고 화상 카드를 넣도록 합니다.
-        return { type: 'ATTACK', amount: 12, description: '☣️ 오염된 소이탄 12' };
+        return { type: 'ATTACK', amount: 14, description: '☣️ 오염된 소이탄 14' };
       } else {
         // D패턴 (광란)
-        return { type: 'ATTACK', amount: 15, description: '⚔️ 광란의 후려치기 (5x3)' };
+        return { type: 'ATTACK', amount: 18, description: '⚔️ 광란의 후려치기 (6x3)' };
       }
     }
     default:
