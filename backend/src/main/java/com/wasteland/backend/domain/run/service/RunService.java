@@ -33,7 +33,11 @@ public class RunService {
                 requestDto.getCurrentLayer(),
                 requestDto.getGold(),
                 requestDto.getDeckJson(),
-                requestDto.getRelicsJson()
+                requestDto.getRelicsJson(),
+                requestDto.getRunSeed(),
+                requestDto.getCurrentScene(),
+                requestDto.getCurrentMapNode(),
+                requestDto.isActive()
         );
 
         RunData saved = runRepository.save(runData);

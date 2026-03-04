@@ -14,6 +14,10 @@ public class RunResponseDto {
     private int gold;
     private String deckJson;
     private String relicsJson;
+    private String runSeed;
+    private String currentScene;
+    private String currentMapNode;
+    private boolean isActive;
 
     public static RunResponseDto of(RunData runData) {
         return new RunResponseDto(
@@ -23,7 +27,11 @@ public class RunResponseDto {
                 runData.getCurrentLayer(),
                 runData.getGold(),
                 runData.getDeckJson(),
-                runData.getRelicsJson()
+                runData.getRelicsJson(),
+                runData.getRunSeed(),
+                runData.getCurrentScene(),
+                runData.getCurrentMapNode(),
+                runData.isActive()
         );
     }
 }

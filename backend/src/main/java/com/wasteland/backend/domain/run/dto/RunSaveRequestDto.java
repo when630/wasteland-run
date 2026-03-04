@@ -16,4 +16,9 @@ public class RunSaveRequestDto {
     private String deckJson;
     // JSON 직렬화 배열 문자열
     private String relicsJson;
+    
+    private String runSeed;
+    private String currentScene;
+    private String currentMapNode;
+    private boolean isActive;
 }
