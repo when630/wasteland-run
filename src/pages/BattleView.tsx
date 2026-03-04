@@ -5,6 +5,7 @@ import { Hand } from '../components/ui/Hand';
 import { ResourcePanel } from '../components/ui/ResourcePanel';
 import { DeckPiles } from '../components/ui/DeckPiles';
 import { CardRewardModal } from '../components/ui/CardRewardModal';
+import { RelicRewardModal } from '../components/ui/RelicRewardModal';
 import { CardViewerModal } from '../components/ui/CardViewerModal';
 import { useDeckStore } from '../store/useDeckStore';
 import { useBattleStore } from '../store/useBattleStore';
@@ -24,6 +25,7 @@ export const BattleView: React.FC = () => {
 
   // 모달 활성화 상태
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
+  const [isRelicModalOpen, setIsRelicModalOpen] = useState(false);
 
   // 게임(전투 뷰) 진입 시 초기 덱과 몬스터를 세팅합니다
   useEffect(() => {
@@ -172,10 +174,7 @@ export const BattleView: React.FC = () => {
 
               {(currentScene === 'ELITE' || currentScene === 'BOSS') && !relicClaimed && (
                 <button
-                  onClick={() => {
-                    alert(`${currentScene === 'BOSS' ? '보스' : '일반'} 유물 획득 화면이 뜰 예정입니다.`);
-                    setRelicClaimed(true);
-                  }}
+                  onClick={() => setIsRelicModalOpen(true)}
                   style={{ ...rewardBtnStyle, color: '#ffaaaa', borderColor: '#b04a4a', backgroundColor: '#502a2a' }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#603a3a'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#502a2a'}
@@ -216,13 +215,17 @@ export const BattleView: React.FC = () => {
       {/* 카드 3택 1 보상 모달 렌더링 */}
       {isCardModalOpen && (
         <CardRewardModal
-          onClose={() => {
-            setIsCardModalOpen(false);
-            setCardClaimed(true); // 건너뛰든 카드를 고르든 닫히면 보상을 처리한 것으로 간주
-          }}
-          onCardSelected={() => {
-            // 카드 선택 시의 부가 처리(애니메이션 등)가 필요하면 여기 작성
-          }}
+          onClose={() => setIsCardModalOpen(false)}
+          onCardSelected={() => setCardClaimed(true)}
+        />
+      )}
+
+      {/* 유물 획득 보상 모달 렌더링 */}
+      {isRelicModalOpen && (
+        <RelicRewardModal
+          guaranteedTier={currentScene === 'BOSS' ? 'BOSS' : undefined}
+          onClose={() => setIsRelicModalOpen(false)}
+          onRelicSelected={() => setRelicClaimed(true)}
         />
       )}
 
