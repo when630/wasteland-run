@@ -50,8 +50,9 @@ export const EventView: React.FC = () => {
     }
   };
 
-  const handleCloseResult = () => {
+  const handleCloseResult = async () => {
     setScene('MAP');
+    await useRunStore.getState().saveRunData();
   };
 
   return (

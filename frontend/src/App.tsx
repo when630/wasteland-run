@@ -58,16 +58,24 @@ function SceneManager() {
 }
 
 function App() {
-  const { masterDeck, setMasterDeck } = useDeckStore();
   const { isAuthenticated } = useAuthStore();
+  const { loadRunData } = useRunStore();
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
 
+  // 인증 상태가 참이 되면 (로그인 직후) 세이브 데이터를 불러옴
   useEffect(() => {
-    // 앱 최초 실행 시 기본 덱이 없으면 지급 (런 시작 연동)
-    if (masterDeck.length === 0) {
-      setMasterDeck(createStartingDeck());
+    if (isAuthenticated) {
+      loadRunData().then(() => {
+        // 불러오기가 끝났을 때 현재 런이 진행 중이 아니거나(isActive === false) 
+        // 덱이 아예 비어있으면 초기 덱을 세팅해 줌
+        const { masterDeck: currentMasterDeck } = useDeckStore.getState();
+        const { isActive: currentActive } = useRunStore.getState();
+        if (!currentActive || currentMasterDeck.length === 0) {
+          useDeckStore.getState().setMasterDeck(createStartingDeck());
+        }
+      });
     }
-  }, [masterDeck.length, setMasterDeck]);
+  }, [isAuthenticated, loadRunData]);
 
   return (
     <>

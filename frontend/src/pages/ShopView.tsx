@@ -68,7 +68,7 @@ export const ShopView: React.FC = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 카드 구매 로직
-  const handleBuyCard = (idx: number) => {
+  const handleBuyCard = async (idx: number) => {
     const item = shopCards[idx];
     if (item.isSoldOut) return;
     if (gold < item.price) {
@@ -88,10 +88,13 @@ export const ShopView: React.FC = () => {
     const newArr = [...shopCards];
     newArr[idx].isSoldOut = true;
     setShopCards(newArr);
+
+    // 자동 저장
+    await useRunStore.getState().saveRunData();
   };
 
   // 유물 구매 로직
-  const handleBuyRelic = (idx: number) => {
+  const handleBuyRelic = async (idx: number) => {
     const item = shopRelics[idx];
     if (item.isSoldOut) return;
     if (gold < item.price) {
@@ -106,6 +109,9 @@ export const ShopView: React.FC = () => {
     const newArr = [...shopRelics];
     newArr[idx].isSoldOut = true;
     setShopRelics(newArr);
+
+    // 자동 저장
+    await useRunStore.getState().saveRunData();
   };
 
   // 덱 압축 서비스 트리거
@@ -120,15 +126,19 @@ export const ShopView: React.FC = () => {
   };
 
   // 덱 압축 "성공" 시 콜백 (모달 안에서 실행됨)
-  const onRemoveConfirm = () => {
+  const onRemoveConfirm = async () => {
     addGold(-REMOVE_PRICE);
     setRemoveServiceAvailable(false);
     setIsRemoveModalOpen(false);
     setToastMessage('카드를 제거했습니다.');
+
+    // 자동 저장
+    await useRunStore.getState().saveRunData();
   };
 
-  const handleLeave = () => {
+  const handleLeave = async () => {
     setScene('MAP');
+    await useRunStore.getState().saveRunData();
   };
 
   return (

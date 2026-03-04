@@ -6,13 +6,14 @@ export const RestView: React.FC = () => {
   const { playerHp, playerMaxHp, healPlayer, setScene } = useRunStore();
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
-  const handleHeal = () => {
+  const handleHeal = async () => {
     // 최대 체력의 30% 회복 (올림 처리)
     const healAmount = Math.ceil(playerMaxHp * 0.3);
     healPlayer(healAmount);
 
     // 임시로 회복 즉시 맵 반환 (추후 연출 후 버튼으로 나가도록 개선 가능)
     setScene('MAP');
+    await useRunStore.getState().saveRunData();
   };
 
   const handleUpgrade = () => {

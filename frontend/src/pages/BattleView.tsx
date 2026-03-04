@@ -192,16 +192,24 @@ export const BattleView: React.FC = () => {
           )}
 
           <button
-            onClick={() => {
+            onClick={async () => {
               if (battleResult === 'VICTORY') {
                 if (currentScene === 'BOSS') {
                   // 보스전이면 맵 이동 대신 클리어 오버레이를 켬
                   setShowBossClear(true);
+                  // 명예의 전당 보존 직후, 해당 런은 클리어된 런으로 종결
+                  useRunStore.getState().setIsActive(false);
+                  await useRunStore.getState().saveRunData();
                 } else {
                   setScene('MAP');
+                  // 맵 이동 직전까지 진행한 덱과 유물, 골드, 체력 상태 저장 자동 갱신
+                  await useRunStore.getState().saveRunData();
                 }
               }
               else {
+                // 게임 오버(DEFEAT) 시 세이브 슬롯 폭파 (isActive = false 전환)
+                useRunStore.getState().setIsActive(false);
+                await useRunStore.getState().saveRunData();
                 window.location.reload();
               }
             }}
@@ -214,7 +222,7 @@ export const BattleView: React.FC = () => {
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#555'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#444'}
           >
-            {battleResult === 'VICTORY' ? (currentScene === 'BOSS' ? '엔딩 보기' : '계속하기 (보상 스킵 및 맵 이동)') : '다시 시작'}
+            {battleResult === 'VICTORY' ? (currentScene === 'BOSS' ? '엔딩 보기' : '계속하기 (보상 획득 완료 및 이동)') : '다시 시작'}
           </button>
         </div>
       )}
