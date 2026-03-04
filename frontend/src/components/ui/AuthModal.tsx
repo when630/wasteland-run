@@ -32,6 +32,10 @@ export const AuthModal: React.FC = () => {
         login(res.data.token, res.data.username);
         setToastMessage(`가입 성공! ${res.data.username}님 환영합니다.`);
       }
+
+      // 로그인(또는 회원가입 직후 로그인)이 성공하면 런 데이터를 서버에서 불러옴
+      const { useRunStore: getRunStore } = await import('../../store/useRunStore');
+      await getRunStore.getState().loadRunData();
     } catch (error: any) {
       if (error.response?.data?.message) {
         setToastMessage(error.response.data.message);

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { authApi } from '../api/auth';
 
 interface RunState {
   playerHp: number;
@@ -17,6 +18,8 @@ interface RunState {
   setScene: (scene: RunState['currentScene']) => void; // 🌟 씬 전환 액션
   addRelic: (relicId: string) => void; // 🌟 유물 추가 액션
   setToastMessage: (msg: string | null) => void; // 🌟 토스트 메시지 액션
+  saveRunData: () => Promise<void>;
+  loadRunData: () => Promise<void>;
 }
 
 export const useRunStore = create<RunState>((set) => ({
@@ -52,5 +55,56 @@ export const useRunStore = create<RunState>((set) => ({
     relics: [...state.relics, relicId]
   })),
 
-  setToastMessage: (msg) => set({ toastMessage: msg })
+  setToastMessage: (msg) => set({ toastMessage: msg }),
+
+  saveRunData: async () => {
+    try {
+      // 덱과 유물 정보 등은 다른 store에서 가져와야 하므로 getState()를 통해 동적으로 취합
+      const { useDeckStore } = await import('./useDeckStore');
+      const { useMapStore } = await import('./useMapStore');
+
+      const currentState = useRunStore.getState();
+      const currentDeck = useDeckStore.getState().masterDeck;
+      const currentLayer = useMapStore.getState().currentFloor;
+
+      await authApi.post('/run', {
+        currentHp: currentState.playerHp,
+        maxHp: currentState.playerMaxHp,
+        currentLayer: currentLayer,
+        gold: currentState.gold,
+        deckJson: JSON.stringify(currentDeck),
+        relicsJson: JSON.stringify(currentState.relics)
+      });
+      // 저장 성공 시 조용히 넘김
+    } catch (e) {
+      console.error('Run Data 저장 실패', e);
+    }
+  },
+
+  loadRunData: async () => {
+    try {
+      const { data } = await authApi.get('/run');
+      if (data) {
+        set({
+          playerHp: data.currentHp,
+          playerMaxHp: data.maxHp,
+          gold: data.gold,
+          relics: data.relicsJson ? JSON.parse(data.relicsJson) : []
+        });
+
+        // 다른 스토어 상태도 복원
+        const { useDeckStore } = await import('./useDeckStore');
+        const { useMapStore } = await import('./useMapStore');
+
+        if (data.deckJson) {
+          useDeckStore.getState().setMasterDeck(JSON.parse(data.deckJson));
+        }
+
+        useMapStore.setState({ currentFloor: data.currentLayer });
+        useRunStore.getState().setToastMessage('진행 상황을 불러왔습니다.');
+      }
+    } catch (e) {
+      console.warn('저장된 진행 상황을 찾지 못했습니다. 새로운 런을 시작합니다.', e);
+    }
+  }
 }));

@@ -24,7 +24,7 @@ export const MapView: React.FC = () => {
     BOSS: '☠️'
   };
 
-  const handleNodeClick = (nodeId: string, type: NodeType) => {
+  const handleNodeClick = async (nodeId: string, type: NodeType) => {
     moveToNode(nodeId);
 
     // BATTLE, REST, EVENT 등 선택된 노드 타입과 동일한 씬 이름으로 전환
@@ -32,6 +32,9 @@ export const MapView: React.FC = () => {
       alert("상점은 아직 공사 중입니다! 임시로 맵에 남습니다.");
     } else {
       setScene(type);
+      // 서버 방향 자동 저장
+      const { useRunStore: getRunStore } = await import('../store/useRunStore');
+      getRunStore.getState().saveRunData();
     }
   };
 
