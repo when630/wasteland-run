@@ -30,6 +30,7 @@ export const useRunStore = create<RunState>((set) => ({
   currentScene: 'MAP', // 기본 씬은 맵으로 시작
   relics: [],
   toastMessage: null,
+  runStartTime: Date.now(), // 런 시작 시간을 현재로 초기화
 
   healPlayer: (amount: number) => set((state) => ({
     playerHp: Math.min(state.playerHp + amount, state.playerMaxHp)

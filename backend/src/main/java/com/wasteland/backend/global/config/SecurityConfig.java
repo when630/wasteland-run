@@ -45,6 +45,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 인증 없이 접근 가능한 경로
                         .requestMatchers("/api/auth/**", "/h2-console/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/leaderboard").permitAll()
                         // 그 외 모든 경로는 인증 필요
                         .anyRequest().authenticated()
                 )

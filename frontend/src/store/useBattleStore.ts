@@ -182,6 +182,37 @@ export const useBattleStore = create<BattleState>((set, get) => ({
       const isVictory = newEnemies.every(e => e.currentHp <= 0);
 
       if (isVictory) {
+        // 보스 클리어 여부 확인 (id나 baseId에 boss 포함 여부 등)
+        const isBossDefeated = newEnemies.some(e => e.baseId.includes('boss'));
+
+        if (isBossDefeated) {
+          const runStore = useRunStore.getState();
+
+          const startTime = (runStore as any).runStartTime || Date.now();
+          const playTimeSeconds = Math.floor((Date.now() - startTime) / 1000);
+
+          // 점수 산정 임시 식 (남은 체력 가중치 + 플탐 가중치 등)
+          const hpScore = runStore.playerHp * 10;
+          const timePenalty = Math.max(0, playTimeSeconds - 300); // 5분 이후부터 감점
+          let finalScore = 1000 + hpScore - timePenalty;
+          if (finalScore < 0) finalScore = 0;
+
+          // 비동기로 던져놓고 결과 통과
+          Promise.all([
+            import('./useMapStore'),
+            import('../api/auth')
+          ]).then(([{ useMapStore }, { authApi }]) => {
+            const submitData = {
+              score: finalScore,
+              clearLayer: useMapStore.getState().currentFloor,
+              playTimeSeconds
+            };
+            authApi.post('/leaderboard', submitData).catch(err => {
+              console.error("리더보드 점수 등록 실패", err);
+            });
+          });
+        }
+
         return { enemies: newEnemies, battleResult: 'VICTORY' };
       }
 

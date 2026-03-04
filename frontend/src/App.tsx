@@ -8,9 +8,10 @@ import { useRunStore } from './store/useRunStore';
 import { useDeckStore } from './store/useDeckStore';
 import { createStartingDeck } from './assets/data/cards';
 import { ToastMessage } from './components/ui/ToastMessage';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { AuthModal } from './components/ui/AuthModal';
 import { useAuthStore } from './store/useAuthStore';
+import { LeaderboardModal } from './components/ui/LeaderboardModal';
 
 function SceneManager() {
   const { currentScene } = useRunStore();
@@ -36,6 +37,7 @@ function SceneManager() {
 function App() {
   const { masterDeck, setMasterDeck } = useDeckStore();
   const { isAuthenticated } = useAuthStore();
+  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
 
   useEffect(() => {
     // 앱 최초 실행 시 기본 덱이 없으면 지급 (런 시작 연동)
@@ -48,6 +50,21 @@ function App() {
     <>
       <ToastMessage />
       {!isAuthenticated && <AuthModal />}
+      {isLeaderboardOpen && <LeaderboardModal onClose={() => setIsLeaderboardOpen(false)} />}
+
+      {/* 화면 우상단 고정 랭킹 모달 토글 버튼 */}
+      <button
+        onClick={() => setIsLeaderboardOpen(true)}
+        style={{
+          position: 'fixed', top: '20px', right: '20px', zIndex: 9000,
+          padding: '10px 16px', backgroundColor: '#334455', color: '#fff',
+          border: '1px solid #5a7a9a', borderRadius: '8px', cursor: 'pointer',
+          fontWeight: 'bold', fontSize: '14px', boxShadow: '0 2px 5px rgba(0,0,0,0.5)'
+        }}
+      >
+        🏆 명예의 전당
+      </button>
+
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<SceneManager />} />
