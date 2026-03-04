@@ -12,26 +12,44 @@ export const Hand: React.FC = () => {
   return (
     <div style={{
       position: 'absolute',
-      bottom: '20px',
+      bottom: '-30px', /* 핸드 뭉치 자체를 좀 더 화면 밖으로 내림 */
       left: '50%',
       transform: 'translateX(-50%)',
       display: 'flex',
-      gap: '15px',
+      justifyContent: 'center',
       alignItems: 'flex-end',
       pointerEvents: 'auto', // 카드 클릭 동작 활성화
-      zIndex: 10
+      zIndex: 50,
+      width: '80%', // 너무 퍼지지 않게 핸드 영역 지정
+      height: '300px' // 카드가 떠오를 여유 공간
     }}>
-      {hand.map((card) => {
+      {hand.map((card, index) => {
         const isSelected = targetingCardId === card.id;
         const isHovered = hoveredCardId === card.id;
         const needsEnemyTarget = card.effects.some((e) => e.type === 'DAMAGE' || e.type === 'DEBUFF');
         const targetLabel = needsEnemyTarget ? '🎯 적' : '👤 나';
+
+        // 🌟 아치형 부채꼴 배치를 위한 수식
+        const totalCards = hand.length;
+        // 중심을 0으로 둥글게 배치하기 위한 인덱스 편차 (예: 5장이면 -2, -1, 0, 1, 2)
+        const offset = index - (totalCards - 1) / 2;
+
+        // 양 끝 카드는 많이 꺾이고, 떨어질수록 위치가 내려감 (2차 함수형 커브)
+        const baseRotation = offset * 4; // 카드당 4도 간격 꺾임
+        const baseYTranslate = Math.pow(Math.abs(offset), 2) * 5; // 카드당 높이 커브 조절 (0, 5, 20px 차이)
+
+        // 호버 시 계산 (회전 해제, 크게 떠오름)
+        // 선택 시 계산 (호버보다 훨씬 높이 떠오름)
+        const finalRotation = (isHovered || isSelected) ? 0 : baseRotation;
+        const finalTranslateY = isSelected ? -70 : isHovered ? -40 : baseYTranslate;
+        const finalScale = isSelected ? 1.2 : isHovered ? 1.2 : 1.0;
 
         return (
           <div
             key={card.id}
             onClick={() => playCard(card.id)}
             style={{
+              position: 'relative',
               width: '130px',
               height: '190px',
               backgroundColor: '#2a2a2a',
@@ -43,14 +61,18 @@ export const Hand: React.FC = () => {
               flexDirection: 'column',
               justifyContent: 'space-between',
               cursor: 'pointer',
-              // 선택된 카드는 위로 크게 떠오르고, 호버된 카드는 살짝 떠오름
-              transform: isSelected ? 'translateY(-30px)' : isHovered ? 'translateY(-15px)' : 'translateY(0)',
+              // 🌟 겹침(오버랩) 마진 효과
+              marginLeft: index === 0 ? '0px' : '-50px',
+              // 🌟 Slay the Spire 식 트랜스폼
+              transform: `translateY(${finalTranslateY}px) rotate(${finalRotation}deg) scale(${finalScale})`,
+              transformOrigin: 'bottom center',
+              zIndex: isSelected ? 200 : isHovered ? 100 : index + 10,
               boxShadow: isSelected
-                ? '0 0 20px rgba(255, 170, 0, 0.7)'
+                ? '0 0 25px rgba(255, 170, 0, 0.9)'
                 : isHovered
-                  ? '0 8px 15px rgba(255, 255, 255, 0.2)'
+                  ? '0 10px 20px rgba(255, 255, 255, 0.4)'
                   : '0 4px 10px rgba(0,0,0,0.5)',
-              transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.2s, box-shadow 0.2s',
+              transition: 'transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.2s, box-shadow 0.2s, z-index 0s',
               userSelect: 'none'
             }}
             onMouseEnter={() => setHoveredCardId(card.id)}

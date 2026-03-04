@@ -7,6 +7,8 @@ import type { Card } from '../types/gameTypes';
 import type { Relic } from '../types/relicTypes';
 import { customShuffle } from '../utils/rng';
 import { RemoveCardModal } from '../components/ui/RemoveCardModal';
+import shopBg from '../assets/images/shop_map_background.png';
+import npcImg from '../assets/images/merchant.png';
 
 // 상점 판매용 카드 타입 확장 (가격, 품절 속성)
 interface ShopCard extends Card {
@@ -143,14 +145,24 @@ export const ShopView: React.FC = () => {
 
   return (
     <div style={{
-      width: '100vw', minHeight: '100vh', backgroundColor: '#18181b', color: '#e5e7eb',
+      width: '100vw', minHeight: '100vh',
+      backgroundImage: `url(${shopBg})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed',
+      backgroundBlendMode: 'overlay',
+      backgroundColor: 'rgba(24, 24, 27, 0.7)',
+      color: '#e5e7eb',
       display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 20px',
       overflowY: 'auto'
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '1000px', marginBottom: '30px' }}>
-        <h1 style={{ fontSize: '42px', color: '#fbbf24', margin: 0 }}>
-          💰 고철 암시장
-        </h1>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '20px' }}>
+          <img src={npcImg} alt="고철 상인" style={{ height: '100px', objectFit: 'contain', filter: 'drop-shadow(2px 4px 6px black)' }} />
+          <h1 style={{ fontSize: '42px', color: '#fbbf24', margin: 0, paddingBottom: '10px' }}>
+            💰 고철 암시장
+          </h1>
+        </div>
         <div style={{ fontSize: '28px', color: '#fbbf24', alignSelf: 'center', backgroundColor: '#3f3f46', padding: '10px 20px', borderRadius: '8px' }}>
           보유 골드: {gold} G
         </div>

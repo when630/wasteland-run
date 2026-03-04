@@ -75,10 +75,11 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
   const isBoss = enemy.baseId === 'brutus';
   const width = isBoss ? 350 : 150;
   const height = isBoss ? 450 : 200;
-  const nameYOffset = isBoss ? -260 : -140;
-  const hpYOffset = isBoss ? -230 : -110;
-  const statYOffset = isBoss ? -200 : -80;
+  // 슬레이 더 스파이어 스타일: 의도/이름은 머리 위, 체력/방어는 발 밑
   const intentYOffset = isBoss ? -290 : -170;
+  const nameYOffset = isBoss ? -250 : -130;
+  const hpYOffset = isBoss ? 260 : 140;
+  const statYOffset = isBoss ? 290 : 170;
 
   return (
     <Container
@@ -89,19 +90,28 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
       pointerdown={onPointerDown}
       cursor={isTargeting && enemy.currentHp > 0 ? 'crosshair' : 'default'}
     >
-      <Sprite
-        texture={texture}
-        width={width}
-        height={height}
-        anchor={0.5}
-        tint={tint}
-      />
+      {/* 적 의도(Intent) */}
+      {enemy.currentIntent && (
+        <Text
+          text={`의도: ${enemy.currentIntent.description}`} // 향후 이모지 부착 작업 연계
+          y={intentYOffset}
+          anchor={0.5}
+          style={intentTextStyle}
+        />
+      )}
       {/* 적 이름 */}
       <Text
         text={enemy.name}
         y={nameYOffset}
         anchor={0.5}
         style={defaultTextStyle}
+      />
+      <Sprite
+        texture={texture}
+        width={width}
+        height={height}
+        anchor={0.5}
+        tint={tint}
       />
       {/* 적 체력 */}
       <Text
@@ -117,15 +127,6 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
           y={statYOffset}
           anchor={0.5}
           style={defaultTextStyle}
-        />
-      )}
-      {/* 적 의도(Intent) */}
-      {enemy.currentIntent && (
-        <Text
-          text={`의도: ${enemy.currentIntent.description}`} // 향후 이모지 부착 작업 연계
-          y={intentYOffset}
-          anchor={0.5}
-          style={intentTextStyle}
         />
       )}
     </Container>

@@ -12,6 +12,7 @@ import { useBattleStore } from '../store/useBattleStore';
 import { createStartingDeck } from '../assets/data/cards';
 import { createEnemy } from '../assets/data/enemies';
 import { useRunStore } from '../store/useRunStore';
+import battleBg from '../assets/images/stage1_battle_backgroung.png';
 
 export const BattleView: React.FC = () => {
   const { initDeck, drawCards, masterDeck, setMasterDeck } = useDeckStore();
@@ -90,7 +91,12 @@ export const BattleView: React.FC = () => {
   };
 
   return (
-    <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+    <div style={{
+      position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden',
+      backgroundImage: `url(${battleBg})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'bottom'
+    }}>
       {/* 
         [하이브리드 렌더링 아키텍처]
         1. Pixi.js Canvas: 맨 밑에 깔려서 전투 연출(스프라이트, 파티클)을 담당합니다.

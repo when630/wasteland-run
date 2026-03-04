@@ -12,6 +12,7 @@ interface RunState {
   runStartTime: number;
   runSeed: string; // 🌟 런 시드 (보존용)
   isActive: boolean; // 🌟 런 진행 여부
+  isLeaderboardOpen: boolean; // 🌟 명예의 전당 모달 상태
 
   // Actions
   healPlayer: (amount: number) => void;
@@ -22,6 +23,7 @@ interface RunState {
   addRelic: (relicId: string) => void; // 🌟 유물 추가 액션
   setToastMessage: (msg: string | null) => void; // 🌟 토스트 메시지 액션
   setIsActive: (active: boolean) => void;
+  setIsLeaderboardOpen: (isOpen: boolean) => void;
   saveRunData: () => Promise<void>;
   loadRunData: () => Promise<void>;
 }
@@ -37,6 +39,7 @@ export const useRunStore = create<RunState>((set) => ({
   runStartTime: Date.now(), // 런 시작 시간을 현재로 초기화
   runSeed: Math.random().toString(36).substring(2, 10), // 기본 무작위 시드
   isActive: true,
+  isLeaderboardOpen: false,
 
   healPlayer: (amount: number) => set((state) => ({
     playerHp: Math.min(state.playerHp + amount, state.playerMaxHp)
@@ -65,6 +68,8 @@ export const useRunStore = create<RunState>((set) => ({
   setToastMessage: (msg) => set({ toastMessage: msg }),
 
   setIsActive: (active: boolean) => set({ isActive: active }),
+
+  setIsLeaderboardOpen: (isOpen: boolean) => set({ isLeaderboardOpen: isOpen }),
 
   saveRunData: async () => {
     try {

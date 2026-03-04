@@ -8,7 +8,7 @@ import { useRunStore } from './store/useRunStore';
 import { useDeckStore } from './store/useDeckStore';
 import { createStartingDeck } from './assets/data/cards';
 import { ToastMessage } from './components/ui/ToastMessage';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { AuthModal } from './components/ui/AuthModal';
 import { useAuthStore } from './store/useAuthStore';
 import { LeaderboardModal } from './components/ui/LeaderboardModal';
@@ -59,8 +59,7 @@ function SceneManager() {
 
 function App() {
   const { isAuthenticated } = useAuthStore();
-  const { loadRunData } = useRunStore();
-  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+  const { loadRunData, isLeaderboardOpen, setIsLeaderboardOpen } = useRunStore();
 
   // 인증 상태가 참이 되면 (로그인 직후) 세이브 데이터를 불러옴
   useEffect(() => {
@@ -83,18 +82,7 @@ function App() {
       {!isAuthenticated && <AuthModal />}
       {isLeaderboardOpen && <LeaderboardModal onClose={() => setIsLeaderboardOpen(false)} />}
 
-      {/* 화면 우상단 고정 랭킹 모달 토글 버튼 */}
-      <button
-        onClick={() => setIsLeaderboardOpen(true)}
-        style={{
-          position: 'fixed', top: '20px', right: '20px', zIndex: 9000,
-          padding: '10px 16px', backgroundColor: '#334455', color: '#fff',
-          border: '1px solid #5a7a9a', borderRadius: '8px', cursor: 'pointer',
-          fontWeight: 'bold', fontSize: '14px', boxShadow: '0 2px 5px rgba(0,0,0,0.5)'
-        }}
-      >
-        🏆 명예의 전당
-      </button>
+      {/* 화면 우상단 고정 랭킹 모달 토글 버튼 (HUD로 이동됨) */}
 
       <BrowserRouter>
         <Routes>

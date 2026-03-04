@@ -3,6 +3,7 @@ import { useRunStore } from '../store/useRunStore';
 import { RANDOM_EVENTS } from '../assets/data/events';
 import type { RandomEvent, EventOption } from '../types/eventTypes';
 import { RemoveCardModal } from '../components/ui/RemoveCardModal';
+import eventBg from '../assets/images/event_map_background.png';
 
 export const EventView: React.FC = () => {
   const { setScene } = useRunStore();
@@ -57,7 +58,13 @@ export const EventView: React.FC = () => {
 
   return (
     <div style={{
-      width: '100vw', height: '100vh', backgroundColor: '#111827', color: '#fff',
+      width: '100vw', height: '100vh',
+      backgroundImage: `url(${eventBg})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundBlendMode: 'overlay',
+      backgroundColor: 'rgba(17, 24, 39, 0.8)',
+      color: '#fff',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
     }}>
       <h1 style={{ fontSize: '48px', color: '#a78bfa', marginBottom: '10px' }}>

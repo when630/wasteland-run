@@ -6,6 +6,7 @@ import { useRunStore } from '../../store/useRunStore';
 import { useDeckStore } from '../../store/useDeckStore';
 import { useCardPlay } from '../../hooks/useCardPlay';
 import { AnimatedEnemy } from './AnimatedEnemy';
+import playerImg from '../../assets/images/player.png';
 
 export const BattleStage: React.FC = () => {
   // 스토어에서 런 상태 및 전투 상태 가져오기
@@ -16,6 +17,7 @@ export const BattleStage: React.FC = () => {
 
   // 타입 충돌을 피하기 위해 useMemo로 텍스처와 스타일 인스턴스 생성
   const placeholderTexture = useMemo(() => PIXI.Texture.WHITE, []);
+  const playerTexture = useMemo(() => PIXI.Texture.from(playerImg), []);
 
   const defaultTextStyle = useMemo(() => new PIXI.TextStyle({
     fill: 0xffffff,
@@ -85,7 +87,7 @@ export const BattleStage: React.FC = () => {
 
   // 🌟 피격 효과 제어용 로컬 상태 및 타이머 구조
   const [playerHitOffset, setPlayerHitOffset] = useState(0);
-  const [playerTint, setPlayerTint] = useState(0x00ff00);
+  const [playerTint, setPlayerTint] = useState(0xffffff);
 
   useEffect(() => {
     if (playerVisualEffect?.type === 'DAMAGE') {
@@ -96,7 +98,7 @@ export const BattleStage: React.FC = () => {
       const t2 = setTimeout(() => setPlayerHitOffset(-10), 100); // 좌측
       const t3 = setTimeout(() => {
         setPlayerHitOffset(0); // 원위치
-        setPlayerTint(0x00ff00); // 색상 원복
+        setPlayerTint(0xffffff); // 색상 원복
       }, 150);
 
       return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
@@ -107,7 +109,7 @@ export const BattleStage: React.FC = () => {
     <Stage
       width={screenWidth}
       height={screenHeight}
-      options={{ backgroundColor: 0x1a1a1a }} // 어두운 황무지 테마
+      options={{ backgroundAlpha: 0 }} // 배경 이미지를 투과시키기 위해 투명도 0으로 설정
     >
       <Container
         scale={scale}
@@ -117,7 +119,7 @@ export const BattleStage: React.FC = () => {
         {/* 플레이어 (좌측) 구역을 Container로 묶어 클릭(타겟팅) 상호작용 추가 */}
         <Container
           x={1920 * 0.25}
-          y={1080 * 0.6}
+          y={1080 * 0.65}
           interactive={targetingCardId !== null}
           pointerdown={() => {
             if (targetingCardId) {
@@ -127,9 +129,9 @@ export const BattleStage: React.FC = () => {
           cursor={targetingCardId !== null ? 'crosshair' : 'default'}
         >
           <Sprite
-            texture={placeholderTexture}
+            texture={playerTexture}
             width={150}
-            height={220}
+            height={300}
             anchor={0.5}
             x={playerHitOffset} // 🌟 흔들림 연출
             tint={playerTint} // 🌟 피격 붉은 점멸 연출
@@ -143,7 +145,7 @@ export const BattleStage: React.FC = () => {
           {/* 플레이어 체력 */}
           <Text
             text={`HP: ${playerHp} / ${playerMaxHp}`}
-            y={140}
+            y={160}
             anchor={0.5}
             style={hpTextStyle}
           />
@@ -151,7 +153,7 @@ export const BattleStage: React.FC = () => {
           {(playerStatus.shield > 0 || playerStatus.resist > 0) && (
             <Text
               text={`[S: ${playerStatus.shield} | R: ${playerStatus.resist}]`}
-              y={170}
+              y={190}
               anchor={0.5}
               style={defaultTextStyle}
             />
@@ -164,8 +166,8 @@ export const BattleStage: React.FC = () => {
           // if (enemyObj.currentHp <= 0) return null; 
 
           // 다중 배치를 위한 위치 지정 (화면 우측에 좌우로 배열)
-          const baseY = 1080 * 0.6;
-          const baseX = 1920 * (0.65 + index * 0.15);
+          const baseY = 1080 * 0.65;
+          const baseX = 1920 * (0.6 + index * 0.18);
           const isTargeting = targetingCardId !== null;
 
           return (
@@ -192,7 +194,7 @@ export const BattleStage: React.FC = () => {
         <Text
           text={targetGuideText}
           x={1920 * 0.5}
-          y={1080 * 0.3}
+          y={1080 * 0.1}
           anchor={0.5}
           style={turnTextStyle}
         />

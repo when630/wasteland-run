@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useRunStore } from '../store/useRunStore';
 import { UpgradeCardModal } from '../components/ui/UpgradeCardModal';
+import restBg from '../assets/images/campfire_map_background.png';
 
 export const RestView: React.FC = () => {
   const { playerHp, playerMaxHp, healPlayer, setScene } = useRunStore();
@@ -22,7 +23,13 @@ export const RestView: React.FC = () => {
 
   return (
     <div style={{
-      width: '100vw', height: '100vh', backgroundColor: '#1e1410', color: '#fff',
+      width: '100vw', height: '100vh',
+      backgroundImage: `url(${restBg})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundBlendMode: 'overlay',
+      backgroundColor: 'rgba(30, 20, 16, 0.6)',
+      color: '#fff',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
     }}>
       <h1 style={{ fontSize: '48px', color: '#ffaa66', marginBottom: '10px' }}>

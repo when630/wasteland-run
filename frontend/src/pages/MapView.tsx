@@ -2,6 +2,13 @@ import React, { useEffect } from 'react';
 import Xarrow from 'react-xarrows';
 import { useRunStore } from '../store/useRunStore';
 import { useMapStore, type NodeType } from '../store/useMapStore';
+import mapBg from '../assets/images/map_background.png';
+import battleBadge from '../assets/images/battle_badge.png';
+import eliteBadge from '../assets/images/elite_badge.png';
+import restBadge from '../assets/images/campfire_badge.png';
+import shopBadge from '../assets/images/shop_badge.png';
+import eventBadge from '../assets/images/event_badge.png';
+import bossBadge from '../assets/images/boss_badge.png';
 
 export const MapView: React.FC = () => {
   const { setScene } = useRunStore();
@@ -14,14 +21,14 @@ export const MapView: React.FC = () => {
     }
   }, [nodes, generateMap]);
 
-  // 노드 타입별 이모지 매핑
+  // 노드 타입별 뱃지 이미지 매핑
   const typeToIcon: Record<NodeType, string> = {
-    BATTLE: '⚔️',
-    ELITE: '👿',
-    REST: '🔥',
-    SHOP: '💰',
-    EVENT: '❓',
-    BOSS: '☠️'
+    BATTLE: battleBadge,
+    ELITE: eliteBadge,
+    REST: restBadge,
+    SHOP: shopBadge,
+    EVENT: eventBadge,
+    BOSS: bossBadge
   };
 
   const handleNodeClick = async (nodeId: string, type: NodeType) => {
@@ -63,7 +70,12 @@ export const MapView: React.FC = () => {
         position: 'relative',
         display: 'flex', flexDirection: 'column-reverse', gap: '60px', alignItems: 'center',
         padding: '40px', border: '1px solid #333', borderRadius: '12px',
-        backgroundColor: '#1a1a1a', minWidth: '600px',
+        backgroundImage: `url(${mapBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundBlendMode: 'overlay',
+        backgroundColor: 'rgba(26, 26, 26, 0.8)', // 기본 #1a1a1a 컬러의 투명 버전 형태
+        minWidth: '600px',
         marginBottom: '100px'
       }}>
         {/* 층(Floor) 단위로 렌더링 (1층이 맨 아래로 오기 위해 column-reverse에 맞춰 순회) */}
@@ -101,7 +113,7 @@ export const MapView: React.FC = () => {
                     }}
                     title={`${node.floor}층 - ${node.type}`}
                   >
-                    {typeToIcon[node.type]}
+                    <img src={typeToIcon[node.type]} alt={node.type} style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
                   </div>
                 );
               })}
