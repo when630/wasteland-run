@@ -9,6 +9,8 @@ import { useDeckStore } from './store/useDeckStore';
 import { createStartingDeck } from './assets/data/cards';
 import { ToastMessage } from './components/ui/ToastMessage';
 import { useEffect } from 'react';
+import { AuthModal } from './components/ui/AuthModal';
+import { useAuthStore } from './store/useAuthStore';
 
 function SceneManager() {
   const { currentScene } = useRunStore();
@@ -33,6 +35,7 @@ function SceneManager() {
 
 function App() {
   const { masterDeck, setMasterDeck } = useDeckStore();
+  const { isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     // 앱 최초 실행 시 기본 덱이 없으면 지급 (런 시작 연동)
@@ -44,6 +47,7 @@ function App() {
   return (
     <>
       <ToastMessage />
+      {!isAuthenticated && <AuthModal />}
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<SceneManager />} />
