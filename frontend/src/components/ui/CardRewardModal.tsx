@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDeckStore } from '../../store/useDeckStore';
 import type { Card } from '../../types/gameTypes';
-import { STARTING_CARDS } from '../../assets/data/cards';
+import { ALL_CARDS } from '../../assets/data/cards';
 
 interface CardRewardModalProps {
   onClose: () => void;
@@ -14,8 +14,9 @@ export const CardRewardModal: React.FC<CardRewardModalProps> = ({ onClose, onCar
 
   // 초기 렌더링 시점에 무작위 카드 3장을 즉시 추출하여 useState에 할당
   const [rewardCards] = useState<Card[]>(() => {
-    console.log('[CardRewardModal] STARTING_CARDS loaded:', STARTING_CARDS);
-    const shuffled = [...STARTING_CARDS].sort(() => 0.5 - Math.random()) as Card[];
+    console.log('[CardRewardModal] ALL_CARDS loaded:', ALL_CARDS);
+    const dropPool = ALL_CARDS.filter(c => c.tier !== 'BASIC');
+    const shuffled = [...dropPool].sort(() => 0.5 - Math.random()) as Card[];
     console.log('[CardRewardModal] rewardCards initialized to:', shuffled.slice(0, 3));
     return shuffled.slice(0, 3);
   });

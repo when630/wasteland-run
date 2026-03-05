@@ -11,9 +11,20 @@ export const CardType = {
 
 export type CardType = typeof CardType[keyof typeof CardType];
 
+export const CardTier = {
+  BASIC: 'BASIC',
+  COMMON: 'COMMON',
+  UNCOMMON: 'UNCOMMON',
+  RARE: 'RARE',
+} as const;
+
+export type CardTier = typeof CardTier[keyof typeof CardTier];
+
 export interface CardEffect {
   type: 'DAMAGE' | 'SHIELD' | 'RESIST' | 'DRAW' | 'ADD_AMMO' | 'HEAL' | 'BUFF' | 'DEBUFF';
   amount?: number;
+  condition?: string; // e.g. 'NEXT_IS_ATTACK'
+  target?: string;    // e.g. 'ALL_ENEMIES', 'PLAYER'
   // TODO: 버프/디버프 타입 및 지속시간 추후 확장
 }
 
@@ -22,6 +33,7 @@ export interface Card {
   baseId: string;          // 카드 원본 ID (예: 'old_pipe')
   name: string;            // 카드명
   type: CardType;          // 카드 타입
+  tier?: CardTier;         // 획득 등급 추가
   costAp: number;          // 필요 행동력
   costAmmo: number;        // 필요 탄약
   description: string;     // UI에 표시될 설명 텍스트

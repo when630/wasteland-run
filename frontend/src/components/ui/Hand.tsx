@@ -18,7 +18,7 @@ export const Hand: React.FC = () => {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'flex-end',
-      pointerEvents: 'auto', // 카드 클릭 동작 활성화
+      pointerEvents: 'none', // 카드 자체에만 반응하기 위해 컨테이너는 none으로 설정
       zIndex: 50,
       width: '80%', // 너무 퍼지지 않게 핸드 영역 지정
       height: '300px' // 카드가 떠오를 여유 공간
@@ -61,6 +61,7 @@ export const Hand: React.FC = () => {
               flexDirection: 'column',
               justifyContent: 'space-between',
               cursor: 'pointer',
+              pointerEvents: 'auto', // 🌟 카드 본체는 마우스 이벤트 수신
               // 🌟 겹침(오버랩) 마진 효과
               marginLeft: index === 0 ? '0px' : '-50px',
               // 🌟 Slay the Spire 식 트랜스폼

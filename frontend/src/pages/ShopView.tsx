@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRunStore } from '../store/useRunStore';
 import { useDeckStore } from '../store/useDeckStore';
-import { STARTING_CARDS } from '../assets/data/cards';
+import { ALL_CARDS } from '../assets/data/cards';
 import { RELICS } from '../assets/data/relics';
 import type { Card } from '../types/gameTypes';
 import type { Relic } from '../types/relicTypes';
@@ -36,7 +36,8 @@ export const ShopView: React.FC = () => {
   // 컴포넌트 마운트 시 (상점 진입 시마다) 물품 로드
   useEffect(() => {
     // 1. 판매할 카드 4장 무작위 뽑기
-    const shuffledCards = customShuffle([...STARTING_CARDS]);
+    const dropPool = ALL_CARDS.filter(c => c.tier !== 'BASIC');
+    const shuffledCards = customShuffle(dropPool);
     const selectedCards = shuffledCards.slice(0, 4).map((card, idx) => {
       // 50~80 랜덤 골드 책정 (10단위)
       const randomPrice = Math.floor(Math.random() * 4) * 10 + 50;

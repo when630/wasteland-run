@@ -47,11 +47,18 @@ export const BattleView: React.FC = () => {
     initDeck();
     drawCards(5);
 
-    // 1스테이지 튜토리얼 몬스터 다중 소환
-    spawnEnemies([
-      createEnemy('scrap_collector'),
-      createEnemy('acid_dog')
-    ]);
+    // 씬에 따른 몬스터 소환 분기
+    if (currentScene === 'BOSS') {
+      spawnEnemies([createEnemy('brutus')]);
+    } else if (currentScene === 'ELITE') {
+      spawnEnemies([createEnemy('waste_slime')]);
+    } else {
+      // 일반 전투 거나 기본 보장값 (랜덤화도 가능하나 지금은 고정값 유지)
+      spawnEnemies([
+        createEnemy('scrap_collector'),
+        createEnemy('acid_dog')
+      ]);
+    }
 
     // 🌟 유물 효과: [피 묻은 가죽 탄띠] (전투 시작 시 탄약 +1)
     if (relics.includes('bloody_bandolier')) {

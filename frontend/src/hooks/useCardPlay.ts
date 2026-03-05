@@ -85,8 +85,15 @@ export const useCardPlay = () => {
     const apUsed = consumeAp(card.costAp);
     if (!apUsed) return false; // 혹시 모를 내부 검증 실패 대비
 
-    // 탄약 소모 로직
-    if (card.costAmmo > 0) {
+    // 탄약 소모 로직 (과충전 코일건 처럼 전체 소모 기믹 대비)
+    let consumedAmmoAmount = 0;
+    if (card.effects.some(e => e.condition === 'PER_AMMO_CONSUMED')) {
+      // 🌟 모든 탄약 소모
+      consumedAmmoAmount = playerAmmo;
+      if (playerAmmo > 0) {
+        addAmmo(-playerAmmo);
+      }
+    } else if (card.costAmmo > 0) {
       addAmmo(-card.costAmmo);
     }
 
@@ -97,20 +104,95 @@ export const useCardPlay = () => {
     let hasBuff = false;
 
     card.effects.forEach((effect) => {
-      if (effect.type === 'DAMAGE' && effect.amount && targetEnemy) {
+      if (effect.type === 'DAMAGE' && effect.amount) {
         // 물리/특수 속성은 카드 타입으로 유추
         const dType: DamageType = card.type === 'SPECIAL_ATTACK' ? 'SPECIAL' : 'PHYSICAL';
-        applyDamageToEnemy(targetEnemy.id, effect.amount, dType);
-        hasDamage = true;
+
+        // 🌟 [과충전 코일건] 타격
+        if (effect.condition === 'PER_AMMO_CONSUMED') {
+          if (targetEnemy) {
+            applyDamageToEnemy(targetEnemy.id, effect.amount * consumedAmmoAmount, dType);
+            hasDamage = true;
+          }
+        }
+        // 🌟 [대물 저격 사격] 적이 '공격' 의도일 때 추가 데미지
+        else if (effect.condition?.startsWith('BONUS_IF_ATTACKING_')) {
+          if (targetEnemy) {
+            const bonus = parseInt(effect.condition.split('_')[3], 10) || 0;
+            let finalDamage = effect.amount;
+            if (targetEnemy.currentIntent?.type === 'ATTACK') {
+              finalDamage += bonus;
+              setToastMessage(`카운터 적중! 추가 피해 +${bonus}`);
+            }
+            applyDamageToEnemy(targetEnemy.id, finalDamage, dType);
+            hasDamage = true;
+          }
+        }
+        // 🌟 [전기톱 갈아버리기] 다단 히트
+        else if (effect.condition?.startsWith('MULTI_HIT_')) {
+          if (targetEnemy) {
+            const hits = parseInt(effect.condition.split('_')[2], 10) || 1;
+            // 타격당 개별적인 피해 연산을 수행할 수 있도록 반복 호출
+            for (let i = 0; i < hits; i++) {
+              applyDamageToEnemy(targetEnemy.id, effect.amount, dType);
+            }
+            hasDamage = true;
+          }
+        }
+        // 🌟 [급조된 네이팜], [수제 독성 가스탄] 구역 데미지
+        else if (effect.target === 'ALL_ENEMIES') {
+          enemies.forEach(e => {
+            if (e.currentHp > 0) {
+              applyDamageToEnemy(e.id, effect.amount!, dType);
+            }
+          });
+          hasDamage = true;
+        }
+        // 일반 단일 공격
+        else if (targetEnemy) {
+          applyDamageToEnemy(targetEnemy.id, effect.amount, dType);
+          hasDamage = true;
+        }
+
       } else if (effect.type === 'SHIELD' && effect.amount) {
         addPlayerShield(effect.amount);
         hasBuff = true;
       } else if (effect.type === 'RESIST' && effect.amount) {
         addPlayerResist(effect.amount);
         hasBuff = true;
+      } else if (effect.type === 'DRAW' && effect.amount) {
+        useDeckStore.getState().drawCards(effect.amount);
+        hasBuff = true;
       } else if (effect.type === 'ADD_AMMO' && effect.amount) {
         addAmmo(effect.amount);
         hasBuff = true;
+      } else if (effect.type === 'HEAL' && effect.amount) {
+        // 음수면 피해, 양수면 회복 (카드 효과에서는 보통 자신 피해로 쓰임)
+        if (effect.amount > 0) {
+          useRunStore.getState().healPlayer(effect.amount);
+        } else {
+          useRunStore.getState().damagePlayer(Math.abs(effect.amount));
+        }
+        hasBuff = true;
+      } else if (effect.type === 'DEBUFF') {
+        const amount = effect.amount || 1;
+        if (effect.target === 'ALL_ENEMIES') {
+          // 일괄 적용 (추후 상태이상 시스템 연동)
+          setToastMessage(`적 전체에 ${effect.condition} ${amount} 부여 (효과 구현 중)`);
+        } else if (targetEnemy) {
+          setToastMessage(`${targetEnemy.name}에게 ${effect.condition} ${amount} 부여 (효과 구현 중)`);
+        } else if (effect.target === 'PLAYER') {
+          setToastMessage(`플레이어에게 ${effect.condition} 부여 (효과 구현 중)`);
+        }
+      } else if (effect.type === 'BUFF') {
+        if (effect.condition === 'PURIFY_1') {
+          setToastMessage('디버프 1개 정화 됨 (효과 구현 중)');
+        } else if (effect.condition?.startsWith('ADD_AP_')) {
+          const apToAdd = parseInt(effect.condition.split('_')[2], 10);
+          useBattleStore.getState().consumeAp(-apToAdd); // AP 획득
+        } else {
+          setToastMessage(`버프 획득: ${effect.condition} (효과 구현 중)`);
+        }
       }
     });
 
