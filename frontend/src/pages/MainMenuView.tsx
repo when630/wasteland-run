@@ -1,0 +1,157 @@
+import React, { useState } from 'react';
+import { useRunStore } from '../store/useRunStore';
+import { useDeckStore } from '../store/useDeckStore';
+import { useMapStore } from '../store/useMapStore';
+import { createStartingDeck } from '../assets/data/cards';
+import { useAudioStore } from '../store/useAudioStore';
+
+export const MainMenuView: React.FC = () => {
+  const { isActive, setScene } = useRunStore();
+  const [isHovered, setIsHovered] = useState<string | null>(null);
+
+  const buttonStyle = (id: string, disabled: boolean = false) => ({
+    padding: '15px 40px',
+    fontSize: '24px',
+    fontWeight: 'bold',
+    color: disabled ? '#555' : isHovered === id ? '#fff' : '#aaa',
+    backgroundColor: 'transparent',
+    border: 'none',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    textShadow: isHovered === id ? '0 0 10px rgba(255,255,255,0.8)' : 'none',
+    transform: isHovered === id && !disabled ? 'scale(1.1)' : 'scale(1)',
+    transition: 'all 0.2s ease-in-out',
+    fontFamily: '"Courier New", Courier, monospace',
+    width: '300px',
+    textAlign: 'left' as const,
+  });
+
+  const handleNewGame = async () => {
+    useAudioStore.getState().playClick();
+
+    // 런 정보 완전 초기화
+    useRunStore.setState({
+      playerHp: 50,
+      playerMaxHp: 70,
+      gold: 0,
+      currentMapNode: null,
+      relics: [],
+      runStartTime: Date.now(),
+      runSeed: Math.random().toString(36).substring(2, 10),
+      isActive: true,
+    });
+
+    // 덱 초기화
+    useDeckStore.getState().setMasterDeck(createStartingDeck());
+
+    // 맵(층) 초기화
+    useMapStore.setState({ currentFloor: 1, nodes: [], currentNodeId: null, visitedNodeIds: [] });
+
+    // 바로 다음 틱에 맵 시스템이 1층 노드를 자동 재생성하도록 맵 씬으로 이동
+    setScene('MAP');
+
+    await useRunStore.getState().saveRunData();
+  };
+
+  const handleContinue = () => {
+    useAudioStore.getState().playClick();
+    setScene('MAP'); // 지난 번 씬 정보를 저장할 수도 있으나, 안전장치로 맵에서 시작
+  };
+
+  const handleNotImplemented = (feature: string) => {
+    useAudioStore.getState().playClick();
+    useRunStore.getState().setToastMessage(`[${feature}] 기능은 개발 중입니다!`);
+  };
+
+  return (
+    <div style={{
+      width: '100vw',
+      height: '100vh',
+      backgroundColor: '#0a0a0a',
+      color: '#fff',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      justifyContent: 'center',
+      paddingLeft: '15%',
+      backgroundImage: 'radial-gradient(circle at right bottom, #2a0a0a 0%, #000 70%)',
+    }}>
+
+      {/* 타이틀 로고/텍스트 영역 */}
+      <div style={{ marginBottom: '80px', pointerEvents: 'none' }}>
+        <h1 style={{
+          fontSize: '96px',
+          margin: 0,
+          color: '#ff4444',
+          textShadow: '4px 4px 0px #440000, 0 0 20px rgba(255,60,60,0.5)',
+          fontFamily: 'Impact, sans-serif',
+          letterSpacing: '5px'
+        }}>
+          WASTELAND RUN
+        </h1>
+        <p style={{
+          fontSize: '24px',
+          color: '#888',
+          marginTop: '10px',
+          letterSpacing: '10px',
+          fontFamily: '"Courier New", Courier, monospace',
+          textTransform: 'uppercase'
+        }}>
+          The End of the World is just the Beginning
+        </p>
+      </div>
+
+      {/* 메뉴 버튼 영역 */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+        {isActive && (
+          <button
+            style={buttonStyle('continue')}
+            onMouseEnter={() => setIsHovered('continue')}
+            onMouseLeave={() => setIsHovered(null)}
+            onClick={handleContinue}
+          >
+            ▶ 이어하기
+          </button>
+        )}
+
+        <button
+          style={buttonStyle('newgame')}
+          onMouseEnter={() => setIsHovered('newgame')}
+          onMouseLeave={() => setIsHovered(null)}
+          onClick={handleNewGame}
+        >
+          {isActive ? '▶ 새 게임 (현재 진행도 삭제)' : '▶ 새 게임'}
+        </button>
+
+        <button
+          style={buttonStyle('compendium')}
+          onMouseEnter={() => setIsHovered('compendium')}
+          onMouseLeave={() => setIsHovered(null)}
+          onClick={() => handleNotImplemented('도감')}
+        >
+          ▶ 도감
+        </button>
+
+        <button
+          style={buttonStyle('statistics')}
+          onMouseEnter={() => setIsHovered('statistics')}
+          onMouseLeave={() => setIsHovered(null)}
+          onClick={() => handleNotImplemented('통계')}
+        >
+          ▶ 통계
+        </button>
+
+        <button
+          style={buttonStyle('settings')}
+          onMouseEnter={() => setIsHovered('settings')}
+          onMouseLeave={() => setIsHovered(null)}
+          onClick={() => handleNotImplemented('설정')}
+        >
+          ▶ 설정
+        </button>
+
+      </div>
+
+    </div>
+  );
+};

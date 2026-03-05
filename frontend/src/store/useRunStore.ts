@@ -6,7 +6,7 @@ interface RunState {
   playerMaxHp: number;
   gold: number;
   currentMapNode: string | null;
-  currentScene: 'MAP' | 'BATTLE' | 'ELITE' | 'REST' | 'EVENT' | 'SHOP' | 'BOSS'; // 🌟 씬 타입 확장
+  currentScene: 'MAIN_MENU' | 'MAP' | 'BATTLE' | 'ELITE' | 'REST' | 'EVENT' | 'SHOP' | 'BOSS'; // 🌟 씬 타입 확장
   relics: string[];
   toastMessage: string | null; // 🌟 전역 알림 메시지 상태
   runStartTime: number;
@@ -33,7 +33,7 @@ export const useRunStore = create<RunState>((set) => ({
   playerMaxHp: 70,
   gold: 0,
   currentMapNode: null,
-  currentScene: 'MAP', // 기본 씬은 맵으로 시작
+  currentScene: 'MAIN_MENU', // 기본 씬은 메인 메뉴로 시작
   relics: [],
   toastMessage: null,
   runStartTime: Date.now(), // 런 시작 시간을 현재로 초기화
@@ -126,9 +126,11 @@ export const useRunStore = create<RunState>((set) => ({
         useRunStore.getState().setToastMessage('진행 상황을 불러왔습니다.');
       } else if (data && !data.isActive) {
         console.log('이전 런이 종료된 상태입니다. 새 게임을 시작합니다.');
+        set({ currentScene: 'MAIN_MENU', isActive: false });
       }
     } catch (e) {
-      console.warn('저장된 진행 상황을 찾지 못했습니다. 새로운 런을 시작합니다.', e);
+      console.warn('저장된 진행 상황을 찾지 못했습니다. 메인 메뉴로 시작합니다.', e);
+      set({ currentScene: 'MAIN_MENU', isActive: false });
     }
   }
 }));

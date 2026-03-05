@@ -5,10 +5,9 @@ import { RestView } from './pages/RestView';
 import { EventView } from './pages/EventView';
 import { ShopView } from './pages/ShopView';
 import { useRunStore } from './store/useRunStore';
-import { useDeckStore } from './store/useDeckStore';
-import { createStartingDeck } from './assets/data/cards';
 import { ToastMessage } from './components/ui/ToastMessage';
 import { useEffect } from 'react';
+import { MainMenuView } from './pages/MainMenuView';
 import { AuthModal } from './components/ui/AuthModal';
 import { useAuthStore } from './store/useAuthStore';
 import { LeaderboardModal } from './components/ui/LeaderboardModal';
@@ -21,6 +20,9 @@ function SceneManager() {
   useEffect(() => {
     const audioStore = useAudioStore.getState();
     switch (currentScene) {
+      case 'MAIN_MENU':
+        audioStore.playBgm('MAP'); // 임시로 MAP bgm 사용. 나중에 TITLE 추가 시 변경
+        break;
       case 'MAP':
       case 'REST':
       case 'EVENT':
@@ -40,6 +42,8 @@ function SceneManager() {
   }, [currentScene]);
 
   switch (currentScene) {
+    case 'MAIN_MENU':
+      return <MainMenuView />;
     case 'MAP':
       return <MapView />;
     case 'BATTLE':
@@ -64,15 +68,7 @@ function App() {
   // 인증 상태가 참이 되면 (로그인 직후) 세이브 데이터를 불러옴
   useEffect(() => {
     if (isAuthenticated) {
-      loadRunData().then(() => {
-        // 불러오기가 끝났을 때 현재 런이 진행 중이 아니거나(isActive === false) 
-        // 덱이 아예 비어있으면 초기 덱을 세팅해 줌
-        const { masterDeck: currentMasterDeck } = useDeckStore.getState();
-        const { isActive: currentActive } = useRunStore.getState();
-        if (!currentActive || currentMasterDeck.length === 0) {
-          useDeckStore.getState().setMasterDeck(createStartingDeck());
-        }
-      });
+      loadRunData(); // 내부에 저장 이력이 없으면 MAIN_MENU로 강제 이동 및 isActive 초기화 로직 존재
     }
   }, [isAuthenticated, loadRunData]);
 
