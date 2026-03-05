@@ -72,7 +72,9 @@ export const RelicRewardModal: React.FC<RelicRewardModalProps> = ({ onClose, onR
               e.currentTarget.style.borderColor = '#b04a4a';
             }}
           >
-            <span style={{ fontSize: '64px', marginBottom: '15px' }}>{rewardRelic.icon}</span>
+            <span style={{ width: '64px', height: '64px', marginBottom: '15px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              {rewardRelic.image ? <img src={rewardRelic.image} alt={rewardRelic.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <span style={{ fontSize: '64px' }}>{rewardRelic.icon}</span>}
+            </span>
             <h3 style={{ margin: '0 0 10px 0', fontSize: '24px', color: '#fff', textAlign: 'center' }}>
               {rewardRelic.name}
               <span style={{ fontSize: '12px', color: '#ffaaaa', marginLeft: '8px', verticalAlign: 'middle' }}>[{rewardRelic.tier}]</span>

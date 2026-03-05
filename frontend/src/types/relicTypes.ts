@@ -12,5 +12,6 @@ export interface Relic {
   name: string;        // 유물 이름
   tier: RelicTier;     // 등급
   description: string; // 유물 효과 설명
-  icon: string;        // 아이콘 (이모지 또는 이미지 경로)
+  icon?: string;       // (Legacy) 아이콘 (이모지 또는 이미지 경로)
+  image: string;       // 유물 이미지 경로
 }

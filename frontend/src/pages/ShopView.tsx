@@ -245,7 +245,9 @@ export const ShopView: React.FC = () => {
                     border: '1px solid #52525b'
                   }}
                 >
-                  <span style={{ fontSize: '36px' }}>{relic.icon}</span>
+                  <span style={{ width: '36px', height: '36px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    {relic.image ? <img src={relic.image} alt={relic.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <span style={{ fontSize: '36px' }}>{relic.icon}</span>}
+                  </span>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 'bold', color: '#fff' }}>{relic.name}</div>
                     <div style={{ fontSize: '12px', color: '#a1a1aa' }}>[{relic.tier}]</div>

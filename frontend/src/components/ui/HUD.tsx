@@ -222,7 +222,7 @@ export const HUD: React.FC = () => {
               onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
               onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
-              {relicData.icon}
+              {relicData.image ? <img src={relicData.image} alt={relicData.name} style={{ width: '80%', height: '80%', objectFit: 'contain' }} /> : relicData.icon}
             </div>
           );
         })}
