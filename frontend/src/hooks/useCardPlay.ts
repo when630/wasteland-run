@@ -177,12 +177,18 @@ export const useCardPlay = () => {
       } else if (effect.type === 'DEBUFF') {
         const amount = effect.amount || 1;
         if (effect.target === 'ALL_ENEMIES') {
-          // 일괄 적용 (추후 상태이상 시스템 연동)
-          setToastMessage(`적 전체에 ${effect.condition} ${amount} 부여 (효과 구현 중)`);
+          enemies.forEach(e => {
+            if (e.currentHp > 0) {
+              useBattleStore.getState().applyStatusToEnemy(e.id, effect.condition!, amount);
+            }
+          });
+          setToastMessage(`적 전체에 ${effect.condition} ${amount} 부여!`);
         } else if (targetEnemy) {
-          setToastMessage(`${targetEnemy.name}에게 ${effect.condition} ${amount} 부여 (효과 구현 중)`);
+          useBattleStore.getState().applyStatusToEnemy(targetEnemy.id, effect.condition!, amount);
+          setToastMessage(`${targetEnemy.name}에게 ${effect.condition} ${amount} 부여!`);
         } else if (effect.target === 'PLAYER') {
-          setToastMessage(`플레이어에게 ${effect.condition} 부여 (효과 구현 중)`);
+          // TODO: 플레이어 상태이상 부여 (기획에 추가될 경우)
+          setToastMessage(`플레이어 상태이상 부여는 아직 구현되지 않았습니다.`);
         }
       } else if (effect.type === 'BUFF') {
         if (effect.condition === 'PURIFY_1') {

@@ -2,8 +2,8 @@ import type { RandomEvent } from '../../types/eventTypes';
 import { useRunStore } from '../../store/useRunStore';
 import { useDeckStore } from '../../store/useDeckStore';
 import { RELICS } from './relics';
-import { STARTING_CARDS } from './cards';
-import { generateUniqueId, customShuffle } from '../../utils/rng';
+import { STARTING_CARDS, STATUS_CARDS } from './cards';
+import { customShuffle } from '../../utils/rng';
 
 export const RANDOM_EVENTS: RandomEvent[] = [
   {
@@ -202,6 +202,140 @@ export const RANDOM_EVENTS: RandomEvent[] = [
           deckStore.addCardToMasterDeck({ ...pick } as any);
 
           return `오락기를 후려쳐서 쓸만한 판넬 부품을 떼어냈습니다. [${pick.name}] 카드를 얻었습니다.`;
+        }
+      }
+    ]
+  },
+  {
+    id: 'evt_abandoned_clinic',
+    title: '폐허가 된 진료소',
+    description: '방사능 피폭을 치료하던 옛 진료소의 잔해입니다. 반쯤 부서진 자동 치료기기가 아직 전원을 유지하고 윙윙거리는 소리를 내고 있습니다.',
+    visualDesc: '파란색 메디컬 마크가 훼손된 채 깜빡이는 소형 캡슐 장치기...',
+    options: [
+      {
+        label: '[장치에 몸을 맡긴다]',
+        description: '체력을 30 회복합니다. 단, 부작용으로 덱에 [화상] 카드가 1장 추가됩니다.',
+        onSelect: () => {
+          useRunStore.getState().healPlayer(30);
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { id, ...burnBlueprint } = STATUS_CARDS[0]; // BURN 카드
+          useDeckStore.getState().addCardToMasterDeck(burnBlueprint as any);
+
+          return `기계 팔이 상처를 거칠게 꿰매고 투박한 주사기를 꽂자, 찢어질 듯한 고통과 함께 엄청난 상쾌함이 밀려옵니다. (체력 30 회복, 덱에 [화상] 추가됨)`;
+        }
+      },
+      {
+        label: '[진열장을 뒤진다]',
+        description: '무작위 [유틸리티] 카드를 1장 획득합니다.',
+        onSelect: () => {
+          const deckStore = useDeckStore.getState();
+          const utilities = STARTING_CARDS.filter(c => c.type === 'UTILITY');
+          const pick = utilities[Math.floor(Math.random() * utilities.length)];
+          deckStore.addCardToMasterDeck({ ...pick } as any);
+          return `깨진 유리병들 사이에서 쓸만한 의학/화학 서적과 주사기를 챙겼습니다. [${pick.name}] 카드를 얻었습니다.`;
+        }
+      },
+      {
+        label: '[무시하고 떠난다]',
+        description: '이 꺼림칙한 기계를 믿지 않고 발길을 돌립니다.',
+        onSelect: () => {
+          return `언제 오작동할지 모르는 기계에 목숨을 맡길 수는 없었습니다. 당신은 안전하게 진료소를 빠져나왔습니다.`;
+        }
+      }
+    ]
+  },
+  {
+    id: 'evt_scavenger_corpse',
+    title: '고철 수집상의 시체',
+    description: '단단히 무장한 어느 수집상의 시체가 길가에 놓여있습니다. 어떤 이유인지 파리 떼가 심하게 꼬여있지만, 그의 배낭은 꽤 묵직해 보입니다.',
+    visualDesc: '파리 떼와 악취가 진동하는 가죽 배낭 멘 시체...',
+    options: [
+      {
+        label: '[배낭을 통째로 턴다]',
+        description: '골드 50을 획득합니다. 무작위 유물을 1개 획득합니다. 하지만 시체의 독기로 체력 10을 잃습니다.',
+        onSelect: () => {
+          const runStore = useRunStore.getState();
+          runStore.addGold(50);
+          runStore.damagePlayer(10);
+
+          const normalRelics = RELICS.filter(r => r.tier !== 'BOSS' && !runStore.relics.includes(r.id));
+          if (normalRelics.length > 0) {
+            const pick = normalRelics[Math.floor(Math.random() * normalRelics.length)];
+            runStore.addRelic(pick.id);
+            return `시체를 뒤집자 지독한 가스가 뿜어져 나와 얼굴을 덮쳤습니다! (체력 10 감소) 구역질을 참으며 배낭을 뒤져 50 골드와 [${pick.name}] 유물을 찾아냈습니다.`;
+          } else {
+            return `시체를 뒤집자 지독한 가스가 뿜어져 나와 얼굴을 덮쳤습니다! (체력 10 감소) 구역질을 참으며 배낭을 뒤져 50 골드를 찾아냈습니다.`;
+          }
+        }
+      },
+      {
+        label: '[조심스럽게 겉만 뒤져본다]',
+        description: '피해 없이 20 골드만을 안전하게 챙깁니다.',
+        onSelect: () => {
+          useRunStore.getState().addGold(20);
+          return `악취에 이끌려 너무 깊이 파고들지 않았습니다. 주머니에 흘러나와 있던 20 골드만 줍고 현장을 떠났습니다.`;
+        }
+      }
+    ]
+  },
+  {
+    id: 'evt_cyborg_wager',
+    title: '기계 사이보그의 내기',
+    description: '반파된 상태로도 움직이는 사이보그가 고장 난 시각 모듈로 당신을 응시하며 도박을 제안합니다. "인생은 룰렛이라지... 나와 피를 걸고 승부해보겠나...?"',
+    visualDesc: '푸른색 홀로그램 룰렛이 허공에 빙글빙글 돌고 있는 사이보그 머리통...',
+    options: [
+      {
+        label: '[동의한다 (체력 15 지불)]',
+        description: '체력 15를 내어줍니다. 33% 확률로 (희귀 유물 / 골드 100 / 카드 1장 제거) 중 하나가 당첨됩니다.',
+        condition: () => useRunStore.getState().playerHp > 15,
+        onSelect: () => {
+          const runStore = useRunStore.getState();
+          runStore.damagePlayer(15);
+
+          const rand = Math.random();
+          if (rand < 0.33) {
+            // 희귀 유물
+            const rareRelics = RELICS.filter(r => r.tier === 'RARE' && !runStore.relics.includes(r.id));
+            if (rareRelics.length > 0) {
+              const pick = rareRelics[Math.floor(Math.random() * rareRelics.length)];
+              runStore.addRelic(pick.id);
+              return `"잭팟이다... 운이 좋군..." 사이보그의 입에서 무언가 떨어집니다. 체력을 잃었으나 [${pick.name}] 유물을 습득했습니다!`;
+            } else {
+              runStore.addGold(50);
+              return `"어라... 상품이 떨어졌군... 대신 돈을 주지." 체력을 잃고 골드 50을 얻었습니다.`;
+            }
+          } else if (rand < 0.66) {
+            // 골드 100
+            runStore.addGold(100);
+            return `"잭팟이다... 운이 좋군..." 기계가 동전을 토해냅니다. 체력을 잃었으나 골드 100을 획득했습니다!`;
+          } else {
+            // 카드 1장 제거
+            return `TRIGGER_CARD_REMOVE`; // EventView에 정의해둔 그 메커니즘을 동일하게 재사용
+          }
+        }
+      },
+      {
+        label: '[기계를 파괴한다]',
+        description: '무작위 [물리 공격] 카드를 1장 얻습니다. 50% 확률로 엘리트 전투가 시작됩니다!',
+        onSelect: () => {
+          const deckStore = useDeckStore.getState();
+          const physics = STARTING_CARDS.filter(c => c.type === 'PHYSICAL_ATTACK');
+          const pick = physics[Math.floor(Math.random() * physics.length)];
+          deckStore.addCardToMasterDeck({ ...pick } as any);
+
+          if (Math.random() < 0.5) {
+            return `TRIGGER_ELITE_BATTLE`;
+          } else {
+            return `사이보그를 박살 내고 쓸만한 무기 부품 모듈([${pick.name}])을 갈취했습니다. 기계는 반격을 시도했지만 안타깝게도 전원이 꺼졌습니다.`;
+          }
+        }
+      },
+      {
+        label: '[무시한다]',
+        description: '아무 일도 일어나지 않습니다.',
+        onSelect: () => {
+          return `"겁쟁이 녀석..." 사이보그의 쉰 목소리를 뒤로 한 채 발걸음을 재촉합니다.`;
         }
       }
     ]

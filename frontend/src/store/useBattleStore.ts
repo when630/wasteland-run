@@ -40,6 +40,7 @@ interface BattleState {
   addPlayerShield: (amount: number) => void;
   addPlayerResist: (amount: number) => void;
   applyDamageToEnemy: (enemyId: string, amount: number, type: DamageType) => void;
+  applyStatusToEnemy: (enemyId: string, status: string, amount: number) => void;
   executeEnemyTurns: () => void; // 적 AI 행동 실행 트리거
   setTargetingCard: (cardId: string | null) => void;
   setPlayedUtilityThisTurn: (value: boolean) => void; // 🌟 아크 심장 용 상태 업데이트
@@ -127,13 +128,35 @@ export const useBattleStore = create<BattleState>((set, get) => ({
     playerStatus: { ...state.playerStatus, resist: state.playerStatus.resist + amount }
   })),
 
+  applyStatusToEnemy: (enemyId: string, status: string, amount: number) => {
+    set((state) => ({
+      enemies: state.enemies.map(enemy => {
+        if (enemy.id !== enemyId) return enemy;
+        const currentStatuses = enemy.statuses || {};
+        return {
+          ...enemy,
+          statuses: {
+            ...currentStatuses,
+            [status]: (currentStatuses[status] || 0) + amount
+          }
+        };
+      })
+    }));
+  },
+
   // 적에게 물리/특수 데미지 가함. 쉴드나 저항부터 까고 남은 수치만큼 체력 차감
   applyDamageToEnemy: (enemyId: string, amount: number, type: DamageType) => {
     set((state) => {
       const newEnemies = state.enemies.map(enemy => {
         if (enemy.id !== enemyId) return enemy;
 
-        let remainingDamage = amount;
+        // VULNERABLE 처리 (받는 데미지 50% 증가)
+        let finalAmount = amount;
+        if (enemy.statuses?.VULNERABLE && enemy.statuses.VULNERABLE > 0) {
+          finalAmount = Math.floor(finalAmount * 1.5);
+        }
+
+        let remainingDamage = finalAmount;
         let newShield = enemy.shield;
         let newResist = enemy.resist;
 
@@ -224,20 +247,48 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   executeEnemyTurns: () => {
     set((state) => {
       let currentShield = state.playerStatus.shield;
+      let currentResist = state.playerStatus.resist;
       let playerHitTick: number | undefined = undefined;
 
       const newEnemies = state.enemies.map((enemy) => {
-        // 생존한 적군만 행동
-        if (enemy.currentHp > 0 && enemy.currentIntent) {
-          if (enemy.currentIntent.type === 'ATTACK' && enemy.currentIntent.amount) {
+        if (enemy.currentHp <= 0) return enemy; // 이미 죽은 적은 스킵
+
+        let currentHp = enemy.currentHp;
+        let currentStatuses = { ...(enemy.statuses || {}) };
+
+        // 🌟 1. 상태이상 주기적 데미지 처리 (턴 시작 시점)
+        if (currentStatuses.BURN && currentStatuses.BURN > 0) {
+          currentHp -= currentStatuses.BURN * 3; // 스택당 3 피해
+        }
+        if (currentStatuses.POISON && currentStatuses.POISON > 0) {
+          currentHp -= currentStatuses.POISON; // 스택당 1 피해
+        }
+
+        if (currentHp <= 0) {
+          // 상태이상 데미지로 사망
+          return { ...enemy, currentHp: 0, statuses: {}, currentIntent: null };
+        }
+
+        let enemyObj = { ...enemy, currentHp };
+
+        // 🌟 2. 행동 처리
+        if (enemyObj.currentIntent) {
+          if (enemyObj.currentIntent.type === 'ATTACK' && enemyObj.currentIntent.amount) {
+
+            const isSpecial = enemyObj.currentIntent.damageType === 'SPECIAL';
 
             // 🌟 브루터스 다단 히트 처리 ('광란의 후려치기 (5x3)' 등)
-            let rawDamage = enemy.currentIntent.amount;
+            let rawDamage = enemyObj.currentIntent.amount;
             let hitCount = 1;
 
-            if (enemy.currentIntent.description.includes('5x3')) {
+            if (enemyObj.currentIntent.description.includes('5x3')) {
               rawDamage = 5;
               hitCount = 3;
+            }
+
+            // 🌟 WEAK(약화) 처리 (데미지 25% 감소)
+            if (currentStatuses.WEAK && currentStatuses.WEAK > 0) {
+              rawDamage = Math.floor(rawDamage * 0.75);
             }
 
             let totalDamageToPlayer = 0;
@@ -245,15 +296,29 @@ export const useBattleStore = create<BattleState>((set, get) => ({
             // N 번 타격 연산
             for (let i = 0; i < hitCount; i++) {
               let damageToPlayer = rawDamage;
-              if (currentShield > 0) {
-                if (currentShield >= damageToPlayer) {
-                  currentShield -= damageToPlayer;
-                  damageToPlayer = 0;
-                } else {
-                  damageToPlayer -= currentShield;
-                  currentShield = 0;
+
+              if (isSpecial) {
+                if (currentResist > 0) {
+                  if (currentResist >= damageToPlayer) {
+                    currentResist -= damageToPlayer;
+                    damageToPlayer = 0;
+                  } else {
+                    damageToPlayer -= currentResist;
+                    currentResist = 0;
+                  }
+                }
+              } else {
+                if (currentShield > 0) {
+                  if (currentShield >= damageToPlayer) {
+                    currentShield -= damageToPlayer;
+                    damageToPlayer = 0;
+                  } else {
+                    damageToPlayer -= currentShield;
+                    currentShield = 0;
+                  }
                 }
               }
+
               totalDamageToPlayer += damageToPlayer;
             }
 
@@ -264,7 +329,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
               console.log(`[피격] 플레이어가 총 ${totalDamageToPlayer} 상흔을 입었습니다.`);
 
               // 🌟 보스 패턴 기믹: 오염된 소이탄에 피격당해 데미지가 1이라도 들어왔다면 화상 카드 강제 삽입
-              if (enemy.currentIntent.description.includes('소이탄')) {
+              if (enemyObj.currentIntent.description.includes('소이탄')) {
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { id, ...burnBlueprint } = STATUS_CARDS[0]; // id를 떼버리고 던짐
                 useDeckStore.getState().addCardToDiscardPile(burnBlueprint);
@@ -274,23 +339,28 @@ export const useBattleStore = create<BattleState>((set, get) => ({
             } else {
               console.log(`[피격 차단] 방어막으로 적군 데미지 차단 성공!`);
             }
-          } else if (enemy.currentIntent.type === 'BUFF' && enemy.currentIntent.amount) {
+          } else if (enemyObj.currentIntent.type === 'BUFF' && enemyObj.currentIntent.amount) {
             // 적군의 자체 버프 (예: 방어도 증가)
-            return {
-              ...enemy,
-              shield: enemy.shield + enemy.currentIntent.amount,
-              currentIntent: determineNextIntent(enemy.baseId),
+            enemyObj = {
+              ...enemyObj,
+              shield: enemyObj.shield + enemyObj.currentIntent.amount,
               visualEffect: { type: 'BUFF' as const, tick: Date.now() } // 🌟 버프 애니메이션 트리거
             };
           }
-          // 행동 종료 후 다음 의도 부여
-          return {
-            ...enemy,
-            currentIntent: determineNextIntent(enemy.baseId),
-            visualEffect: undefined // 일반 턴 종료 시 이펙트 해제
-          };
         }
-        return enemy; // 죽거나 상태이상이면 스킵
+
+        // 🌟 3. 행동 종료 후 상태이상 1스택씩 감소 및 다음 의도 부여
+        const nextStatuses: Record<string, number> = {};
+        Object.entries(currentStatuses).forEach(([key, val]) => {
+          if (val > 1) nextStatuses[key] = val - 1;
+        });
+
+        return {
+          ...enemyObj,
+          statuses: nextStatuses,
+          currentIntent: determineNextIntent(enemyObj.baseId),
+          visualEffect: enemyObj.visualEffect?.type === 'BUFF' ? enemyObj.visualEffect : undefined // BUFF 효과는 유지, DAMAGE는 해제
+        };
       });
 
       // 3. 패배 판정: 플레이어의 런 스토어 상 체력이 0 이하인가?
@@ -298,7 +368,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
 
       return {
         enemies: newEnemies,
-        playerStatus: { ...state.playerStatus, shield: currentShield },
+        playerStatus: { ...state.playerStatus, shield: currentShield, resist: currentResist },
         battleResult: isDefeat ? 'DEFEAT' : 'NONE', // 임시: NONE 외 기존 유지 필요 시 분기 고려
         playerVisualEffect: playerHitTick ? { type: 'DAMAGE', tick: playerHitTick } : state.playerVisualEffect
       };

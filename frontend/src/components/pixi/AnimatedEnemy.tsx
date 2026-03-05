@@ -123,10 +123,27 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
       {/* 적 방어력 */}
       {(enemy.shield > 0 || enemy.resist > 0) && (
         <Text
-          text={`[S: ${enemy.shield} | R: ${enemy.resist}]`}
+          text={`🛡️ ${enemy.shield}  |  💠 ${enemy.resist}`}
           y={statYOffset}
           anchor={0.5}
           style={defaultTextStyle}
+        />
+      )}
+      {/* 상태이상 (디버프/버프) 표시 */}
+      {enemy.statuses && Object.keys(enemy.statuses).length > 0 && (
+        <Text
+          text={Object.entries(enemy.statuses)
+            .filter(([, val]) => val > 0)
+            .map(([key, val]) => {
+              if (key === 'BURN') return `🔥${val}`;
+              if (key === 'POISON') return `☣️${val}`;
+              if (key === 'VULNERABLE') return `💔${val}`;
+              if (key === 'WEAK') return `⏬${val}`;
+              return `${key}:${val}`;
+            }).join(' ')}
+          y={statYOffset + 30}
+          anchor={0.5}
+          style={new PIXI.TextStyle({ ...defaultTextStyle, fontSize: 16 })}
         />
       )}
     </Container>

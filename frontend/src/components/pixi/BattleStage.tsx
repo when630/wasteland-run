@@ -152,7 +152,7 @@ export const BattleStage: React.FC = () => {
           {/* 플레이어 방어 버프 */}
           {(playerStatus.shield > 0 || playerStatus.resist > 0) && (
             <Text
-              text={`[S: ${playerStatus.shield} | R: ${playerStatus.resist}]`}
+              text={`🛡️ ${playerStatus.shield}  |  💠 ${playerStatus.resist}`}
               y={190}
               anchor={0.5}
               style={defaultTextStyle}

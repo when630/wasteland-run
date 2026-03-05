@@ -35,17 +35,17 @@ export const determineNextIntent = (baseId: string): Intent => {
     case 'scrap_collector': {
       // 60% 확률로 5 피해, 40% 확률로 7 피해
       if (rand < 0.6) {
-        return { type: 'ATTACK', amount: 5, description: '⚔️ 투박한 타격 5' };
+        return { type: 'ATTACK', amount: 5, damageType: 'PHYSICAL', description: '⚔️ 투박한 타격 5' };
       } else {
-        return { type: 'ATTACK', amount: 7, description: '⚔️ 강하게 후려치기 7' };
+        return { type: 'ATTACK', amount: 7, damageType: 'PHYSICAL', description: '⚔️ 강하게 후려치기 7' };
       }
     }
     case 'acid_dog': {
       // 70% 특수피해 4, 30% 특수피해 6
       if (rand < 0.7) {
-        return { type: 'ATTACK', amount: 4, description: '☣️ 산성 침 4' }; // 차후 디버프 부여로 발전 가능
+        return { type: 'ATTACK', amount: 4, damageType: 'SPECIAL', description: '☣️ 산성 침 4' }; // 차후 디버프 부여로 발전 가능
       } else {
-        return { type: 'ATTACK', amount: 6, description: '⚔️ 물어뜯기 6' };
+        return { type: 'ATTACK', amount: 6, damageType: 'PHYSICAL', description: '⚔️ 물어뜯기 6' };
       }
     }
     case 'waste_slime': {
@@ -53,29 +53,22 @@ export const determineNextIntent = (baseId: string): Intent => {
       if (rand < 0.5) {
         return { type: 'BUFF', amount: 5, description: '🛡️ 단단해지기 (방어도 5)' };
       } else {
-        return { type: 'ATTACK', amount: 3, description: '⚔️ 짓누르기 3' };
+        return { type: 'ATTACK', amount: 3, damageType: 'PHYSICAL', description: '⚔️ 짓누르기 3' };
       }
     }
     case 'brutus': {
-      // 턴 진행에 맞는 로테이션을 정확히 짤 수 있도록 rand 대신 state를 의존해야 하나,
-      // determineNextIntent 함수가 stateless 하므로 보스는 임시로 턴마다 무작위가 아닌 균등 분포 로테이션을 따르게 하거나
-      // 호출 시 턴수를 인자로 받게 확장해야 합니다.
-      // 일단 간단한 구현을 위해 무작위 패턴 4종을 부여하거나, 난수 구간을 잘라 모방합니다.
-      // (완벽한 로테이션 A->B->C->D 구현을 위해선 useBattleStore에 패턴 카운터가 필요합니다)
-
       if (rand < 0.25) {
         // A패턴 (엔진 예열)
         return { type: 'BUFF', amount: 10, description: '🛡️ 엔진 예열 (방어도 10 회복, 괴력 획득)' };
       } else if (rand < 0.50) {
         // B패턴 (굴삭기 내려찍기)
-        return { type: 'ATTACK', amount: 18, description: '⚔️ 굴삭기 내려찍기 18' };
+        return { type: 'ATTACK', amount: 18, damageType: 'PHYSICAL', description: '⚔️ 굴삭기 내려찍기 18' };
       } else if (rand < 0.75) {
         // C패턴 (소이탄)
-        // 특수 공격 대신 이펙트만 구분하고, 실제 전투 스토어에서 이 설명이나 amount를 보고 화상 카드를 넣도록 합니다.
-        return { type: 'ATTACK', amount: 14, description: '☣️ 오염된 소이탄 14' };
+        return { type: 'ATTACK', amount: 14, damageType: 'SPECIAL', description: '☣️ 오염된 소이탄 14' };
       } else {
         // D패턴 (광란)
-        return { type: 'ATTACK', amount: 18, description: '⚔️ 광란의 후려치기 (6x3)' };
+        return { type: 'ATTACK', amount: 18, damageType: 'PHYSICAL', description: '⚔️ 광란의 후려치기 (6x3)' };
       }
     }
     default:
