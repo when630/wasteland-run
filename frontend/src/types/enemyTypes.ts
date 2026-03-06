@@ -18,5 +18,5 @@ export interface Enemy {
   resist: number;      // 특수 방어도 (특수 공격 피격 시 우선 깎임)
   currentIntent: Intent | null; // 현재 턴에 하려는 행동
   statuses?: Record<string, number>; // 상태이상 (VULNERABLE, WEAK, BURN, POISON 등)
-  visualEffect?: { type: 'DAMAGE' | 'BUFF'; tick: number }; // 피격, 버프 등 시각적 애니메이션 발현 시점 타이머
+  visualEffect?: { type: 'DAMAGE' | 'BUFF' | 'BURN_TICK' | 'POISON_TICK'; tick: number }; // 피격, 버프, 상태이상 틱 시각 효과
 }

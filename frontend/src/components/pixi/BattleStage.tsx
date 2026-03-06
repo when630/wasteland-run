@@ -88,29 +88,72 @@ export const BattleStage: React.FC = () => {
 
   // 🌟 다단 히트 피격 효과 순차 제어용
   const [playerHitOffset, setPlayerHitOffset] = useState(0);
+  const [playerHitOffsetY, setPlayerHitOffsetY] = useState(0); // 🌟 Y축 떨림
   const [playerTint, setPlayerTint] = useState(0xffffff);
-  const [isAnimatingHit, setIsAnimatingHit] = useState(false); // 연출 중복 방지 락
+  const [playerAlphaFlicker, setPlayerAlphaFlicker] = useState(1); // 🌟 투명도 깜빡
+  const [isAnimatingHit, setIsAnimatingHit] = useState(false);
 
   useEffect(() => {
     // 큐에 남은 애니메이션이 있고, 현재 재생 중이 아니면 1회 재생 시작
-    if (playerHitQueue > 0 && !isAnimatingHit) {
+    if (playerHitQueue.length > 0 && !isAnimatingHit) {
+      const hitType = playerHitQueue[0].type; // 큐 첫 번째 아이템의 타입
       setIsAnimatingHit(true);
-      setPlayerTint(0xff4444); // 붉은 점멸
-      setPlayerHitOffset(-10); // 좌측 흔들림
 
-      setTimeout(() => setPlayerHitOffset(10), 60); // 우측 흔들림
-      setTimeout(() => setPlayerHitOffset(-10), 120); // 다시 좌측
-
-      setTimeout(() => {
-        setPlayerHitOffset(0); // 원위치
-        setPlayerTint(0xffffff); // 색상 원복
-        setIsAnimatingHit(false); // 애니메이션 락 해제
-        consumePlayerHitQueue(); // 스토어 큐 1개 소모 (이후 effect 재호출되어 남은 큐 처리)
-      }, 180); // 1회 당 약 180ms 소요
-
-      // 타이머 클리어 제어로 인한 중도 캔슬 (색상 원복 증발)을 막기 위해 
-      // isAnimatingHit 락이 걸려있는 동안에는 이펙트가 재실행되어도 
-      // 내부 타임아웃을 강제로 날리지 않도록 cleanup 함수 생략.
+      if (hitType === 'DAMAGE') {
+        // 🌟 직접 피격: 넉백(좌측으로 밀림) + 붉은 번쩍
+        setPlayerTint(0xff2222);
+        setPlayerHitOffset(-20); // 넉백
+        setTimeout(() => setPlayerHitOffset(8), 100);  // 반동
+        setTimeout(() => setPlayerHitOffset(-4), 180);   // 미세 흔들림
+        setTimeout(() => {
+          setPlayerHitOffset(0);
+          setPlayerHitOffsetY(0);
+          setPlayerTint(0xffffff);
+          setPlayerAlphaFlicker(1);
+          setIsAnimatingHit(false);
+          consumePlayerHitQueue();
+        }, 300);
+      } else if (hitType === 'BURN') {
+        // 🌟 화상 틱: 오렌지 점멸 + Y 떨림
+        setPlayerTint(0xff6600);
+        let tickCount = 0;
+        const burnInterval = setInterval(() => {
+          tickCount++;
+          setPlayerHitOffsetY(Math.sin(tickCount * 2) * 4);
+          setPlayerTint(tickCount % 2 === 0 ? 0xff6600 : 0xff9944);
+        }, 50);
+        setTimeout(() => {
+          clearInterval(burnInterval);
+          setPlayerHitOffset(0);
+          setPlayerHitOffsetY(0);
+          setPlayerTint(0xffffff);
+          setPlayerAlphaFlicker(1);
+          setIsAnimatingHit(false);
+          consumePlayerHitQueue();
+        }, 350);
+      } else if (hitType === 'POISON') {
+        // 🌟 맹독 틱: 녹색 점멸 + 투명도 깜빡
+        setPlayerTint(0x22ff44);
+        let tickCount = 0;
+        const poisonInterval = setInterval(() => {
+          tickCount++;
+          setPlayerAlphaFlicker(tickCount % 2 === 0 ? 0.6 : 1.0);
+          setPlayerTint(tickCount % 2 === 0 ? 0x22ff44 : 0x44ff88);
+        }, 60);
+        setTimeout(() => {
+          clearInterval(poisonInterval);
+          setPlayerHitOffset(0);
+          setPlayerHitOffsetY(0);
+          setPlayerTint(0xffffff);
+          setPlayerAlphaFlicker(1);
+          setIsAnimatingHit(false);
+          consumePlayerHitQueue();
+        }, 350);
+      } else {
+        // 알 수 없는 타입 → 기본 처리
+        setIsAnimatingHit(false);
+        consumePlayerHitQueue();
+      }
     }
   }, [playerHitQueue, isAnimatingHit, consumePlayerHitQueue]);
 
@@ -158,7 +201,8 @@ export const BattleStage: React.FC = () => {
         {/* 플레이어 (좌측) 구역을 Container로 묶어 클릭(타겟팅) 상호작용 추가 */}
         <Container
           x={1920 * 0.25}
-          y={1080 * 0.65}
+          y={1080 * 0.65 + playerHitOffsetY}
+          alpha={playerAlphaFlicker}
           interactive={targetingCardId !== null}
           pointerdown={() => {
             if (targetingCardId) {
@@ -172,8 +216,8 @@ export const BattleStage: React.FC = () => {
             width={150}
             height={300}
             anchor={0.5}
-            x={playerHitOffset} // 🌟 흔들림 연출
-            tint={playerTint} // 🌟 피격 붉은 점멸 연출
+            x={playerHitOffset} // 🌟 넉백/흔들림 연출
+            tint={playerTint} // 🌟 타입별 색상 연출
           />
           <Text
             text="Player"

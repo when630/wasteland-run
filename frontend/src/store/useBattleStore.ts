@@ -27,7 +27,7 @@ interface BattleState {
   targetingCardId: string | null;
   targetingPosition: { x: number, y: number } | null; // 🌟 카드를 클릭했을 때 타겟팅 화살표의 시작점
   hasPlayedUtilityThisTurn: boolean; // 🌟 아크 심장 유물 용: 이번 턴에 변화 카드를 사용했는지 추적
-  playerHitQueue: number; // 🌟 다단 히트 연출용 남은 애니메이션 횟수 큐
+  playerHitQueue: Array<{ type: 'DAMAGE' | 'BURN' | 'POISON' }>; // 🌟 다단 히트 연출용 타입별 큐
 
   // Actions
   startPlayerTurn: () => void;
@@ -60,7 +60,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   targetingCardId: null,
   targetingPosition: null,
   hasPlayedUtilityThisTurn: false,
-  playerHitQueue: 0,
+  playerHitQueue: [],
 
   resetBattle: () => {
     const relics = useRunStore.getState().relics;
@@ -77,7 +77,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
       targetingCardId: null,
       targetingPosition: null,
       hasPlayedUtilityThisTurn: false,
-      playerHitQueue: 0
+      playerHitQueue: []
     });
   },
 
@@ -102,7 +102,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
         targetingCardId: null,
         targetingPosition: null,
         hasPlayedUtilityThisTurn: false, // 🌟 매 턴 시작 시 초기화
-        playerHitQueue: 0
+        playerHitQueue: []
       };
     });
   },
@@ -127,7 +127,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   setTargetingPosition: (pos: { x: number, y: number } | null) => set({ targetingPosition: pos }),
   setPlayedUtilityThisTurn: (value: boolean) => set({ hasPlayedUtilityThisTurn: value }),
   consumePlayerHitQueue: () => set((state) => ({
-    playerHitQueue: Math.max(0, state.playerHitQueue - 1)
+    playerHitQueue: state.playerHitQueue.slice(1) // 첫 번째 큐 아이템 소모
   })),
 
   /* --- 전투 액션 함수 --- */
@@ -271,19 +271,22 @@ export const useBattleStore = create<BattleState>((set, get) => ({
         let currentStatuses = { ...(enemy.statuses || {}) };
 
         // 🌟 1. 상태이상 주기적 데미지 처리 (턴 시작 시점)
+        let statusVfx: { type: 'DAMAGE' | 'BUFF' | 'BURN_TICK' | 'POISON_TICK'; tick: number } | undefined = undefined;
         if (currentStatuses.BURN && currentStatuses.BURN > 0) {
           currentHp -= currentStatuses.BURN * 3; // 스택당 3 피해
+          statusVfx = { type: 'BURN_TICK', tick: Date.now() }; // 🌟 화상 틱 이펙트
         }
         if (currentStatuses.POISON && currentStatuses.POISON > 0) {
           currentHp -= currentStatuses.POISON; // 스택당 1 피해
+          statusVfx = { type: 'POISON_TICK', tick: Date.now() }; // 🌟 맹독 틱 이펙트
         }
 
         if (currentHp <= 0) {
           // 상태이상 데미지로 사망
-          return { ...enemy, currentHp: 0, statuses: {}, currentIntent: null };
+          return { ...enemy, currentHp: 0, statuses: {}, currentIntent: null, visualEffect: statusVfx };
         }
 
-        let enemyObj = { ...enemy, currentHp };
+        let enemyObj = { ...enemy, currentHp, visualEffect: statusVfx };
 
         // 🌟 2. 행동 처리
         if (enemyObj.currentIntent) {
@@ -391,7 +394,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
         enemies: newEnemies,
         playerStatus: { ...state.playerStatus, shield: currentShield, resist: currentResist },
         battleResult: isDefeat ? 'DEFEAT' : 'NONE', // 임시: NONE 외 기존 유지 필요 시 분기 고려
-        playerHitQueue: state.playerHitQueue + hitInc
+        playerHitQueue: [...state.playerHitQueue, ...Array(hitInc).fill({ type: 'DAMAGE' as const })]
       };
     });
   }
