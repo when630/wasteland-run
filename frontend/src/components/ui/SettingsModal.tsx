@@ -9,15 +9,16 @@ interface SettingsModalProps {
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showQuitButton = false }) => {
   const { bgmVolume, sfxVolume, setBgmVolume, setSfxVolume, playClick, playHit } = useAudioStore();
-  const { saveRunData, isActive, runSeed } = useRunStore();
+  const { saveRunData, isActive, runSeed, setScene } = useRunStore();
 
   const handleQuitToMain = async () => {
     // 확인 후 메인 메뉴로 나가기 처리
     if (window.confirm('현재 게임 진행 상황을 저장하고 메인 메뉴로 돌아가시겠습니까?')) {
       if (isActive) {
-        await saveRunData();
+        await saveRunData(); // 🌟 현재 진행 상황 서버에 저장
       }
-      window.location.reload(); // 리로드 시 기본값으로 MAIN_MENU 씬으로 복귀됨
+      onClose(); // 설정 모달 닫기
+      setScene('MAIN_MENU'); // 🌟 리로드 대신 씬 전환으로 메인 메뉴 이동
     }
   };
 

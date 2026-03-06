@@ -40,7 +40,7 @@ export const useRunStore = create<RunState>((set) => ({
   toastMessage: null,
   runStartTime: Date.now(), // 런 시작 시간을 현재로 초기화
   runSeed: Math.random().toString(36).substring(2, 10), // 기본 무작위 시드
-  isActive: true,
+  isActive: false, // 🌟 기본값 false: loadRunData가 완료되어야만 true로 세팅
   isLeaderboardOpen: false,
   enemiesKilled: 0,
 
@@ -115,7 +115,7 @@ export const useRunStore = create<RunState>((set) => ({
           gold: data.gold,
           relics: data.relicsJson ? JSON.parse(data.relicsJson) : [],
           runSeed: data.runSeed || Math.random().toString(36).substring(2, 10),
-          currentScene: data.currentScene || 'MAP',
+          currentScene: 'MAIN_MENU', // 🌟 항상 메인 메뉴에서 시작 → "이어하기" 버튼을 통해 진입
           currentMapNode: data.currentMapNode || null,
           isActive: data.isActive,
           enemiesKilled: data.enemiesKilled || 0
