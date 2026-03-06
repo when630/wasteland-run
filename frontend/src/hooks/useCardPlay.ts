@@ -227,6 +227,9 @@ export const useCardPlay = () => {
       }
     }
 
+    // 통계 추적: 카드 사용 수 + 1
+    useRunStore.getState().addCardsPlayed(1);
+
     console.log(`[Card Played] ${card.name} 사용! (효과 처리 완료)`);
 
     // 8. 타겟팅 모드 및 카드 사용 처리 (비우기/소멸)

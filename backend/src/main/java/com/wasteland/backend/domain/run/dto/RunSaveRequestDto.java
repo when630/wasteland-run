@@ -22,4 +22,8 @@ public class RunSaveRequestDto {
     private String currentMapNode;
     private boolean isActive;
     private int enemiesKilled;
+    private int cardsPlayed;
+    private long totalDamageDealt;
+    private long totalDamageTaken;
+    private long totalGoldEarned;
 }

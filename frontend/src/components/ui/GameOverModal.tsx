@@ -7,17 +7,23 @@ interface GameOverModalProps {
 }
 
 export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
-  const { gold, enemiesKilled, setIsActive, saveRunData } = useRunStore();
+  const { gold, enemiesKilled, cardsPlayed, totalDamageDealt, totalDamageTaken, totalGoldEarned, runStartTime, setIsActive, saveRunData, submitRunStats } = useRunStore();
   const { currentFloor } = useMapStore();
 
+  const isVictory = result === 'VICTORY';
+  const playTimeSeconds = Math.floor((Date.now() - runStartTime) / 1000);
+  const playTimeMinutes = Math.floor(playTimeSeconds / 60);
+  const playTimeRemainSec = playTimeSeconds % 60;
+
   const handleReturnToTitle = async () => {
+    // 런 통계를 백엔드에 제출
+    await submitRunStats(isVictory);
     // 런 종료 (Game Over 또는 챕터 클리어 시)
     setIsActive(false);
     await saveRunData();
     window.location.reload(); // 앱 초기화 리로드 (MainMenuView로 리다이렉트됨)
   };
 
-  const isVictory = result === 'VICTORY';
   const overlayStyle: React.CSSProperties = {
     position: 'fixed',
     top: 0,
@@ -110,7 +116,27 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
         </div>
         <div style={reportItemStyle}>
           <span style={{ color: '#9ca3af' }}>남은 골드</span>
-          <span style={{ fontWeight: 'bold', color: '#fbbf24' }}>💰 {gold}</span>
+          <span style={{ fontWeight: 'bold', color: '#fbbf24' }}>{gold} G</span>
+        </div>
+        <div style={reportItemStyle}>
+          <span style={{ color: '#9ca3af' }}>사용한 카드</span>
+          <span style={{ fontWeight: 'bold' }}>{cardsPlayed} 장</span>
+        </div>
+        <div style={reportItemStyle}>
+          <span style={{ color: '#9ca3af' }}>가한 총 피해</span>
+          <span style={{ fontWeight: 'bold', color: '#f87171' }}>{totalDamageDealt}</span>
+        </div>
+        <div style={reportItemStyle}>
+          <span style={{ color: '#9ca3af' }}>받은 총 피해</span>
+          <span style={{ fontWeight: 'bold', color: '#fb923c' }}>{totalDamageTaken}</span>
+        </div>
+        <div style={reportItemStyle}>
+          <span style={{ color: '#9ca3af' }}>획득 총 골드</span>
+          <span style={{ fontWeight: 'bold', color: '#fbbf24' }}>{totalGoldEarned} G</span>
+        </div>
+        <div style={reportItemStyle}>
+          <span style={{ color: '#9ca3af' }}>플레이 시간</span>
+          <span style={{ fontWeight: 'bold' }}>{playTimeMinutes}분 {playTimeRemainSec}초</span>
         </div>
       </div>
 

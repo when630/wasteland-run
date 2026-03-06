@@ -6,12 +6,14 @@ import { createStartingDeck } from '../assets/data/cards';
 import { useAudioStore } from '../store/useAudioStore';
 import { CompendiumModal } from '../components/ui/CompendiumModal';
 import { SettingsModal } from '../components/ui/SettingsModal';
+import { StatisticsModal } from '../components/ui/StatisticsModal';
 
 export const MainMenuView: React.FC = () => {
   const { isActive, setScene } = useRunStore();
   const [isHovered, setIsHovered] = useState<string | null>(null);
   const [isCompendiumOpen, setIsCompendiumOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isStatisticsOpen, setIsStatisticsOpen] = useState(false);
 
   const buttonStyle = (id: string, disabled: boolean = false) => ({
     padding: '15px 40px',
@@ -42,6 +44,11 @@ export const MainMenuView: React.FC = () => {
       runStartTime: Date.now(),
       runSeed: Math.random().toString(36).substring(2, 10),
       isActive: true,
+      enemiesKilled: 0,
+      cardsPlayed: 0,
+      totalDamageDealt: 0,
+      totalDamageTaken: 0,
+      totalGoldEarned: 0,
     });
 
     // 덱 초기화
@@ -59,11 +66,6 @@ export const MainMenuView: React.FC = () => {
   const handleContinue = () => {
     useAudioStore.getState().playClick();
     setScene('MAP'); // 지난 번 씬 정보를 저장할 수도 있으나, 안전장치로 맵에서 시작
-  };
-
-  const handleNotImplemented = (feature: string) => {
-    useAudioStore.getState().playClick();
-    useRunStore.getState().setToastMessage(`[${feature}] — 공사 중입니다`);
   };
 
   return (
@@ -143,7 +145,10 @@ export const MainMenuView: React.FC = () => {
           style={buttonStyle('statistics')}
           onMouseEnter={() => setIsHovered('statistics')}
           onMouseLeave={() => setIsHovered(null)}
-          onClick={() => handleNotImplemented('통계')}
+          onClick={() => {
+            useAudioStore.getState().playClick();
+            setIsStatisticsOpen(true);
+          }}
         >
           ▶ 통계
         </button>
@@ -164,6 +169,7 @@ export const MainMenuView: React.FC = () => {
 
       {isCompendiumOpen && <CompendiumModal onClose={() => setIsCompendiumOpen(false)} />}
       {isSettingsOpen && <SettingsModal onClose={() => setIsSettingsOpen(false)} showQuitButton={false} />}
+      {isStatisticsOpen && <StatisticsModal onClose={() => setIsStatisticsOpen(false)} />}
     </div>
   );
 };

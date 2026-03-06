@@ -197,6 +197,12 @@ export const useBattleStore = create<BattleState>((set, get) => ({
         let newHp = enemy.currentHp - remainingDamage;
         if (newHp < 0) newHp = 0; // 최소 HP 0 보정 (추후 사망 처리 로직 발동용)
 
+        // 통계 추적: 실제로 적에게 가한 피해 (방어 관통 후 실제 HP 감소분)
+        const actualDamage = enemy.currentHp - newHp;
+        if (actualDamage > 0) {
+          useRunStore.getState().addDamageDealt(actualDamage);
+        }
+
         // 🌟 유물 효과: [구시대의 구급상자] 특수(SPECIAL) 공격으로 처치 시 체력 3 회복
         if (newHp === 0 && enemy.currentHp > 0 && type === 'SPECIAL') {
           if (useRunStore.getState().relics.includes('old_medkit')) {
@@ -366,6 +372,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
             // 남은 데미지가 있다면 런 스토어의 전역 체력 차감
             if (totalDamageToPlayer > 0) {
               useRunStore.getState().damagePlayer(totalDamageToPlayer);
+              useRunStore.getState().addDamageTaken(totalDamageToPlayer);
               console.log(`[피격] 플레이어가 총 ${totalDamageToPlayer} 상흔을 입었습니다.`);
 
               // 🌟 보스 패턴 기믹: 오염된 소이탄에 피격당해 데미지가 1이라도 들어왔다면 화상 카드 강제 삽입
