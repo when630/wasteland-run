@@ -200,8 +200,8 @@ export const useCardPlay = () => {
           useBattleStore.getState().applyStatusToEnemy(targetEnemy.id, effect.condition!, amount);
           setToastMessage(`${targetEnemy.name}에게 ${effect.condition} ${amount} 부여!`);
         } else if (effect.target === 'PLAYER') {
-          // TODO: 플레이어 상태이상 부여 (기획에 추가될 경우)
-          setToastMessage(`플레이어 상태이상 부여는 아직 구현되지 않았습니다.`);
+          // 플레이어 상태이상: 현재 기획된 카드에선 직접 사용되지 않으나, 향후 확장 시 이곳에 로직 추가
+          console.log(`[CardPlay] 플레이어 대상 상태이상 효과 예약됨: ${effect.condition} x${amount}`);
         }
       } else if (effect.type === 'BUFF') {
         if (effect.condition === 'PURIFY_1') {

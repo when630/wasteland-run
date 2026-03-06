@@ -230,7 +230,8 @@ export const useDeckStore = create<DeckState>((set) => ({
 
         const drawnCard = currentDraw.shift();
         if (drawnCard) {
-          // TODO: 핸드 최대 장수 제한이 기획적으로 필요하다면 이 곳에 10장 같은 조건 추가
+          // 🌟 핸드 최대 10장 제한
+          if (newHand.length >= 10) break;
           newHand.push(drawnCard);
         }
       }

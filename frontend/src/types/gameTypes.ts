@@ -25,7 +25,8 @@ export interface CardEffect {
   amount?: number;
   condition?: string; // e.g. 'NEXT_IS_ATTACK'
   target?: string;    // e.g. 'ALL_ENEMIES', 'PLAYER'
-  // TODO: 버프/디버프 타입 및 지속시간 추후 확장
+  statusType?: 'BURN' | 'POISON' | 'VULNERABLE' | 'WEAK' | string; // 버프/디버프 세부 타입
+  duration?: number;  // 상태이상 지속 턴 수
 }
 
 export interface Card {
