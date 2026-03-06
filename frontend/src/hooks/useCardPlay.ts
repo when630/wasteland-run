@@ -77,9 +77,8 @@ export const useCardPlay = () => {
       return false;
     }
     if (!needsEnemyTarget && finalTargetId !== 'PLAYER') {
-      setToastMessage('이 카드는 플레이어 자신에게만 사용할 수 있습니다.');
-      setTargetingCard(null);
-      return false;
+      // 🌟 단일 대상이 아닌 카드(전체 공격/버프/방어)는 어디를 클릭해도 발동
+      finalTargetId = 'PLAYER';
     }
 
     // 5. 코스트(AP/Ammo) 검사
