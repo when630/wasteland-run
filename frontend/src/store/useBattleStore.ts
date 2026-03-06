@@ -262,7 +262,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
     set((state) => {
       let currentShield = state.playerStatus.shield;
       let currentResist = state.playerStatus.resist;
-      let hitInc = 0; // 이번 턴에 누적된 총 피격 횟수
+      const hitQueue: Array<{ type: 'DAMAGE' | 'BURN' | 'POISON' }> = []; // 🌟 타입별 피격 큐
 
       const newEnemies = state.enemies.map((enemy) => {
         if (enemy.currentHp <= 0) return enemy; // 이미 죽은 적은 스킵
@@ -341,9 +341,17 @@ export const useBattleStore = create<BattleState>((set, get) => ({
 
               totalDamageToPlayer += damageToPlayer;
 
-              // 각 타격마다 데미지가 1이라도 들어왔다면 피격 횟수(큐) 증가
+              // 각 타격마다 데미지가 1이라도 들어왔다면 피격 리스트에 타입 등록
               if (damageToPlayer > 0) {
-                hitInc += 1;
+                // 🌟 적의 공격 속성에 따라 피격 타입 분기
+                const desc = enemyObj.currentIntent?.description || '';
+                let hitType: 'DAMAGE' | 'BURN' | 'POISON' = 'DAMAGE';
+                if (desc.includes('☣️') || desc.includes('산성') || desc.includes('독') || desc.includes('맹독')) {
+                  hitType = 'POISON';
+                } else if (desc.includes('소이탄') || desc.includes('화상') || desc.includes('🔥') || desc.includes('화염')) {
+                  hitType = 'BURN';
+                }
+                hitQueue.push({ type: hitType });
               }
             }
 
@@ -394,7 +402,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
         enemies: newEnemies,
         playerStatus: { ...state.playerStatus, shield: currentShield, resist: currentResist },
         battleResult: isDefeat ? 'DEFEAT' : 'NONE', // 임시: NONE 외 기존 유지 필요 시 분기 고려
-        playerHitQueue: [...state.playerHitQueue, ...Array(hitInc).fill({ type: 'DAMAGE' as const })]
+        playerHitQueue: [...state.playerHitQueue, ...hitQueue]
       };
     });
   }
