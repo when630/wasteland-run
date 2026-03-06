@@ -391,7 +391,9 @@ export const useBattleStore = create<BattleState>((set, get) => ({
           ...enemyObj,
           statuses: nextStatuses,
           currentIntent: determineNextIntent(enemyObj.baseId),
-          visualEffect: enemyObj.visualEffect?.type === 'BUFF' ? enemyObj.visualEffect : undefined // BUFF 효과는 유지, DAMAGE는 해제
+          // 🌟 BUFF, BURN_TICK, POISON_TICK 이펙트는 보존 (DAMAGE만 해제하여 한 프레임만 재생)
+          visualEffect: (enemyObj.visualEffect?.type === 'BUFF' || enemyObj.visualEffect?.type === 'BURN_TICK' || enemyObj.visualEffect?.type === 'POISON_TICK')
+            ? enemyObj.visualEffect : undefined
         };
       });
 
