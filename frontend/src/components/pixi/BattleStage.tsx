@@ -88,30 +88,43 @@ export const BattleStage: React.FC = () => {
 
   // 🌟 다단 히트 피격 효과 순차 제어용
   const [playerHitOffset, setPlayerHitOffset] = useState(0);
-  const [playerHitOffsetY, setPlayerHitOffsetY] = useState(0); // 🌟 Y축 떨림
+  const [playerHitOffsetY, setPlayerHitOffsetY] = useState(0);
   const [playerTint, setPlayerTint] = useState(0xffffff);
-  const [playerAlphaFlicker, setPlayerAlphaFlicker] = useState(1); // 🌟 투명도 깜빡
-  const [isAnimatingHit, setIsAnimatingHit] = useState(false);
+  const [playerAlphaFlicker, setPlayerAlphaFlicker] = useState(1);
+  const isAnimatingRef = React.useRef(false); // 🌟 useRef로 락 관리 (React 배칭 문제 방지)
+  const timersRef = React.useRef<ReturnType<typeof setTimeout>[]>([]); // 🌟 클린업용 타이머 추적
+
+  // 타이머 등록 헬퍼
+  const safeTimeout = React.useCallback((fn: () => void, ms: number) => {
+    const id = setTimeout(fn, ms);
+    timersRef.current.push(id);
+    return id;
+  }, []);
+
+  // 모든 시각 상태를 원위치로 리셋하는 헬퍼
+  const resetVisuals = React.useCallback(() => {
+    setPlayerHitOffset(0);
+    setPlayerHitOffsetY(0);
+    setPlayerTint(0xffffff);
+    setPlayerAlphaFlicker(1);
+  }, []);
 
   useEffect(() => {
-    // 큐에 남은 애니메이션이 있고, 현재 재생 중이 아니면 1회 재생 시작
-    if (playerHitQueue.length > 0 && !isAnimatingHit) {
-      const hitType = playerHitQueue[0].type; // 큐 첫 번째 아이템의 타입
-      setIsAnimatingHit(true);
+    // 🌟 큐에 남은 애니메이션이 있고, 현재 재생 중이 아니면 1회 재생 시작
+    if (playerHitQueue.length > 0 && !isAnimatingRef.current) {
+      const hitType = playerHitQueue[0].type;
+      isAnimatingRef.current = true; // 즉시 락 (useState와 달리 동기적)
 
       if (hitType === 'DAMAGE') {
-        // 🌟 직접 피격: 넉백(좌측으로 밀림) + 붉은 번쩍
+        // 🌟 직접 피격: 넉백 + 붉은 번쩍
         setPlayerTint(0xff2222);
-        setPlayerHitOffset(-20); // 넉백
-        setTimeout(() => setPlayerHitOffset(8), 100);  // 반동
-        setTimeout(() => setPlayerHitOffset(-4), 180);   // 미세 흔들림
-        setTimeout(() => {
-          setPlayerHitOffset(0);
-          setPlayerHitOffsetY(0);
-          setPlayerTint(0xffffff);
-          setPlayerAlphaFlicker(1);
-          setIsAnimatingHit(false);
-          consumePlayerHitQueue();
+        setPlayerHitOffset(-20);
+        safeTimeout(() => setPlayerHitOffset(8), 100);
+        safeTimeout(() => setPlayerHitOffset(-4), 180);
+        safeTimeout(() => {
+          resetVisuals();
+          isAnimatingRef.current = false;
+          consumePlayerHitQueue(); // 다음 큐 아이템으로
         }, 300);
       } else if (hitType === 'BURN') {
         // 🌟 화상 틱: 오렌지 점멸 + Y 떨림
@@ -122,13 +135,10 @@ export const BattleStage: React.FC = () => {
           setPlayerHitOffsetY(Math.sin(tickCount * 2) * 4);
           setPlayerTint(tickCount % 2 === 0 ? 0xff6600 : 0xff9944);
         }, 50);
-        setTimeout(() => {
+        safeTimeout(() => {
           clearInterval(burnInterval);
-          setPlayerHitOffset(0);
-          setPlayerHitOffsetY(0);
-          setPlayerTint(0xffffff);
-          setPlayerAlphaFlicker(1);
-          setIsAnimatingHit(false);
+          resetVisuals();
+          isAnimatingRef.current = false;
           consumePlayerHitQueue();
         }, 350);
       } else if (hitType === 'POISON') {
@@ -140,22 +150,26 @@ export const BattleStage: React.FC = () => {
           setPlayerAlphaFlicker(tickCount % 2 === 0 ? 0.6 : 1.0);
           setPlayerTint(tickCount % 2 === 0 ? 0x22ff44 : 0x44ff88);
         }, 60);
-        setTimeout(() => {
+        safeTimeout(() => {
           clearInterval(poisonInterval);
-          setPlayerHitOffset(0);
-          setPlayerHitOffsetY(0);
-          setPlayerTint(0xffffff);
-          setPlayerAlphaFlicker(1);
-          setIsAnimatingHit(false);
+          resetVisuals();
+          isAnimatingRef.current = false;
           consumePlayerHitQueue();
         }, 350);
       } else {
-        // 알 수 없는 타입 → 기본 처리
-        setIsAnimatingHit(false);
+        isAnimatingRef.current = false;
         consumePlayerHitQueue();
       }
     }
-  }, [playerHitQueue, isAnimatingHit, consumePlayerHitQueue]);
+  }, [playerHitQueue, consumePlayerHitQueue, safeTimeout, resetVisuals]);
+
+  // 🌟 컴포넌트 언마운트 시 모든 타이머 정리
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach(clearTimeout);
+      timersRef.current = [];
+    };
+  }, []);
 
   return (
     <Stage
