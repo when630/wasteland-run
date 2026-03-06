@@ -75,7 +75,7 @@ export const ShopView: React.FC = () => {
     const item = shopCards[idx];
     if (item.isSoldOut) return;
     if (gold < item.price) {
-      setToastMessage('💰 골드가 부족합니다…');
+      setToastMessage('골드가 부족합니다…');
       return;
     }
 
@@ -85,7 +85,7 @@ export const ShopView: React.FC = () => {
     const { price, isSoldOut, id, ...cardBlueprint } = item;
     addCardToMasterDeck(cardBlueprint as Omit<Card, 'id'>);
 
-    setToastMessage(`🃏 ${item.name} 획득!`);
+    setToastMessage(`${item.name} 획득!`);
 
     // 배열 업데이트 (품절 동기화)
     const newArr = [...shopCards];
@@ -101,13 +101,13 @@ export const ShopView: React.FC = () => {
     const item = shopRelics[idx];
     if (item.isSoldOut) return;
     if (gold < item.price) {
-      setToastMessage('💰 골드가 부족합니다…');
+      setToastMessage('골드가 부족합니다…');
       return;
     }
 
     addGold(-item.price);
     addRelic(item.id);
-    setToastMessage(`🏺 ${item.name} 획득!`);
+    setToastMessage(`${item.name} 획득!`);
 
     const newArr = [...shopRelics];
     newArr[idx].isSoldOut = true;
@@ -121,7 +121,7 @@ export const ShopView: React.FC = () => {
   const handleRemoveService = () => {
     if (!removeServiceAvailable) return;
     if (gold < REMOVE_PRICE) {
-      setToastMessage('💰 골드가 부족합니다…');
+      setToastMessage('골드가 부족합니다…');
       return;
     }
     // 선 결제 대신 모달에서 진짜 제거가 확정될 때 차감하도록 모달만 먼저 띄움
@@ -133,7 +133,7 @@ export const ShopView: React.FC = () => {
     addGold(-REMOVE_PRICE);
     setRemoveServiceAvailable(false);
     setIsRemoveModalOpen(false);
-    setToastMessage('🗑️ 카드를 덱에서 제거했습니다.');
+    setToastMessage('카드를 덱에서 제거했습니다.');
 
     // 자동 저장
     await useRunStore.getState().saveRunData();

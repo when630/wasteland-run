@@ -15,7 +15,7 @@ export const AuthModal: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username || !password) {
-      setToastMessage('아이디와 비밀번호를 입력해주세요.');
+      setToastMessage('인증 정보를 입력해주세요.');
       return;
     }
 
@@ -25,12 +25,12 @@ export const AuthModal: React.FC = () => {
         // 로그인
         const res = await authApi.post('/auth/login', { username, password });
         login(res.data.token, res.data.username);
-        setToastMessage(`환영합니다, ${res.data.username}님!`);
+        setToastMessage(`${res.data.username}, 다시 돌아오셨군요.`);
       } else {
         // 회원가입
         const res = await authApi.post('/auth/register', { username, password });
         login(res.data.token, res.data.username);
-        setToastMessage(`가입 성공! ${res.data.username}님 환영합니다.`);
+        setToastMessage(`${res.data.username}, 황무지에 오신 것을 환영합니다.`);
       }
 
       // 로그인(또는 회원가입 직후 로그인)이 성공하면 런 데이터를 서버에서 불러옴
@@ -40,7 +40,7 @@ export const AuthModal: React.FC = () => {
       if (error.response?.data?.message) {
         setToastMessage(error.response.data.message);
       } else {
-        setToastMessage(isLoginMode ? '로그인에 실패했습니다.' : '회원가입에 실패했습니다.');
+        setToastMessage(isLoginMode ? '인증 실패 — 다시 시도해주세요.' : '등록 실패 — 다시 시도해주세요.');
       }
     } finally {
       setIsLoading(false);

@@ -373,7 +373,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { id, ...burnBlueprint } = STATUS_CARDS[0]; // id를 떼버리고 던짐
                 useDeckStore.getState().addCardToDiscardPile(burnBlueprint);
-                useRunStore.getState().setToastMessage('🔥 오염물질 침투 — 덱에 [화상] 카드가 섞여들었다!');
+                useRunStore.getState().setToastMessage('오염물질 침투 — 덱에 [화상] 카드가 섞여들었다!');
               }
 
             } else {

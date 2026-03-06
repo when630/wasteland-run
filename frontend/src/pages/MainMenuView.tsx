@@ -63,7 +63,7 @@ export const MainMenuView: React.FC = () => {
 
   const handleNotImplemented = (feature: string) => {
     useAudioStore.getState().playClick();
-    useRunStore.getState().setToastMessage(`🚧 [${feature}] — 공사 중입니다`);
+    useRunStore.getState().setToastMessage(`[${feature}] — 공사 중입니다`);
   };
 
   return (
