@@ -85,12 +85,24 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
       // 🌟 맹독 틱: 녹색 펄스 + 수축 효과
       if (elapsed < 400) {
         const t = elapsed / 400;
-        setTint(0x22ff44); // 녹색 빛
-        setScaleModifier(0.92 + 0.08 * t); // 수축에서 원래 크기로 복귀
+        setTint(0x22ff44);
+        setScaleModifier(0.92 + 0.08 * t);
         setOffsetX(0);
         setOffsetY(0);
       } else {
         setTint(0xff0000);
+        setScaleModifier(1);
+      }
+    } else if (enemy.visualEffect.type === 'BURN_POISON_TICK') {
+      // 🌟 화상+맹독 복합 틱: 오렌지↔녹색 교차 + Y떨림 + 수축
+      if (elapsed < 500) {
+        const cycle = Math.floor(elapsed / 80) % 2; // 80ms마다 색상 교차
+        setTint(cycle === 0 ? 0xff6600 : 0x22ff44); // 오렌지 ↔ 녹색
+        setOffsetY(Math.sin(elapsed * 0.08) * 4);
+        setScaleModifier(0.94 + 0.06 * (elapsed / 500));
+      } else {
+        setTint(0xff0000);
+        setOffsetY(0);
         setScaleModifier(1);
       }
     } else if (enemy.visualEffect.type === 'BUFF') {

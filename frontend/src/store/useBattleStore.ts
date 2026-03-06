@@ -271,14 +271,22 @@ export const useBattleStore = create<BattleState>((set, get) => ({
         let currentStatuses = { ...(enemy.statuses || {}) };
 
         // 🌟 1. 상태이상 주기적 데미지 처리 (턴 시작 시점)
-        let statusVfx: { type: 'DAMAGE' | 'BUFF' | 'BURN_TICK' | 'POISON_TICK'; tick: number } | undefined = undefined;
-        if (currentStatuses.BURN && currentStatuses.BURN > 0) {
-          currentHp -= currentStatuses.BURN * 3; // 스택당 3 피해
-          statusVfx = { type: 'BURN_TICK', tick: Date.now() }; // 🌟 화상 틱 이펙트
+        let statusVfx: { type: 'DAMAGE' | 'BUFF' | 'BURN_TICK' | 'POISON_TICK' | 'BURN_POISON_TICK'; tick: number } | undefined = undefined;
+        const hasBurn = currentStatuses.BURN && currentStatuses.BURN > 0;
+        const hasPoison = currentStatuses.POISON && currentStatuses.POISON > 0;
+        if (hasBurn) {
+          currentHp -= currentStatuses.BURN * 3;
         }
-        if (currentStatuses.POISON && currentStatuses.POISON > 0) {
-          currentHp -= currentStatuses.POISON; // 스택당 1 피해
-          statusVfx = { type: 'POISON_TICK', tick: Date.now() }; // 🌟 맹독 틱 이펙트
+        if (hasPoison) {
+          currentHp -= currentStatuses.POISON;
+        }
+        // 🌟 복합 상태이상 시 별도 타입 부여
+        if (hasBurn && hasPoison) {
+          statusVfx = { type: 'BURN_POISON_TICK', tick: Date.now() };
+        } else if (hasBurn) {
+          statusVfx = { type: 'BURN_TICK', tick: Date.now() };
+        } else if (hasPoison) {
+          statusVfx = { type: 'POISON_TICK', tick: Date.now() };
         }
 
         if (currentHp <= 0) {
@@ -391,8 +399,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
           ...enemyObj,
           statuses: nextStatuses,
           currentIntent: determineNextIntent(enemyObj.baseId),
-          // 🌟 BUFF, BURN_TICK, POISON_TICK 이펙트는 보존 (DAMAGE만 해제하여 한 프레임만 재생)
-          visualEffect: (enemyObj.visualEffect?.type === 'BUFF' || enemyObj.visualEffect?.type === 'BURN_TICK' || enemyObj.visualEffect?.type === 'POISON_TICK')
+          visualEffect: (enemyObj.visualEffect?.type && enemyObj.visualEffect.type !== 'DAMAGE')
             ? enemyObj.visualEffect : undefined
         };
       });
