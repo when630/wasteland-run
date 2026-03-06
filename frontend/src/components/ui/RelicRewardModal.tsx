@@ -34,7 +34,7 @@ export const RelicRewardModal: React.FC<RelicRewardModalProps> = ({ onClose, onR
 
   const handleSelectRelic = (relicId: string) => {
     addRelic(relicId);
-    setToastMessage('새로운 유물을 획득했습니다!');
+    setToastMessage('🏺 새로운 유물의 힘이 깨어납니다!');
     onRelicSelected();
     onClose();
   };

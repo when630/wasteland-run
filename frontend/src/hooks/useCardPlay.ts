@@ -23,7 +23,7 @@ export const useCardPlay = () => {
   const playCard = (cardId: string, targetId?: string) => {
     // 1. 플레이어 턴 검사
     if (currentTurn !== 'PLAYER') {
-      setToastMessage('아직 플레이어 턴이 아닙니다.');
+      setToastMessage('⏳ 적의 차례입니다. 잠시 기다리세요.');
       return false;
     }
 
@@ -72,7 +72,7 @@ export const useCardPlay = () => {
 
     // 4. 대상 유형 검증 (공격형은 적에게, 방어/버프형은 나에게)
     if (needsEnemyTarget && finalTargetId === 'PLAYER') {
-      setToastMessage('이 카드는 적을 대상으로 지정해야 합니다.');
+      setToastMessage('🎯 타겟을 지정하세요 — 적을 클릭!');
       setTargetingCard(null);
       return false;
     }
@@ -83,12 +83,12 @@ export const useCardPlay = () => {
 
     // 5. 코스트(AP/Ammo) 검사
     if (playerActionPoints < card.costAp) {
-      setToastMessage(`AP가 부족합니다! (필요: ${card.costAp}, 현재: ${playerActionPoints})`);
+      setToastMessage(`⚡ AP 부족! (${playerActionPoints}/${card.costAp})`);
       setTargetingCard(null); // 혹시 모를 타겟 취소
       return false;
     }
     if (playerAmmo < card.costAmmo) {
-      setToastMessage(`탄약이 없습니다! (필요: ${card.costAmmo}, 현재: ${playerAmmo})`);
+      setToastMessage(`🔫 탄약 부족! (${playerAmmo}/${card.costAmmo})`);
       setTargetingCard(null);
       return false;
     }
@@ -134,7 +134,7 @@ export const useCardPlay = () => {
             let finalDamage = effect.amount;
             if (targetEnemy.currentIntent?.type === 'ATTACK') {
               finalDamage += bonus;
-              setToastMessage(`카운터 적중! 추가 피해 +${bonus}`);
+              setToastMessage(`💥 카운터! +${bonus} 추가 피해`);
             }
             applyDamageToEnemy(targetEnemy.id, finalDamage, dType);
             hasDamage = true;
@@ -194,22 +194,22 @@ export const useCardPlay = () => {
               useBattleStore.getState().applyStatusToEnemy(e.id, effect.condition!, amount);
             }
           });
-          setToastMessage(`적 전체에 ${effect.condition} ${amount} 부여!`);
+          setToastMessage(`☠️ 전체 ${effect.condition} ×${amount}!`);
         } else if (targetEnemy) {
           useBattleStore.getState().applyStatusToEnemy(targetEnemy.id, effect.condition!, amount);
-          setToastMessage(`${targetEnemy.name}에게 ${effect.condition} ${amount} 부여!`);
+          setToastMessage(`☠️ ${targetEnemy.name} — ${effect.condition} ×${amount}!`);
         } else if (effect.target === 'PLAYER') {
           // 플레이어 상태이상: 현재 기획된 카드에선 직접 사용되지 않으나, 향후 확장 시 이곳에 로직 추가
           console.log(`[CardPlay] 플레이어 대상 상태이상 효과 예약됨: ${effect.condition} x${amount}`);
         }
       } else if (effect.type === 'BUFF') {
         if (effect.condition === 'PURIFY_1') {
-          setToastMessage('디버프 1개 정화 됨 (효과 구현 중)');
+          setToastMessage('✨ 디버프 1개 정화!');
         } else if (effect.condition?.startsWith('ADD_AP_')) {
           const apToAdd = parseInt(effect.condition.split('_')[2], 10);
           useBattleStore.getState().consumeAp(-apToAdd); // AP 획득
         } else {
-          setToastMessage(`버프 획득: ${effect.condition} (효과 구현 중)`);
+          setToastMessage(`🔮 ${effect.condition} 발동!`);
         }
       }
     });

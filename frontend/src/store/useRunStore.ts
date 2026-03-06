@@ -130,7 +130,7 @@ export const useRunStore = create<RunState>((set) => ({
         }
 
         useMapStore.setState({ currentFloor: data.currentLayer });
-        useRunStore.getState().setToastMessage('진행 상황을 불러왔습니다.');
+        useRunStore.getState().setToastMessage('📡 데이터 수신 완료 — 탐험을 이어갑니다.');
       } else if (data && !data.isActive) {
         console.log('이전 런이 종료된 상태입니다. 새 게임을 시작합니다.');
         set({ currentScene: 'MAIN_MENU', isActive: false, enemiesKilled: 0 });
