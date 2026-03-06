@@ -36,6 +36,13 @@ export const useCardPlay = () => {
 
     // 3. 무조건 타겟팅 모드 진입 (대상을 아직 지정하지 않은 경우)
     if (!targetId) {
+      if (targetingCardId === cardId) {
+        // 이미 타겟팅 중인 카드를 한 번 더 눌렀을 경우 -> 타겟팅 취소
+        useAudioStore.getState().playClick();
+        setTargetingCard(null);
+        return false;
+      }
+
       useAudioStore.getState().playClick(); // 타겟팅 시 클릭음
       setTargetingCard(cardId);
       return false;
@@ -44,7 +51,13 @@ export const useCardPlay = () => {
     // 🌟 유물 효과: [불안정한 아크 심장]
     // 이번 턴의 첫 번째 UTILITY 카드라면 대상 지정 여부와 상관없이 적을 무작위로 선택함
     let finalTargetId = targetId;
-    let needsEnemyTarget = card.effects.some(e => e.type === 'DAMAGE' || e.type === 'DEBUFF');
+
+    // 공격형 카드이면서, 전체 타겟이 아니며, 플레이어 타겟도 아닐 경우에만 적 타겟팅 요구 ('단일 공격')
+    let needsEnemyTarget = card.effects.some(e =>
+      (e.type === 'DAMAGE' || e.type === 'DEBUFF') &&
+      e.target !== 'ALL_ENEMIES' &&
+      e.target !== 'PLAYER'
+    );
 
     if (card.type === 'UTILITY' && relics.includes('arc_heart') && !hasPlayedUtilityThisTurn) {
       console.log('⚡ [아크 심장 발동] 첫 번째 변화(UTILITY) 카드의 대상이 무작위 적으로 변경됩니다!');

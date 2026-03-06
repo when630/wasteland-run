@@ -17,6 +17,16 @@ export const BASE_ENEMIES: Record<string, Omit<Enemy, 'id' | 'currentHp' | 'shie
     name: '폐기물 슬라임',
     maxHp: 65,
   },
+  mutant_behemoth: {
+    baseId: 'mutant_behemoth',
+    name: '돌연변이 베히모스',
+    maxHp: 110,
+  },
+  rogue_sentry: {
+    baseId: 'rogue_sentry',
+    name: '폭주하는 경비 드론',
+    maxHp: 85,
+  },
   brutus: {
     baseId: 'brutus',
     name: '고철 기갑수 브루터스',
@@ -54,6 +64,26 @@ export const determineNextIntent = (baseId: string): Intent => {
         return { type: 'BUFF', amount: 5, description: '🛡️ 단단해지기 (방어도 5)' };
       } else {
         return { type: 'ATTACK', amount: 3, damageType: 'PHYSICAL', description: '⚔️ 짓누르기 3' };
+      }
+    }
+    case 'mutant_behemoth': {
+      // 40% 강타, 30% 쉴드, 30% 묵직한 내려찍기
+      if (rand < 0.4) {
+        return { type: 'ATTACK', amount: 15, damageType: 'PHYSICAL', description: '⚔️ 괴력의 강타 15' };
+      } else if (rand < 0.7) {
+        return { type: 'BUFF', amount: 15, description: '🛡️ 재생의 외침 (방어도 15)' };
+      } else {
+        return { type: 'ATTACK', amount: 12, damageType: 'PHYSICAL', description: '⚔️ 묵직한 내려찍기 12 (취약)' };
+      }
+    }
+    case 'rogue_sentry': {
+      // 50% 레이저, 30% 조준(방어), 20% 연발 사격
+      if (rand < 0.5) {
+        return { type: 'ATTACK', amount: 8, damageType: 'SPECIAL', description: '☣️ 고출력 레이저 8' };
+      } else if (rand < 0.8) {
+        return { type: 'BUFF', amount: 8, description: '🛡️ 목표 재조준 (방어도 8)' };
+      } else {
+        return { type: 'ATTACK', amount: 8, damageType: 'PHYSICAL', description: '⚔️ 연발 권총 사격 (4x2)' }; // 🌟 데미지 amount는 실제 렌더링용, 작동은 AI 파싱부에서 4x2로 구현
       }
     }
     case 'brutus': {

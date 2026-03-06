@@ -88,7 +88,6 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
       alpha={alpha} // 상태 기반 투명도 적용
       interactive={isTargeting && enemy.currentHp > 0} // 죽은 적은 타겟 불가능
       pointerdown={onPointerDown}
-      cursor={isTargeting && enemy.currentHp > 0 ? 'crosshair' : 'default'}
     >
       {/* 적 의도(Intent) */}
       {enemy.currentIntent && (

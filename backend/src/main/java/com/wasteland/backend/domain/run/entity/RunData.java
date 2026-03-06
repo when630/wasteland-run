@@ -28,14 +28,14 @@ public class RunData extends BaseTimeEntity {
     private int currentHp;
     // 최대 체력
     private int maxHp;
-    
+
     // 현재 진행 중인 맵 층수
     private int currentLayer;
-    
+
     // 소지 골드
     private int gold;
 
-    // JSON 형태 직렬화 문자열: [ { id, name, type ... } ] 
+    // JSON 형태 직렬화 문자열: [ { id, name, type ... } ]
     @Column(columnDefinition = "TEXT")
     private String deckJson;
 
@@ -55,10 +55,13 @@ public class RunData extends BaseTimeEntity {
     // [NEW] 런의 진행 중 여부 (클리어/사망 시 false)
     private boolean isActive;
 
-    public void updateRun(int currentHp, int maxHp, int currentLayer, int gold, 
-                          String deckJson, String relicsJson, 
-                          String runSeed, String currentScene, 
-                          String currentMapNode, boolean isActive) {
+    // [NEW] 런 동안 처치한 적 수
+    private int enemiesKilled;
+
+    public void updateRun(int currentHp, int maxHp, int currentLayer, int gold,
+            String deckJson, String relicsJson,
+            String runSeed, String currentScene,
+            String currentMapNode, boolean isActive, int enemiesKilled) {
         this.currentHp = currentHp;
         this.maxHp = maxHp;
         this.currentLayer = currentLayer;
@@ -69,5 +72,6 @@ public class RunData extends BaseTimeEntity {
         this.currentScene = currentScene;
         this.currentMapNode = currentMapNode;
         this.isActive = isActive;
+        this.enemiesKilled = enemiesKilled;
     }
 }

@@ -4,9 +4,11 @@ import { useBattleStore } from '../../store/useBattleStore';
 import { useDeckStore } from '../../store/useDeckStore';
 import { RELICS } from '../../assets/data/relics';
 import { useAudioStore } from '../../store/useAudioStore';
+import { SettingsModal } from './SettingsModal';
 
 export const HUD: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { playerHp, playerMaxHp, gold, setIsLeaderboardOpen } = useRunStore();
   const { enemies, applyDamageToEnemy } = useBattleStore();
   const { drawPile, hand, discardPile, exhaustPile, setViewingPile } = useDeckStore();
@@ -84,7 +86,28 @@ export const HUD: React.FC = () => {
           🏆
         </div>
 
-        {/* 🌟 메뉴 버튼 & 드롭다운 (톱니바퀴) */}
+        {/* 🌟 환경 설정 버튼 (새 톱니바퀴 모달) */}
+        <div
+          onClick={() => {
+            useAudioStore.getState().playClick();
+            setIsSettingsOpen(true);
+          }}
+          style={{
+            cursor: 'pointer',
+            userSelect: 'none',
+            fontSize: '24px',
+            marginRight: '15px',
+            textShadow: '2px 2px 2px black',
+            transition: 'transform 0.2s'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          title="환경 설정"
+        >
+          ⚙️
+        </div>
+
+        {/* 🌟 기존 메뉴 버튼 & 드롭다운 (디버그 아이콘으로 변경) */}
         <div style={{ position: 'relative', marginRight: '15px' }}>
           <div
             onClick={() => {
@@ -100,9 +123,9 @@ export const HUD: React.FC = () => {
             }}
             onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
             onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            title="설정 및 디버그 메뉴"
+            title="디버그 메뉴"
           >
-            ⚙️
+            🐛
           </div>
 
           {isMenuOpen && (
@@ -321,6 +344,9 @@ export const HUD: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* 🌟 환경 설정 모달 렌더링 */}
+      {isSettingsOpen && <SettingsModal onClose={() => setIsSettingsOpen(false)} showQuitButton={true} />}
     </>
   );
 };

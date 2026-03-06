@@ -7,6 +7,7 @@ import { DeckPiles } from '../components/ui/DeckPiles';
 import { CardRewardModal } from '../components/ui/CardRewardModal';
 import { RelicRewardModal } from '../components/ui/RelicRewardModal';
 import { CardViewerModal } from '../components/ui/CardViewerModal';
+import { GameOverModal } from '../components/ui/GameOverModal';
 import { useDeckStore } from '../store/useDeckStore';
 import { useBattleStore } from '../store/useBattleStore';
 import { createStartingDeck } from '../assets/data/cards';
@@ -16,7 +17,7 @@ import battleBg from '../assets/images/stage1_battle_backgroung.png';
 
 export const BattleView: React.FC = () => {
   const { initDeck, drawCards, masterDeck, setMasterDeck } = useDeckStore();
-  const { currentTurn, battleResult, startPlayerTurn, spawnEnemies, executeEnemyTurns, resetBattle, addAmmo } = useBattleStore();
+  const { currentTurn, battleResult, startPlayerTurn, spawnEnemies, executeEnemyTurns, resetBattle, addAmmo, targetingCardId, targetingPosition } = useBattleStore();
   const { setScene, addGold, currentScene, relics } = useRunStore();
 
   // 보상 획득 여부 로컬 플래그 분리
@@ -51,7 +52,9 @@ export const BattleView: React.FC = () => {
     if (currentScene === 'BOSS') {
       spawnEnemies([createEnemy('brutus')]);
     } else if (currentScene === 'ELITE') {
-      spawnEnemies([createEnemy('waste_slime')]);
+      // 엘리트 몹 2종 중 무작위 1종 스폰 (50%)
+      const eliteType = Math.random() < 0.5 ? 'mutant_behemoth' : 'rogue_sentry';
+      spawnEnemies([createEnemy(eliteType)]);
     } else {
       // 일반 전투 거나 기본 보장값 (랜덤화도 가능하나 지금은 고정값 유지)
       spawnEnemies([
@@ -89,6 +92,21 @@ export const BattleView: React.FC = () => {
     }
   }, [currentTurn, startPlayerTurn, drawCards, executeEnemyTurns]);
 
+  // 🌟 타겟팅 모드 전역 마우스 추적 및 곡선 연산용 상태
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (targetingCardId !== null && targetingPosition !== null) {
+      const handleMouseMove = (e: MouseEvent) => {
+        setMousePos({ x: e.clientX, y: e.clientY });
+      };
+
+      // 혹시 모를 초기 커서 위치 틀어짐을 방지하기 위해 등록 시점부터 즉시 추적 시작
+      window.addEventListener('mousemove', handleMouseMove);
+      return () => window.removeEventListener('mousemove', handleMouseMove);
+    }
+  }, [targetingCardId, targetingPosition]);
+
   // 보상 획득용 버튼 스타일 변수
   const rewardBtnStyle: React.CSSProperties = {
     padding: '12px 24px', fontSize: '18px', fontWeight: 'bold', width: '100%',
@@ -98,13 +116,16 @@ export const BattleView: React.FC = () => {
   };
 
   return (
-    <div style={{
-      position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden',
-      backgroundImage: `url(${battleBg})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'bottom'
-    }}>
-      {/* 
+    <div
+      className={targetingCardId ? 'targeting-mode' : ''}
+      style={{
+        position: 'relative',
+        width: '100vw', height: '100vh', overflow: 'hidden',
+        backgroundImage: `url(${battleBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'bottom'
+      }}>
+      {/*
         [하이브리드 렌더링 아키텍처]
         1. Pixi.js Canvas: 맨 밑에 깔려서 전투 연출(스프라이트, 파티클)을 담당합니다.
       */}
@@ -112,10 +133,43 @@ export const BattleView: React.FC = () => {
         <BattleStage />
       </div>
 
+      {/* 🌟 타겟팅 SVG 점선 오버레이 (Pixi 캔버스와 React UI 사이쯤 혹은 UI와 동급으로 렌더링) */}
+      {targetingCardId && targetingPosition && (
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0, left: 0,
+            width: '100%', height: '100%',
+            pointerEvents: 'none',
+            zIndex: 15, // 카드나 몹보단 아래일 수 있으나 명확하게 보이도록 충분히 높힘
+            filter: 'drop-shadow(0 0 10px rgba(255, 170, 0, 0.8))' // 네온 광원 효과
+          }}
+        >
+          {/* C자형 둥근 곡선 (Quadratic Bezier) */}
+          <path
+            d={`M ${targetingPosition.x} ${targetingPosition.y} 
+                Q ${targetingPosition.x + (mousePos.x - targetingPosition.x) * 0.5 + 100} ${targetingPosition.y - 150},
+                ${mousePos.x} ${mousePos.y}`}
+            fill="none"
+            stroke="#ffaa00"
+            strokeWidth="4"
+            strokeDasharray="16 16"
+          >
+            {/* 흘러가는 점선 애니메이션 */}
+            <animate
+              attributeName="stroke-dashoffset"
+              values="128;0"
+              dur="2s"
+              repeatCount="indefinite"
+            />
+          </path>
+        </svg>
+      )}
+
       {/* 
         2. React UI: Canvas 위를 덮는 투명한 DOM 레이어로 메뉴, 카드, 상태를 담당합니다.
       */}
-      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 10 }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 20 }}>
         {/* pointerEvents: 'none'을 통해 클릭이 기본적으로 아래 Canvas로 투과되게 하고, 
             각종 UI 요소들에만 pointerEvents: 'auto'를 줍니다. */}
         <div style={{ pointerEvents: 'auto' }}>
@@ -126,8 +180,8 @@ export const BattleView: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. 전투 결과 팝업 오버레이 (승리/패배 보상창) */}
-      {battleResult !== 'NONE' && !showBossClear && (
+      {/* 4. 전투 결과 팝업 오버레이 (승리 보상창) */}
+      {battleResult === 'VICTORY' && !showBossClear && (
         <div style={{
           position: 'fixed',
           top: 0, left: 0, width: '100vw', height: '100vh',
@@ -139,91 +193,76 @@ export const BattleView: React.FC = () => {
         }}>
           <h1 style={{
             fontSize: '48px',
-            color: battleResult === 'VICTORY' ? '#44ff44' : '#ff4444',
+            color: '#44ff44',
             marginBottom: '10px'
           }}>
-            {battleResult === 'VICTORY' ? '전투 승리!' : '사망 (Game Over)'}
+            전투 승리!
           </h1>
           <p style={{ fontSize: '18px', color: '#ccc', marginBottom: '30px' }}>
-            {battleResult === 'VICTORY'
-              ? '수고하셨습니다. 보상을 챙기거나 스킵하고 넘어갈 수 있습니다.'
-              : '황무지의 이슬로 사라졌습니다...'}
+            수고하셨습니다. 보상을 챙기거나 스킵하고 넘어갈 수 있습니다.
           </p>
 
           {/* 보상(전리품) 선택 영역 */}
-          {battleResult === 'VICTORY' && (
-            <div style={{
-              margin: '0 0 30px 0', padding: '20px', width: '360px',
-              backgroundColor: '#2a1f1a', borderRadius: '12px', border: '2px solid #aa7700',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px'
-            }}>
-              <h3 style={{ margin: '0 0 5px 0', color: '#ffd700', fontSize: '24px' }}>🎁 전리품 발견</h3>
+          <div style={{
+            margin: '0 0 30px 0', padding: '20px', width: '360px',
+            backgroundColor: '#2a1f1a', borderRadius: '12px', border: '2px solid #aa7700',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px'
+          }}>
+            <h3 style={{ margin: '0 0 5px 0', color: '#ffd700', fontSize: '24px' }}>🎁 전리품 발견</h3>
 
-              {!goldClaimed && (
-                <button
-                  onClick={() => {
-                    const goldAmount = currentScene === 'BOSS' ? 100 : currentScene === 'ELITE' ? 50 : 20;
-                    addGold(goldAmount);
-                    setGoldClaimed(true);
-                  }}
-                  style={rewardBtnStyle}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#5a4a20'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4a3a10'}
-                >
-                  💰 {currentScene === 'BOSS' ? 100 : currentScene === 'ELITE' ? 50 : 20} 골드 획득
-                </button>
-              )}
+            {!goldClaimed && (
+              <button
+                onClick={() => {
+                  const goldAmount = currentScene === 'BOSS' ? 100 : currentScene === 'ELITE' ? 50 : 20;
+                  addGold(goldAmount);
+                  setGoldClaimed(true);
+                }}
+                style={rewardBtnStyle}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#5a4a20'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4a3a10'}
+              >
+                💰 {currentScene === 'BOSS' ? 100 : currentScene === 'ELITE' ? 50 : 20} 골드 획득
+              </button>
+            )}
 
-              {!cardClaimed && (
-                <button
-                  onClick={() => {
-                    setIsCardModalOpen(true);
-                  }}
-                  style={{ ...rewardBtnStyle, color: '#fff', borderColor: '#4a70b0', backgroundColor: '#2a3a50' }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3a4a60'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2a3a50'}
-                >
-                  🃏 새 카드 1장 선택 (3택 1)
-                </button>
-              )}
+            {!cardClaimed && (
+              <button
+                onClick={() => {
+                  setIsCardModalOpen(true);
+                }}
+                style={{ ...rewardBtnStyle, color: '#fff', borderColor: '#4a70b0', backgroundColor: '#2a3a50' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3a4a60'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2a3a50'}
+              >
+                🃏 새 카드 1장 선택 (3택 1)
+              </button>
+            )}
 
-              {(currentScene === 'ELITE' || currentScene === 'BOSS') && !relicClaimed && (
-                <button
-                  onClick={() => setIsRelicModalOpen(true)}
-                  style={{ ...rewardBtnStyle, color: '#ffaaaa', borderColor: '#b04a4a', backgroundColor: '#502a2a' }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#603a3a'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#502a2a'}
-                >
-                  📦 {currentScene === 'BOSS' ? '보스 유물' : '일반 유물'} 획득
-                </button>
-              )}
+            {(currentScene === 'ELITE' || currentScene === 'BOSS') && !relicClaimed && (
+              <button
+                onClick={() => setIsRelicModalOpen(true)}
+                style={{ ...rewardBtnStyle, color: '#ffaaaa', borderColor: '#b04a4a', backgroundColor: '#502a2a' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#603a3a'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#502a2a'}
+              >
+                📦 {currentScene === 'BOSS' ? '보스 유물' : '일반 유물'} 획득
+              </button>
+            )}
 
-              {goldClaimed && cardClaimed && (!(currentScene === 'ELITE' || currentScene === 'BOSS') || relicClaimed) && (
-                <span style={{ color: '#88ff88', marginTop: '10px' }}>✓ 모든 보상을 남김없이 획득했습니다.</span>
-              )}
-            </div>
-          )}
+            {goldClaimed && cardClaimed && (!(currentScene === 'ELITE' || currentScene === 'BOSS') || relicClaimed) && (
+              <span style={{ color: '#88ff88', marginTop: '10px' }}>✓ 모든 보상을 남김없이 획득했습니다.</span>
+            )}
+          </div>
 
           <button
             onClick={async () => {
-              if (battleResult === 'VICTORY') {
-                if (currentScene === 'BOSS') {
-                  // 보스전이면 맵 이동 대신 클리어 오버레이를 켬
-                  setShowBossClear(true);
-                  // 명예의 전당 보존 직후, 해당 런은 클리어된 런으로 종결
-                  useRunStore.getState().setIsActive(false);
-                  await useRunStore.getState().saveRunData();
-                } else {
-                  setScene('MAP');
-                  // 맵 이동 직전까지 진행한 덱과 유물, 골드, 체력 상태 저장 자동 갱신
-                  await useRunStore.getState().saveRunData();
-                }
-              }
-              else {
-                // 게임 오버(DEFEAT) 시 세이브 슬롯 폭파 (isActive = false 전환)
-                useRunStore.getState().setIsActive(false);
+              if (currentScene === 'BOSS') {
+                // 보스전이면 맵 이동 대신 클리어 오버레이를 켬
+                setShowBossClear(true);
+              } else {
+                setScene('MAP');
+                // 맵 이동 직전까지 진행한 덱과 유물, 골드, 체력 상태 저장 자동 갱신
                 await useRunStore.getState().saveRunData();
-                window.location.reload();
               }
             }}
             style={{
@@ -235,42 +274,16 @@ export const BattleView: React.FC = () => {
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#555'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#444'}
           >
-            {battleResult === 'VICTORY' ? (currentScene === 'BOSS' ? '엔딩 보기' : '계속하기 (보상 획득 완료 및 이동)') : '다시 시작'}
+            {currentScene === 'BOSS' ? '엔딩 보기' : '계속하기 (보상 획득 완료 및 이동)'}
           </button>
         </div>
       )}
 
-      {/* 🌟 1챕터 보스 처치 영광의 결과창 (Game Clear) */}
-      {showBossClear && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-          backgroundColor: 'rgba(0,0,0,0.95)', zIndex: 300,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          animation: 'fadeIn 2s ease-in-out'
-        }}>
-          <h1 style={{ fontSize: '64px', color: '#fbbf24', textShadow: '0 0 20px #fbbf24', marginBottom: '20px' }}>
-            🎉 1챕터 클리어!
-          </h1>
-          <p style={{ fontSize: '24px', color: '#d1d5db', textAlign: 'center', lineHeight: '1.6', maxWidth: '600px', marginBottom: '50px' }}>
-            거대한 고철 기갑수 브루터스가 굉음과 함께 쓰러졌습니다.<br />
-            당신은 매캐한 연기를 뚫고 황무지의 다음 구역으로 발걸음을 옮깁니다.
-          </p>
-          <div style={{ display: 'flex', gap: '20px' }}>
-            <button
-              onClick={() => window.location.reload()} // 임시: 나중에 챕터 2로 연결되거나 통계창 노출
-              style={{
-                padding: '20px 60px', fontSize: '24px', fontWeight: 'bold',
-                backgroundColor: '#b45309', color: '#fff', border: 'none',
-                borderRadius: '12px', cursor: 'pointer', boxShadow: '0 0 15px rgba(180,83,9,0.5)'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              처음부터 다시하기
-            </button>
-          </div>
-        </div>
-      )}
+      {/* 🌟 사망 시 GameOver 모달 */}
+      {battleResult === 'DEFEAT' && <GameOverModal result="DEFEAT" />}
+
+      {/* 🌟 1챕터 보스 처치 영광의 결과창 (Game Clear 모달 연결) */}
+      {showBossClear && <GameOverModal result="VICTORY" />}
 
       {/* 카드 3택 1 보상 모달 렌더링 */}
       {isCardModalOpen && (

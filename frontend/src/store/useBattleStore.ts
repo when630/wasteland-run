@@ -25,8 +25,9 @@ interface BattleState {
   playerStatus: PlayerBattleStatus;
   enemies: Enemy[];
   targetingCardId: string | null;
+  targetingPosition: { x: number, y: number } | null; // 🌟 카드를 클릭했을 때 타겟팅 화살표의 시작점
   hasPlayedUtilityThisTurn: boolean; // 🌟 아크 심장 유물 용: 이번 턴에 변화 카드를 사용했는지 추적
-  playerVisualEffect?: { type: 'DAMAGE' | 'HEAL', tick: number }; // 🌟 플레이어 피격 연출용 상태
+  playerHitQueue: number; // 🌟 다단 히트 연출용 남은 애니메이션 횟수 큐
 
   // Actions
   startPlayerTurn: () => void;
@@ -43,7 +44,9 @@ interface BattleState {
   applyStatusToEnemy: (enemyId: string, status: string, amount: number) => void;
   executeEnemyTurns: () => void; // 적 AI 행동 실행 트리거
   setTargetingCard: (cardId: string | null) => void;
+  setTargetingPosition: (pos: { x: number, y: number } | null) => void; // 🌟 위치 셋업용
   setPlayedUtilityThisTurn: (value: boolean) => void; // 🌟 아크 심장 용 상태 업데이트
+  consumePlayerHitQueue: () => void; // 🌟 큐 1회 소모
 }
 
 export const useBattleStore = create<BattleState>((set, get) => ({
@@ -55,7 +58,9 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   playerStatus: { shield: 0, resist: 0 },
   enemies: [],
   targetingCardId: null,
+  targetingPosition: null,
   hasPlayedUtilityThisTurn: false,
+  playerHitQueue: 0,
 
   resetBattle: () => {
     const relics = useRunStore.getState().relics;
@@ -70,7 +75,9 @@ export const useBattleStore = create<BattleState>((set, get) => ({
       playerActionPoints: startingAp,
       playerStatus: { shield: 0, resist: 0 },
       targetingCardId: null,
-      hasPlayedUtilityThisTurn: false
+      targetingPosition: null,
+      hasPlayedUtilityThisTurn: false,
+      playerHitQueue: 0
     });
   },
 
@@ -93,8 +100,9 @@ export const useBattleStore = create<BattleState>((set, get) => ({
         turnCount: state.turnCount + 1,
         playerStatus: { shield: 0, resist: 0 },
         targetingCardId: null,
+        targetingPosition: null,
         hasPlayedUtilityThisTurn: false, // 🌟 매 턴 시작 시 초기화
-        playerVisualEffect: undefined
+        playerHitQueue: 0
       };
     });
   },
@@ -115,8 +123,12 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   })),
 
   spawnEnemies: (enemyArray: Enemy[]) => set({ enemies: enemyArray }),
-  setTargetingCard: (cardId: string | null) => set({ targetingCardId: cardId }),
+  setTargetingCard: (cardId: string | null) => set({ targetingCardId: cardId, targetingPosition: cardId === null ? null : get().targetingPosition }),
+  setTargetingPosition: (pos: { x: number, y: number } | null) => set({ targetingPosition: pos }),
   setPlayedUtilityThisTurn: (value: boolean) => set({ hasPlayedUtilityThisTurn: value }),
+  consumePlayerHitQueue: () => set((state) => ({
+    playerHitQueue: Math.max(0, state.playerHitQueue - 1)
+  })),
 
   /* --- 전투 액션 함수 --- */
 
@@ -201,10 +213,12 @@ export const useBattleStore = create<BattleState>((set, get) => ({
         };
       });
 
-      // 2. Victory 판정: 남은 적들의 hp가 전부 0인가?
       const isVictory = newEnemies.every(e => e.currentHp <= 0);
 
       if (isVictory) {
+        // 전투에서 승리 시 현재 노드의 적 수만큼 처치 카운트 증가
+        useRunStore.getState().addEnemiesKilled(newEnemies.length);
+
         // 보스 클리어 여부 확인 (id나 baseId에 boss 포함 여부 등)
         const isBossDefeated = newEnemies.some(e => e.baseId.includes('boss'));
 
@@ -248,7 +262,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
     set((state) => {
       let currentShield = state.playerStatus.shield;
       let currentResist = state.playerStatus.resist;
-      let playerHitTick: number | undefined = undefined;
+      let hitInc = 0; // 이번 턴에 누적된 총 피격 횟수
 
       const newEnemies = state.enemies.map((enemy) => {
         if (enemy.currentHp <= 0) return enemy; // 이미 죽은 적은 스킵
@@ -277,13 +291,16 @@ export const useBattleStore = create<BattleState>((set, get) => ({
 
             const isSpecial = enemyObj.currentIntent.damageType === 'SPECIAL';
 
-            // 🌟 브루터스 다단 히트 처리 ('광란의 후려치기 (5x3)' 등)
+            // 🌟 특수 및 다단 히트 기믹 처리
             let rawDamage = enemyObj.currentIntent.amount;
             let hitCount = 1;
 
             if (enemyObj.currentIntent.description.includes('5x3')) {
               rawDamage = 5;
               hitCount = 3;
+            } else if (enemyObj.currentIntent.description.includes('4x2')) {
+              rawDamage = 4;
+              hitCount = 2;
             }
 
             // 🌟 WEAK(약화) 처리 (데미지 25% 감소)
@@ -320,12 +337,16 @@ export const useBattleStore = create<BattleState>((set, get) => ({
               }
 
               totalDamageToPlayer += damageToPlayer;
+
+              // 각 타격마다 데미지가 1이라도 들어왔다면 피격 횟수(큐) 증가
+              if (damageToPlayer > 0) {
+                hitInc += 1;
+              }
             }
 
             // 남은 데미지가 있다면 런 스토어의 전역 체력 차감
             if (totalDamageToPlayer > 0) {
               useRunStore.getState().damagePlayer(totalDamageToPlayer);
-              playerHitTick = Date.now(); // 피격 이펙트 플래그 설정
               console.log(`[피격] 플레이어가 총 ${totalDamageToPlayer} 상흔을 입었습니다.`);
 
               // 🌟 보스 패턴 기믹: 오염된 소이탄에 피격당해 데미지가 1이라도 들어왔다면 화상 카드 강제 삽입
@@ -370,7 +391,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
         enemies: newEnemies,
         playerStatus: { ...state.playerStatus, shield: currentShield, resist: currentResist },
         battleResult: isDefeat ? 'DEFEAT' : 'NONE', // 임시: NONE 외 기존 유지 필요 시 분기 고려
-        playerVisualEffect: playerHitTick ? { type: 'DAMAGE', tick: playerHitTick } : state.playerVisualEffect
+        playerHitQueue: state.playerHitQueue + hitInc
       };
     });
   }

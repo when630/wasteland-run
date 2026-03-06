@@ -14,44 +14,44 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RunService {
 
-    private final RunRepository runRepository;
-    private final UserRepository userRepository;
+        private final RunRepository runRepository;
+        private final UserRepository userRepository;
 
-    @Transactional
-    public RunResponseDto saveOrUpdateRun(String username, RunSaveRequestDto requestDto) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        @Transactional
+        public RunResponseDto saveOrUpdateRun(String username, RunSaveRequestDto requestDto) {
+                User user = userRepository.findByUsername(username)
+                                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        RunData runData = runRepository.findByUser(user)
-                .orElseGet(() -> RunData.builder()
-                        .user(user)
-                        .build());
+                RunData runData = runRepository.findByUser(user)
+                                .orElseGet(() -> RunData.builder()
+                                                .user(user)
+                                                .build());
 
-        runData.updateRun(
-                requestDto.getCurrentHp(),
-                requestDto.getMaxHp(),
-                requestDto.getCurrentLayer(),
-                requestDto.getGold(),
-                requestDto.getDeckJson(),
-                requestDto.getRelicsJson(),
-                requestDto.getRunSeed(),
-                requestDto.getCurrentScene(),
-                requestDto.getCurrentMapNode(),
-                requestDto.isActive()
-        );
+                runData.updateRun(
+                                requestDto.getCurrentHp(),
+                                requestDto.getMaxHp(),
+                                requestDto.getCurrentLayer(),
+                                requestDto.getGold(),
+                                requestDto.getDeckJson(),
+                                requestDto.getRelicsJson(),
+                                requestDto.getRunSeed(),
+                                requestDto.getCurrentScene(),
+                                requestDto.getCurrentMapNode(),
+                                requestDto.isActive(),
+                                requestDto.getEnemiesKilled());
 
-        RunData saved = runRepository.save(runData);
-        return RunResponseDto.of(saved);
-    }
+                RunData saved = runRepository.save(runData);
+                return RunResponseDto.of(saved);
+        }
 
-    @Transactional(readOnly = true)
-    public RunResponseDto getRun(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        @Transactional(readOnly = true)
+        public RunResponseDto getRun(String username) {
+                User user = userRepository.findByUsername(username)
+                                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        RunData runData = runRepository.findByUser(user)
-                .orElseThrow(() -> new IllegalArgumentException("저장된 런 데이터가 없습니다."));
+                RunData runData = runRepository.findByUser(user)
+                                .orElseThrow(() -> new IllegalArgumentException("저장된 런 데이터가 없습니다."));
 
-        return RunResponseDto.of(runData);
-    }
+                return RunResponseDto.of(runData);
+        }
 }

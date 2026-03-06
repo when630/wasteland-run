@@ -26,8 +26,13 @@ export const Hand: React.FC = () => {
       {hand.map((card, index) => {
         const isSelected = targetingCardId === card.id;
         const isHovered = hoveredCardId === card.id;
-        const needsEnemyTarget = card.effects.some((e) => e.type === 'DAMAGE' || e.type === 'DEBUFF');
-        const targetLabel = needsEnemyTarget ? '🎯 적' : '👤 나';
+        // 타겟팅 라벨 업데이트 (단일 공격/디버프만 적 타겟 요구)
+        const needsEnemyTarget = card.effects.some((e) =>
+          (e.type === 'DAMAGE' || e.type === 'DEBUFF') &&
+          e.target !== 'ALL_ENEMIES' &&
+          e.target !== 'PLAYER'
+        );
+        const targetLabel = needsEnemyTarget ? '🎯 단일 적' : '👤 전체/나';
 
         // 🌟 아치형 부채꼴 배치를 위한 수식
         const totalCards = hand.length;
@@ -47,7 +52,17 @@ export const Hand: React.FC = () => {
         return (
           <div
             key={card.id}
-            onClick={() => playCard(card.id)}
+            onClick={(e) => {
+              // DOM 요소를 통한 중심 상단 좌표 계산
+              const rect = e.currentTarget.getBoundingClientRect();
+              const startX = rect.left + rect.width / 2;
+              const startY = rect.top; // 카드 윗부분 시작점
+
+              // 기존 playCard 실행 전 위치 세팅 (추후 useCardPlay 내부나 스토어 감지에 의해 취소 처리 될 수 있음)
+              useBattleStore.getState().setTargetingPosition({ x: startX, y: startY });
+
+              playCard(card.id);
+            }}
             style={{
               position: 'relative',
               width: '130px',

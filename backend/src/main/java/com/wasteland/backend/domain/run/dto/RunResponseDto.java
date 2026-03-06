@@ -18,6 +18,7 @@ public class RunResponseDto {
     private String currentScene;
     private String currentMapNode;
     private boolean isActive;
+    private int enemiesKilled;
 
     public static RunResponseDto of(RunData runData) {
         return new RunResponseDto(
@@ -31,7 +32,7 @@ public class RunResponseDto {
                 runData.getRunSeed(),
                 runData.getCurrentScene(),
                 runData.getCurrentMapNode(),
-                runData.isActive()
-        );
+                runData.isActive(),
+                runData.getEnemiesKilled());
     }
 }

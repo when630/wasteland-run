@@ -4,10 +4,14 @@ import { useDeckStore } from '../store/useDeckStore';
 import { useMapStore } from '../store/useMapStore';
 import { createStartingDeck } from '../assets/data/cards';
 import { useAudioStore } from '../store/useAudioStore';
+import { CompendiumModal } from '../components/ui/CompendiumModal';
+import { SettingsModal } from '../components/ui/SettingsModal';
 
 export const MainMenuView: React.FC = () => {
   const { isActive, setScene } = useRunStore();
   const [isHovered, setIsHovered] = useState<string | null>(null);
+  const [isCompendiumOpen, setIsCompendiumOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const buttonStyle = (id: string, disabled: boolean = false) => ({
     padding: '15px 40px',
@@ -127,7 +131,10 @@ export const MainMenuView: React.FC = () => {
           style={buttonStyle('compendium')}
           onMouseEnter={() => setIsHovered('compendium')}
           onMouseLeave={() => setIsHovered(null)}
-          onClick={() => handleNotImplemented('도감')}
+          onClick={() => {
+            useAudioStore.getState().playClick();
+            setIsCompendiumOpen(true);
+          }}
         >
           ▶ 도감
         </button>
@@ -145,13 +152,18 @@ export const MainMenuView: React.FC = () => {
           style={buttonStyle('settings')}
           onMouseEnter={() => setIsHovered('settings')}
           onMouseLeave={() => setIsHovered(null)}
-          onClick={() => handleNotImplemented('설정')}
+          onClick={() => {
+            useAudioStore.getState().playClick();
+            setIsSettingsOpen(true);
+          }}
         >
           ▶ 설정
         </button>
 
       </div>
 
+      {isCompendiumOpen && <CompendiumModal onClose={() => setIsCompendiumOpen(false)} />}
+      {isSettingsOpen && <SettingsModal onClose={() => setIsSettingsOpen(false)} showQuitButton={false} />}
     </div>
   );
 };
