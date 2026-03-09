@@ -17,7 +17,7 @@ import battleBg from '../assets/images/stage1_battle_backgroung.png';
 
 export const BattleView: React.FC = () => {
   const { initDeck, drawCards, masterDeck, setMasterDeck } = useDeckStore();
-  const { currentTurn, battleResult, startPlayerTurn, spawnEnemies, executeOneEnemyTurn, setActiveEnemyIndex, resetBattle, addAmmo, targetingCardId, targetingPosition, enemies } = useBattleStore();
+  const { currentTurn, battleResult, startPlayerTurn, spawnEnemies, executeOneEnemyTurn, setActiveEnemyIndex, resetBattle, addAmmo, targetingCardId, targetingPosition } = useBattleStore();
   const { setScene, addGold, currentScene, relics } = useRunStore();
 
   // 보상 획득 여부 로컬 플래그 분리

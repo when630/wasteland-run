@@ -6,6 +6,7 @@ export interface Intent {
   amount?: number;     // 예상 데미지 혹은 방어도 수치
   damageType?: DamageType; // 공격일 때 물리인지 특수인지 구분
   description: string; // "물리 공격 10", "방어도 5 증가" 등 UI용 텍스트
+  applyDebuff?: { status: string; amount: number }; // 피격 시 플레이어에게 부여할 디버프
 }
 
 export interface Enemy {
@@ -18,5 +19,5 @@ export interface Enemy {
   resist: number;      // 특수 방어도 (특수 공격 피격 시 우선 깎임)
   currentIntent: Intent | null; // 현재 턴에 하려는 행동
   statuses?: Record<string, number>; // 상태이상 (VULNERABLE, WEAK, BURN, POISON 등)
-  visualEffect?: { type: 'DAMAGE' | 'BUFF' | 'BURN_TICK' | 'POISON_TICK' | 'BURN_POISON_TICK'; tick: number };
+  visualEffect?: { type: 'DAMAGE' | 'BUFF' | 'BURN_TICK' | 'POISON_TICK' | 'BURN_POISON_TICK' | 'ATTACKING'; tick: number };
 }

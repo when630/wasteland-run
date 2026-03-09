@@ -73,7 +73,7 @@ export const determineNextIntent = (baseId: string): Intent => {
       } else if (rand < 0.7) {
         return { type: 'BUFF', amount: 15, description: '🛡️ 재생의 외침 (방어도 15)' };
       } else {
-        return { type: 'ATTACK', amount: 12, damageType: 'PHYSICAL', description: '⚔️ 묵직한 내려찍기 12 (취약)' };
+        return { type: 'ATTACK', amount: 12, damageType: 'PHYSICAL', description: '⚔️ 묵직한 내려찍기 12 (취약)', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
       }
     }
     case 'rogue_sentry': {

@@ -21,6 +21,7 @@ interface DeckState {
   drawCards: (count: number) => void;
   playCardFromHand: (cardId: string) => void;
   discardHand: () => void;
+  discardHandWithRetain: (retainCount: number) => void;
   setViewingPile: (pile: PileType) => void;
   addCardToDiscardPile: (cardBlueprint: Omit<Card, 'id'>) => void; // 🌟 몹의 패턴 등에 의해 강제로 카드를 욱여넣을 때 사용
 }
@@ -268,12 +269,25 @@ export const useDeckStore = create<DeckState>((set) => ({
     });
   },
 
-  // 턴 종류 시 손에 쥔 모든 카드를 버린뭉치로 보내기 
+  // 턴 종료 시 손에 쥔 모든 카드를 버린뭉치로 보내기
   discardHand: () => {
     set((state) => ({
       hand: [],
       discardPile: [...state.discardPile, ...state.hand],
     }));
+  },
+
+  // 턴 종료 시 N장을 보존(Retain)하고 나머지만 버린뭉치로 보냄
+  discardHandWithRetain: (retainCount: number) => {
+    set((state) => {
+      if (retainCount <= 0 || state.hand.length === 0) {
+        return { hand: [], discardPile: [...state.discardPile, ...state.hand] };
+      }
+      const actualRetain = Math.min(retainCount, state.hand.length);
+      const retained = state.hand.slice(0, actualRetain);
+      const discarded = state.hand.slice(actualRetain);
+      return { hand: retained, discardPile: [...state.discardPile, ...discarded] };
+    });
   },
 
   // 특정 형태의 덱 뷰어 띄우기 (또는 NONE으로 닫기)

@@ -9,7 +9,12 @@ export const ResourcePanel: React.FC = () => {
 
   const handleTurnEnd = () => {
     useAudioStore.getState().playClick();
-    discardHand();
+    const retainCount = useBattleStore.getState().playerStatus.retainCardCount;
+    if (retainCount > 0) {
+      useDeckStore.getState().discardHandWithRetain(retainCount);
+    } else {
+      discardHand();
+    }
     endPlayerTurn();
   };
 
