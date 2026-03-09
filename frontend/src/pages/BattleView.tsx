@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { BattleStage } from '../components/pixi/BattleStage';
 import { HUD } from '../components/ui/HUD';
 import { Hand } from '../components/ui/Hand';
@@ -17,7 +17,7 @@ import battleBg from '../assets/images/stage1_battle_backgroung.png';
 
 export const BattleView: React.FC = () => {
   const { initDeck, drawCards, masterDeck, setMasterDeck } = useDeckStore();
-  const { currentTurn, battleResult, startPlayerTurn, spawnEnemies, executeEnemyTurns, resetBattle, addAmmo, targetingCardId, targetingPosition } = useBattleStore();
+  const { currentTurn, battleResult, startPlayerTurn, spawnEnemies, executeOneEnemyTurn, setActiveEnemyIndex, resetBattle, addAmmo, targetingCardId, targetingPosition, enemies } = useBattleStore();
   const { setScene, addGold, currentScene, relics } = useRunStore();
 
   // 보상 획득 여부 로컬 플래그 분리
@@ -71,26 +71,66 @@ export const BattleView: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // 적 턴 순차 실행용 ref (cleanup 가능하도록)
+  const enemyTurnTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // 적 턴 순차 처리: 각 적이 차례로 행동
+  const processEnemyTurnsSequentially = useCallback(() => {
+    // cleanup 이전 타이머
+    enemyTurnTimersRef.current.forEach(clearTimeout);
+    enemyTurnTimersRef.current = [];
+
+    const currentEnemies = useBattleStore.getState().enemies;
+    const aliveIndices = currentEnemies
+      .map((e, i) => (e.currentHp > 0 ? i : -1))
+      .filter(i => i >= 0);
+
+    if (aliveIndices.length === 0) {
+      startPlayerTurn();
+      drawCards(5);
+      return;
+    }
+
+    const ENEMY_ACTION_DELAY = 800; // 각 적 행동 간 딜레이 (ms)
+
+    aliveIndices.forEach((enemyIdx, seqIdx) => {
+      // 1. 활성 적 표시 (공격 전진 연출 시작)
+      const highlightTimer = setTimeout(() => {
+        setActiveEnemyIndex(enemyIdx);
+      }, seqIdx * ENEMY_ACTION_DELAY);
+      enemyTurnTimersRef.current.push(highlightTimer);
+
+      // 2. 실제 행동 실행 (표시 후 300ms 뒤)
+      const actionTimer = setTimeout(() => {
+        executeOneEnemyTurn(enemyIdx);
+      }, seqIdx * ENEMY_ACTION_DELAY + 300);
+      enemyTurnTimersRef.current.push(actionTimer);
+    });
+
+    // 3. 모든 적 행동 완료 후 플레이어 턴 복귀
+    const totalTime = aliveIndices.length * ENEMY_ACTION_DELAY + 500;
+    const turnEndTimer = setTimeout(() => {
+      setActiveEnemyIndex(null);
+      startPlayerTurn();
+      drawCards(5);
+    }, totalTime);
+    enemyTurnTimersRef.current.push(turnEndTimer);
+  }, [startPlayerTurn, drawCards, executeOneEnemyTurn, setActiveEnemyIndex]);
+
   // 턴 전환 감지 및 적 턴 행동(AI) 처리
   useEffect(() => {
     if (currentTurn === 'ENEMY') {
-      // 1. 적군 행동(Intent) 연산 실행
-      const actionTimer = setTimeout(() => {
-        executeEnemyTurns();
-      }, 500);
-
-      // 2. 적군 행동이 끝나면 플레이어 턴으로 복귀 및 새 카드 드로우 (1.5초 뒤)
-      const turnTimer = setTimeout(() => {
-        startPlayerTurn();
-        drawCards(5);
-      }, 1500);
+      const startTimer = setTimeout(() => {
+        processEnemyTurnsSequentially();
+      }, 300);
 
       return () => {
-        clearTimeout(actionTimer);
-        clearTimeout(turnTimer);
+        clearTimeout(startTimer);
+        enemyTurnTimersRef.current.forEach(clearTimeout);
+        enemyTurnTimersRef.current = [];
       };
     }
-  }, [currentTurn, startPlayerTurn, drawCards, executeEnemyTurns]);
+  }, [currentTurn, processEnemyTurnsSequentially]);
 
   // 🌟 타겟팅 모드 전역 마우스 추적 및 곡선 연산용 상태
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });

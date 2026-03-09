@@ -12,7 +12,7 @@ import playerImg from '../../assets/images/player.png';
 export const BattleStage: React.FC = () => {
   // 스토어에서 런 상태 및 전투 상태 가져오기
   const { playerHp, playerMaxHp } = useRunStore();
-  const { currentTurn, enemies, playerStatus, targetingCardId, playerHitQueue, consumePlayerHitQueue } = useBattleStore();
+  const { currentTurn, enemies, playerStatus, targetingCardId, playerHitQueue, consumePlayerHitQueue, activeEnemyIndex } = useBattleStore();
   const { hand } = useDeckStore();
   const { playCard } = useCardPlay();
 
@@ -283,6 +283,7 @@ export const BattleStage: React.FC = () => {
               hpTextStyle={enemyHpTextStyle}
               intentTextStyle={intentTextStyle}
               texture={placeholderTexture}
+              isActive={activeEnemyIndex === index}
             />
           );
         })}

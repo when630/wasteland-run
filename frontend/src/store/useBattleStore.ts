@@ -28,6 +28,7 @@ interface BattleState {
   targetingPosition: { x: number, y: number } | null; // 🌟 카드를 클릭했을 때 타겟팅 화살표의 시작점
   hasPlayedUtilityThisTurn: boolean; // 🌟 아크 심장 유물 용: 이번 턴에 변화 카드를 사용했는지 추적
   playerHitQueue: Array<{ type: 'DAMAGE' | 'BURN' | 'POISON' }>; // 🌟 다단 히트 연출용 타입별 큐
+  activeEnemyIndex: number | null; // 현재 행동 중인 적 인덱스 (순차 공격 연출용)
 
   // Actions
   startPlayerTurn: () => void;
@@ -42,7 +43,9 @@ interface BattleState {
   addPlayerResist: (amount: number) => void;
   applyDamageToEnemy: (enemyId: string, amount: number, type: DamageType) => void;
   applyStatusToEnemy: (enemyId: string, status: string, amount: number) => void;
-  executeEnemyTurns: () => void; // 적 AI 행동 실행 트리거
+  executeEnemyTurns: () => void; // 적 AI 행동 일괄 실행 (레거시)
+  executeOneEnemyTurn: (enemyIndex: number) => void; // 적 1체 행동 실행 (순차 연출용)
+  setActiveEnemyIndex: (index: number | null) => void;
   setTargetingCard: (cardId: string | null) => void;
   setTargetingPosition: (pos: { x: number, y: number } | null) => void; // 🌟 위치 셋업용
   setPlayedUtilityThisTurn: (value: boolean) => void; // 🌟 아크 심장 용 상태 업데이트
@@ -61,6 +64,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   targetingPosition: null,
   hasPlayedUtilityThisTurn: false,
   playerHitQueue: [],
+  activeEnemyIndex: null,
 
   resetBattle: () => {
     const relics = useRunStore.getState().relics;
@@ -77,7 +81,8 @@ export const useBattleStore = create<BattleState>((set, get) => ({
       targetingCardId: null,
       targetingPosition: null,
       hasPlayedUtilityThisTurn: false,
-      playerHitQueue: []
+      playerHitQueue: [],
+      activeEnemyIndex: null
     });
   },
 
@@ -102,7 +107,8 @@ export const useBattleStore = create<BattleState>((set, get) => ({
         targetingCardId: null,
         targetingPosition: null,
         hasPlayedUtilityThisTurn: false, // 🌟 매 턴 시작 시 초기화
-        playerHitQueue: []
+        playerHitQueue: [],
+        activeEnemyIndex: null
       };
     });
   },
@@ -263,7 +269,162 @@ export const useBattleStore = create<BattleState>((set, get) => ({
     });
   },
 
-  // 적 행동(Intent) 일괄 실행 및 다음 행동 세팅
+  setActiveEnemyIndex: (index: number | null) => set({ activeEnemyIndex: index }),
+
+  // 적 1체 행동 실행 (순차 연출용)
+  executeOneEnemyTurn: (enemyIndex: number) => {
+    set((state) => {
+      let currentShield = state.playerStatus.shield;
+      let currentResist = state.playerStatus.resist;
+      const hitQueue: Array<{ type: 'DAMAGE' | 'BURN' | 'POISON' }> = [];
+
+      const enemy = state.enemies[enemyIndex];
+      if (!enemy || enemy.currentHp <= 0) return {}; // 이미 죽은 적은 스킵
+
+      let currentHp = enemy.currentHp;
+      let currentStatuses = { ...(enemy.statuses || {}) };
+
+      // 1. 상태이상 주기적 데미지 처리 (턴 시작 시점)
+      let statusVfx: { type: 'DAMAGE' | 'BUFF' | 'BURN_TICK' | 'POISON_TICK' | 'BURN_POISON_TICK' | 'ATTACKING'; tick: number } | undefined = undefined;
+      const hasBurn = currentStatuses.BURN && currentStatuses.BURN > 0;
+      const hasPoison = currentStatuses.POISON && currentStatuses.POISON > 0;
+      if (hasBurn) {
+        currentHp -= currentStatuses.BURN * 3;
+      }
+      if (hasPoison) {
+        currentHp -= currentStatuses.POISON;
+      }
+      if (hasBurn && hasPoison) {
+        statusVfx = { type: 'BURN_POISON_TICK', tick: Date.now() };
+      } else if (hasBurn) {
+        statusVfx = { type: 'BURN_TICK', tick: Date.now() };
+      } else if (hasPoison) {
+        statusVfx = { type: 'POISON_TICK', tick: Date.now() };
+      }
+
+      if (currentHp <= 0) {
+        // 상태이상 데미지로 사망
+        const newEnemies = [...state.enemies];
+        newEnemies[enemyIndex] = { ...enemy, currentHp: 0, statuses: {}, currentIntent: null, visualEffect: statusVfx };
+        return { enemies: newEnemies, playerStatus: { ...state.playerStatus, shield: currentShield, resist: currentResist } };
+      }
+
+      let enemyObj = { ...enemy, currentHp, visualEffect: statusVfx };
+
+      // 2. 행동 처리
+      if (enemyObj.currentIntent) {
+        if (enemyObj.currentIntent.type === 'ATTACK' && enemyObj.currentIntent.amount) {
+          const isSpecial = enemyObj.currentIntent.damageType === 'SPECIAL';
+
+          let rawDamage = enemyObj.currentIntent.amount;
+          let hitCount = 1;
+
+          if (enemyObj.currentIntent.description.includes('5x3')) {
+            rawDamage = 5;
+            hitCount = 3;
+          } else if (enemyObj.currentIntent.description.includes('4x2')) {
+            rawDamage = 4;
+            hitCount = 2;
+          }
+
+          if (currentStatuses.WEAK && currentStatuses.WEAK > 0) {
+            rawDamage = Math.floor(rawDamage * 0.75);
+          }
+
+          let totalDamageToPlayer = 0;
+
+          for (let i = 0; i < hitCount; i++) {
+            let damageToPlayer = rawDamage;
+
+            if (isSpecial) {
+              if (currentResist > 0) {
+                if (currentResist >= damageToPlayer) {
+                  currentResist -= damageToPlayer;
+                  damageToPlayer = 0;
+                } else {
+                  damageToPlayer -= currentResist;
+                  currentResist = 0;
+                }
+              }
+            } else {
+              if (currentShield > 0) {
+                if (currentShield >= damageToPlayer) {
+                  currentShield -= damageToPlayer;
+                  damageToPlayer = 0;
+                } else {
+                  damageToPlayer -= currentShield;
+                  currentShield = 0;
+                }
+              }
+            }
+
+            totalDamageToPlayer += damageToPlayer;
+
+            if (damageToPlayer > 0) {
+              const desc = enemyObj.currentIntent?.description || '';
+              let hitType: 'DAMAGE' | 'BURN' | 'POISON' = 'DAMAGE';
+              if (desc.includes('☣️') || desc.includes('산성') || desc.includes('독') || desc.includes('맹독')) {
+                hitType = 'POISON';
+              } else if (desc.includes('소이탄') || desc.includes('화상') || desc.includes('🔥') || desc.includes('화염')) {
+                hitType = 'BURN';
+              }
+              hitQueue.push({ type: hitType });
+            }
+          }
+
+          if (totalDamageToPlayer > 0) {
+            useRunStore.getState().damagePlayer(totalDamageToPlayer);
+            useRunStore.getState().addDamageTaken(totalDamageToPlayer);
+            console.log(`[피격] ${enemyObj.name}의 공격! 플레이어가 ${totalDamageToPlayer} 상흔을 입었습니다.`);
+
+            if (enemyObj.currentIntent.description.includes('소이탄')) {
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const { id, ...burnBlueprint } = STATUS_CARDS[0];
+              useDeckStore.getState().addCardToDiscardPile(burnBlueprint);
+              useRunStore.getState().setToastMessage('오염물질 침투 — 덱에 [화상] 카드가 섞여들었다!');
+            }
+          } else {
+            console.log(`[피격 차단] ${enemyObj.name}의 공격을 방어막으로 차단!`);
+          }
+        } else if (enemyObj.currentIntent.type === 'BUFF' && enemyObj.currentIntent.amount) {
+          enemyObj = {
+            ...enemyObj,
+            shield: enemyObj.shield + enemyObj.currentIntent.amount,
+            visualEffect: { type: 'BUFF' as const, tick: Date.now() }
+          };
+        }
+      }
+
+      // 3. 행동 종료 후 상태이상 1스택씩 감소 및 다음 의도 부여
+      const nextStatuses: Record<string, number> = {};
+      Object.entries(currentStatuses).forEach(([key, val]) => {
+        if (val > 1) nextStatuses[key] = val - 1;
+      });
+
+      const updatedEnemy = {
+        ...enemyObj,
+        statuses: nextStatuses,
+        currentIntent: determineNextIntent(enemyObj.baseId),
+        visualEffect: (enemyObj.visualEffect?.type && enemyObj.visualEffect.type !== 'DAMAGE')
+          ? enemyObj.visualEffect : undefined
+      };
+
+      const newEnemies = [...state.enemies];
+      newEnemies[enemyIndex] = updatedEnemy;
+
+      // 패배 판정
+      const isDefeat = useRunStore.getState().playerHp <= 0;
+
+      return {
+        enemies: newEnemies,
+        playerStatus: { ...state.playerStatus, shield: currentShield, resist: currentResist },
+        battleResult: isDefeat ? 'DEFEAT' : state.battleResult,
+        playerHitQueue: [...state.playerHitQueue, ...hitQueue]
+      };
+    });
+  },
+
+  // 적 행동(Intent) 일괄 실행 및 다음 행동 세팅 (레거시 - 순차 연출 사용 시 미사용)
   executeEnemyTurns: () => {
     set((state) => {
       let currentShield = state.playerStatus.shield;

@@ -13,6 +13,7 @@ interface AnimatedEnemyProps {
   hpTextStyle: PIXI.TextStyle;
   intentTextStyle: PIXI.TextStyle;
   texture: PIXI.Texture;
+  isActive?: boolean; // 현재 행동 중인 적 표시 (순차 공격 연출용)
 }
 
 export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
@@ -24,7 +25,8 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
   defaultTextStyle,
   hpTextStyle,
   intentTextStyle,
-  texture
+  texture,
+  isActive = false
 }) => {
   // 애니메이션용 로컬 오프셋 및 색상
   const [offsetX, setOffsetX] = useState(0);
@@ -33,8 +35,33 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
   const [alpha, setAlpha] = useState(1); // 사망 시 페이드아웃을 위한 투명도 상태
   const [scaleModifier, setScaleModifier] = useState(1); // 🌟 독 수축 효과용
 
+  // 활성 상태(공격 모션) 연출용
+  const activeTimerRef = React.useRef<number>(0);
+
+  React.useEffect(() => {
+    if (isActive && enemy.currentHp > 0) {
+      activeTimerRef.current = Date.now();
+    } else {
+      activeTimerRef.current = 0;
+    }
+  }, [isActive, enemy.currentHp]);
+
   // PIXI Ticker 루프 - 컴포넌트 마운트 및 매 프레임마다 실행
   useTick(() => {
+    // 활성 상태: 제자리 진동 + 밝은 색상으로 공격 모션 연출
+    if (isActive && enemy.currentHp > 0 && activeTimerRef.current > 0) {
+      const elapsed = Date.now() - activeTimerRef.current;
+      // 빠른 좌우 진동 (공격 준비 → 공격)
+      const shake = Math.sin(elapsed * 0.05) * 6 * Math.max(0, 1 - elapsed / 600);
+      setOffsetX(shake);
+      setTint(0xff4444); // 밝은 붉은색
+      setScaleModifier(1.05); // 약간 커지는 위압감
+      if (!enemy.visualEffect) {
+        setOffsetY(0);
+        return;
+      }
+    }
+
     if (!enemy.visualEffect) {
       // 이펙트가 없으면 초기화
       setOffsetX(0);
