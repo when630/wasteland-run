@@ -17,18 +17,23 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({ onClose }) =
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const abortController = new AbortController();
     const fetchLeaderboard = async () => {
       try {
-        // 인증 없이도 호출 가능한 엔드포인트이되, 로그인된 상태면 인터셉터가 토큰을 싣고 보냅니다.
-        const res = await authApi.get('/leaderboard');
+        const res = await authApi.get('/leaderboard', { signal: abortController.signal });
         setLeaders(res.data);
       } catch (err) {
-        console.error('리더보드 로드 실패', err);
+        if (!abortController.signal.aborted) {
+          console.error('리더보드 로드 실패', err);
+        }
       } finally {
-        setIsLoading(false);
+        if (!abortController.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     };
     fetchLeaderboard();
+    return () => abortController.abort();
   }, []);
 
   // 분/초 포매팅

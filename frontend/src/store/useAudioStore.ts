@@ -62,7 +62,8 @@ export const useAudioStore = create<AudioState>((set, get) => ({
 
     if (currentBgmAudio) {
       currentBgmAudio.pause();
-      currentBgmAudio.currentTime = 0;
+      currentBgmAudio.removeAttribute('src');
+      currentBgmAudio.load(); // 리소스 해제
     }
 
     const newAudio = new Audio(targetUrl);
@@ -77,7 +78,8 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     const { currentBgmAudio } = get();
     if (currentBgmAudio) {
       currentBgmAudio.pause();
-      currentBgmAudio.currentTime = 0;
+      currentBgmAudio.removeAttribute('src');
+      currentBgmAudio.load();
     }
     set({ currentBgmAudio: null, currentBgmTrack: null });
   },

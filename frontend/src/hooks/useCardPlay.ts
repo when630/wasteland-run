@@ -30,7 +30,6 @@ export const useCardPlay = () => {
     // 2. 카드 정보 찾기
     const card = hand.find((c) => c.id === cardId);
     if (!card) {
-      console.warn('손패에 해당 카드가 없습니다.');
       return false;
     }
 
@@ -60,7 +59,6 @@ export const useCardPlay = () => {
     );
 
     if (card.type === 'UTILITY' && relics.includes('arc_heart') && !hasPlayedUtilityThisTurn) {
-      console.log('⚡ [아크 심장 발동] 첫 번째 변화(UTILITY) 카드의 대상이 무작위 적으로 변경됩니다!');
       const livingEnemies = enemies.filter(e => e.currentHp > 0);
       if (livingEnemies.length > 0) {
         const randomEnemy = livingEnemies[Math.floor(Math.random() * livingEnemies.length)];
@@ -199,8 +197,7 @@ export const useCardPlay = () => {
           useBattleStore.getState().applyStatusToEnemy(targetEnemy.id, effect.condition!, amount);
           setToastMessage(`${targetEnemy.name} — ${effect.condition} ×${amount}!`);
         } else if (effect.target === 'PLAYER') {
-          // 플레이어 상태이상: 현재 기획된 카드에선 직접 사용되지 않으나, 향후 확장 시 이곳에 로직 추가
-          console.log(`[CardPlay] 플레이어 대상 상태이상 효과 예약됨: ${effect.condition} x${amount}`);
+          // 플레이어 상태이상: 향후 확장 시 이곳에 로직 추가
         }
       } else if (effect.type === 'BUFF') {
         if (effect.condition === 'PURIFY_1') {
@@ -230,7 +227,7 @@ export const useCardPlay = () => {
     // 통계 추적: 카드 사용 수 + 1
     useRunStore.getState().addCardsPlayed(1);
 
-    console.log(`[Card Played] ${card.name} 사용! (효과 처리 완료)`);
+    // 카드 사용 완료
 
     // 8. 타겟팅 모드 및 카드 사용 처리 (비우기/소멸)
     if (targetingCardId === cardId) {

@@ -9,15 +9,11 @@ interface CardRewardModalProps {
 }
 
 export const CardRewardModal: React.FC<CardRewardModalProps> = ({ onClose, onCardSelected }) => {
-  console.log('[CardRewardModal] component mounted/rendered'); // 디버그 목적
   const { addCardToMasterDeck } = useDeckStore();
 
-  // 초기 렌더링 시점에 무작위 카드 3장을 즉시 추출하여 useState에 할당
   const [rewardCards] = useState<Card[]>(() => {
-    console.log('[CardRewardModal] ALL_CARDS loaded:', ALL_CARDS);
     const dropPool = ALL_CARDS.filter(c => c.tier !== 'BASIC');
     const shuffled = [...dropPool].sort(() => 0.5 - Math.random()) as Card[];
-    console.log('[CardRewardModal] rewardCards initialized to:', shuffled.slice(0, 3));
     return shuffled.slice(0, 3);
   });
 

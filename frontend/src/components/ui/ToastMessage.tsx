@@ -13,11 +13,17 @@ export const ToastMessage: React.FC = () => {
 
       const timer = setTimeout(() => {
         setIsVisible(false);
-        // 애니메이션(0.3s)이 끝난 후 store 도 비움
-        setTimeout(() => setToastMessage(null), 300);
       }, 2000); // 2초 표시
 
-      return () => clearTimeout(timer);
+      // 애니메이션(0.3s)이 끝난 후 store 도 비움
+      const clearTimer = setTimeout(() => {
+        setToastMessage(null);
+      }, 2300);
+
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(clearTimer);
+      };
     }
   }, [toastMessage, setToastMessage]);
 

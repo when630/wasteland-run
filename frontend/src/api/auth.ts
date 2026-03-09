@@ -1,8 +1,7 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/useAuthStore';
 
-// Spring Boot 서버 주소 하드코딩 (개발용)
-export const API_URL = 'http://localhost:8080/api';
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 // 인증이 필요한 요청용 인스턴스 (인터셉터 적용)
 export const authApi = axios.create({

@@ -39,7 +39,7 @@ export const useDeckStore = create<DeckState>((set) => ({
   addCardToMasterDeck: (cardBlueprint: Omit<Card, 'id'>) => set((state) => {
     const newCard: Card = {
       ...cardBlueprint,
-      id: `${cardBlueprint.type}-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+      id: `${cardBlueprint.type}-${Date.now()}-${crypto.randomUUID()}`
     };
     return { masterDeck: [...state.masterDeck, newCard] };
   }),
@@ -283,7 +283,7 @@ export const useDeckStore = create<DeckState>((set) => ({
   addCardToDiscardPile: (cardBlueprint: Omit<Card, 'id'>) => set((state) => {
     const newCard: Card = {
       ...cardBlueprint,
-      id: `${cardBlueprint.type}-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+      id: `${cardBlueprint.type}-${Date.now()}-${crypto.randomUUID()}`
     };
     return { discardPile: [...state.discardPile, newCard] };
   }),

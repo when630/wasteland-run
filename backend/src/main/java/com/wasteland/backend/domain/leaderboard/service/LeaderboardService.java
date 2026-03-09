@@ -37,7 +37,7 @@ public class LeaderboardService {
 
     @Transactional(readOnly = true)
     public List<LeaderboardItemDto> getTop50() {
-        return leaderboardRepository.findTop50ByOrderByScoreDescPlayTimeSecondsAsc()
+        return leaderboardRepository.findTop50WithUser()
                 .stream()
                 .map(LeaderboardItemDto::of)
                 .collect(Collectors.toList());

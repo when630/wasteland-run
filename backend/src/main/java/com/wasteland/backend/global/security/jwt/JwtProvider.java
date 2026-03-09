@@ -57,8 +57,12 @@ public class JwtProvider {
                 .parseSignedClaims(token)
                 .getPayload();
 
+        Object authClaim = claims.get(AUTHORITIES_KEY);
+        String authString = (authClaim != null) ? authClaim.toString() : "ROLE_USER";
+
         Collection<? extends GrantedAuthority> authorities =
-                Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+                Arrays.stream(authString.split(","))
+                        .filter(s -> !s.isBlank())
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
 
@@ -71,7 +75,7 @@ public class JwtProvider {
             Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
             return true;
         } catch (Exception e) {
-            System.out.println("Invalid JWT Token: " + e.getMessage());
+            // JWT 검증 실패 (만료, 변조, 형식 오류 등)
             return false;
         }
     }
