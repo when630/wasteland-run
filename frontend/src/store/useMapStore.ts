@@ -3,18 +3,18 @@ import { create } from 'zustand';
 export type NodeType = 'BATTLE' | 'ELITE' | 'REST' | 'SHOP' | 'EVENT' | 'BOSS';
 
 export interface MapNode {
-  id: string;         // 고유 식별자 (예: 'f1-p0')
-  floor: number;      // 맵의 깊이 (y축 역할)
-  positionX: number;  // 층 내 위치 (0, 1, 2) (x축 렌더링 역할)
+  id: string;         // 고유 식별자 (예: 'f1-p0', 'f15-boss')
+  floor: number;      // 맵의 깊이 (1~15)
+  positionX: number;  // 층 내 위치 (0~6, 7열 그리드)
   type: NodeType;     // 노드 타입
-  nextNodeIds: string[]; // 연결된 다음 노드들의 ID 가리킴
+  nextNodeIds: string[]; // 연결된 다음 노드들의 ID
 }
 
 interface MapState {
   nodes: MapNode[];
   currentNodeId: string | null;
   currentFloor: number;
-  visitedNodeIds: string[]; // 🌟 플레이어가 거쳐온 노드의 히스토리 배열
+  visitedNodeIds: string[];
 
   // Actions
   generateMap: () => void;
@@ -29,52 +29,118 @@ export const useMapStore = create<MapState>((set) => ({
 
   generateMap: () => {
     const TOTAL_FLOORS = 15;
-    const PATHS_PER_FLOOR = 3;
-    const newNodes: MapNode[] = [];
+    const COLUMNS = 7;
+    const NUM_PATHS = 6;
 
-    // 노드 타입 굴리기 유틸 함수
+    // 노드 타입 확률: 전투 45%, 이벤트 22%, 엘리트 16%, 휴식 12%, 상인 5%
     const getRandomType = (floor: number): NodeType => {
-      if (floor === 1) return 'BATTLE'; // 1층은 무조건 배틀
-      if (floor === TOTAL_FLOORS) return 'BOSS'; // 꼭대기는 보스
-      if (floor === TOTAL_FLOORS - 1) return 'REST'; // 보스 직전은 무조건 휴식처
-      if (floor === Math.floor(TOTAL_FLOORS / 2)) return 'ELITE'; // 중간층 엘리트 강제 배치
+      if (floor === 1) return 'BATTLE';
+      if (floor === TOTAL_FLOORS) return 'BOSS';
+      if (floor === TOTAL_FLOORS - 1) return 'REST';
+      if (floor === Math.floor(TOTAL_FLOORS / 2)) return 'ELITE';
 
-      // 기본적인 맵 등장 확률 가중치
-      const random = Math.random();
-      if (random < 0.45) return 'BATTLE'; // 45%
-      if (random < 0.70) return 'EVENT';  // 25%
-      if (random < 0.85) return 'SHOP';   // 15%
-      if (random < 0.95) return 'REST';   // 10%
-      return 'ELITE';                     // 5% (가끔 등장하는 추가 엘리트)
+      const r = Math.random();
+      if (r < 0.45) return 'BATTLE';
+      if (r < 0.67) return 'EVENT';
+      if (r < 0.83) return 'ELITE';
+      if (r < 0.95) return 'REST';
+      return 'SHOP';
     };
 
-    // 1. 노드 껍데기 생성 (위치와 타입 부여)
-    for (let floor = 1; floor <= TOTAL_FLOORS; floor++) {
-      if (floor === TOTAL_FLOORS) {
-        // 보스방은 1개만 생성 (중앙 배치)
-        newNodes.push({
-          id: `f${floor}-boss`,
-          floor,
-          positionX: 1, // 0, 1, 2 중 중앙인 1
-          type: 'BOSS',
-          nextNodeIds: [] // 클리어 시 맵 이동 끝
-        });
-      } else if (floor === 1) {
-        // 시작 지점은 1개만 생성 (중앙 배치)
-        newNodes.push({
-          id: `f${floor}-start`,
-          floor,
-          positionX: 1,
-          type: 'BATTLE',
-          nextNodeIds: []
-        });
+    // --- (a) 경로 생성: 6개의 1층→14층 랜덤 워크 ---
+
+    // 간선 교차 방지: 층 전이별 간선 기록
+    const floorEdges = new Map<number, Array<[number, number]>>();
+
+    const wouldCross = (floor: number, fromCol: number, toCol: number): boolean => {
+      const edges = floorEdges.get(floor) || [];
+      for (const [ef, et] of edges) {
+        if ((fromCol < ef && toCol > et) || (fromCol > ef && toCol < et)) return true;
+      }
+      return false;
+    };
+
+    const addEdge = (floor: number, fromCol: number, toCol: number) => {
+      if (!floorEdges.has(floor)) floorEdges.set(floor, []);
+      const edges = floorEdges.get(floor)!;
+      if (!edges.some(([f, t]) => f === fromCol && t === toCol)) {
+        edges.push([fromCol, toCol]);
+      }
+    };
+
+    // Fisher-Yates 셔플
+    const shuffle = <T>(arr: T[]): T[] => {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    };
+
+    const paths: Array<Array<[number, number]>> = [];
+    const usedStartCols = new Set<number>();
+
+    for (let p = 0; p < NUM_PATHS; p++) {
+      // 시작 열 선택 (처음 2개 경로는 서로 다른 시작점 보장)
+      let startCol: number;
+      if (p < 2) {
+        do {
+          startCol = Math.floor(Math.random() * COLUMNS);
+        } while (p > 0 && usedStartCols.has(startCol));
+        usedStartCols.add(startCol);
       } else {
-        // 일반 층은 PATHS_PER_FLOOR(3) 개 만큼 생성
-        for (let pos = 0; pos < PATHS_PER_FLOOR; pos++) {
-          newNodes.push({
-            id: `f${floor}-p${pos}`,
+        startCol = Math.floor(Math.random() * COLUMNS);
+      }
+
+      const path: Array<[number, number]> = [[1, startCol]];
+      let currentCol = startCol;
+
+      for (let floor = 2; floor <= TOTAL_FLOORS - 1; floor++) {
+        // 인접 열 후보 (x-1, x, x+1)
+        const options: number[] = [];
+        if (currentCol > 0) options.push(currentCol - 1);
+        options.push(currentCol);
+        if (currentCol < COLUMNS - 1) options.push(currentCol + 1);
+
+        // 셔플 후, 교차하지 않는 첫 번째 선택지 사용
+        const shuffled = shuffle(options);
+        let nextCol = shuffled[0];
+        for (const opt of shuffled) {
+          if (!wouldCross(floor - 1, currentCol, opt)) {
+            nextCol = opt;
+            break;
+          }
+        }
+
+        addEdge(floor - 1, currentCol, nextCol);
+        path.push([floor, nextCol]);
+        currentCol = nextCol;
+      }
+
+      paths.push(path);
+    }
+
+    // --- (b) 노드 생성: 경로가 지나간 (층, 열)에만 노드 배치 ---
+    const nodeMap = new Map<string, MapNode>();
+
+    // 보스 노드 (15층 중앙)
+    nodeMap.set(`${TOTAL_FLOORS}-3`, {
+      id: `f${TOTAL_FLOORS}-boss`,
+      floor: TOTAL_FLOORS,
+      positionX: 3,
+      type: 'BOSS',
+      nextNodeIds: []
+    });
+
+    for (const path of paths) {
+      for (const [floor, col] of path) {
+        const key = `${floor}-${col}`;
+        if (!nodeMap.has(key)) {
+          nodeMap.set(key, {
+            id: `f${floor}-p${col}`,
             floor,
-            positionX: pos,
+            positionX: col,
             type: getRandomType(floor),
             nextNodeIds: []
           });
@@ -82,68 +148,30 @@ export const useMapStore = create<MapState>((set) => ({
       }
     }
 
-    // 2. 층간 연결(Edges) 알고리즘 구성
-    // 각 층의 노드는 다음 층(floor+1)의 자신과 같거나 좌우 인접한(±1) 노드 중 1~2개와 연결됨.
-    for (let floor = 1; floor < TOTAL_FLOORS; floor++) {
-      const currentFloorNodes = newNodes.filter(n => n.floor === floor);
-      const nextFloorNodes = newNodes.filter(n => n.floor === floor + 1);
+    // --- (c) 간선 생성: 각 경로를 따라 노드 간 연결 ---
+    const bossId = `f${TOTAL_FLOORS}-boss`;
 
-      currentFloorNodes.forEach((node) => {
-        // 보스방(15층)을 향하는 14층 노드들은 모두 무조건 보스방 1개에 연결됨
-        if (floor === TOTAL_FLOORS - 1) {
-          node.nextNodeIds.push(nextFloorNodes[0].id);
-          return;
+    for (const path of paths) {
+      for (let i = 0; i < path.length - 1; i++) {
+        const [f1, c1] = path[i];
+        const [f2, c2] = path[i + 1];
+        const node1 = nodeMap.get(`${f1}-${c1}`)!;
+        const node2Id = nodeMap.get(`${f2}-${c2}`)!.id;
+        if (!node1.nextNodeIds.includes(node2Id)) {
+          node1.nextNodeIds.push(node2Id);
         }
+      }
 
-        // 시작 지점(1층)은 2층의 모든 경로(3개)로 자유롭게 진입 가능하도록 전체 개방
-        if (floor === 1) {
-          node.nextNodeIds = nextFloorNodes.map(n => n.id);
-          return;
-        }
-
-        // 일반적인 연결 (바로 위 및 양 옆 대각선)
-        const possibleNextIds: string[] = [];
-        const x = node.positionX;
-
-        // 무조건 자신의 직진(위) 경로는 높은 확률로 뚫림
-        if (nextFloorNodes[x]) possibleNextIds.push(nextFloorNodes[x].id);
-
-        // 엇갈리는 대각선 경로 (30% 확률로 뚫림)
-        if (x - 1 >= 0 && Math.random() < 0.3) possibleNextIds.push(nextFloorNodes[x - 1].id);
-        if (x + 1 < PATHS_PER_FLOOR && Math.random() < 0.3) possibleNextIds.push(nextFloorNodes[x + 1].id);
-
-        // 아무 길도 없는 고립을 막기 위해 최소 1개는 강제 확보 (방금 만든 possibleNextIds가 비었을 경우 대비)
-        if (possibleNextIds.length === 0) {
-          possibleNextIds.push(nextFloorNodes[x].id);
-        }
-
-        // 중복 제거 후 추가
-        node.nextNodeIds = Array.from(new Set(possibleNextIds));
-      });
-
-      // (선택 보정 로직) 다음 층의 어떤 노드도 이전 층에서 도달할 수 없는 '도달 불가' 노드가 발생했는지 검사
-      // 도달 불가 노드가 있다면, 이전 층의 가까운 노드에서 강제로 선을 하나 이어준다.
-      if (floor < TOTAL_FLOORS - 1) { // 보스방 제외
-        nextFloorNodes.forEach(targetNode => {
-          const hasIncoming = currentFloorNodes.some(n => n.nextNodeIds.includes(targetNode.id));
-          if (!hasIncoming) {
-            // 들어오는 선이 없으면 가장 x좌표가 가까운 현재 층 노드에 강제로 파이프 연결
-            const closestNode = currentFloorNodes.reduce((prev, curr) =>
-              Math.abs(curr.positionX - targetNode.positionX) < Math.abs(prev.positionX - targetNode.positionX) ? curr : prev
-            );
-            closestNode.nextNodeIds.push(targetNode.id);
-            closestNode.nextNodeIds = Array.from(new Set(closestNode.nextNodeIds)); // 고유화
-          }
-        });
+      // 14층 → 15층 보스 연결
+      const [lastFloor, lastCol] = path[path.length - 1];
+      const lastNode = nodeMap.get(`${lastFloor}-${lastCol}`)!;
+      if (!lastNode.nextNodeIds.includes(bossId)) {
+        lastNode.nextNodeIds.push(bossId);
       }
     }
 
-    set({
-      nodes: newNodes,
-      currentNodeId: null, // 초기화 시 입장 전 대기상태를 null로 설정
-      currentFloor: 1,
-      visitedNodeIds: [] // 맵이 새로 띄워지면 방문 궤적 초기화
-    });
+    const newNodes = Array.from(nodeMap.values());
+    set({ nodes: newNodes, currentNodeId: null, currentFloor: 1, visitedNodeIds: [] });
   },
 
   moveToNode: (nodeId: string) => set((state) => {
@@ -153,7 +181,7 @@ export const useMapStore = create<MapState>((set) => ({
     return {
       currentNodeId: nodeId,
       currentFloor: targetNode.floor,
-      visitedNodeIds: [...state.visitedNodeIds, nodeId] // 현재 밟은 노드를 기록함
+      visitedNodeIds: [...state.visitedNodeIds, nodeId]
     };
   })
 }));

@@ -74,14 +74,20 @@ export const MapView: React.FC = () => {
         minWidth: '600px',
         marginBottom: '100px'
       }}>
-        {/* 층(Floor) 단위로 렌더링 (1층이 맨 아래로 오기 위해 column-reverse에 맞춰 순회) */}
+        {/* 층(Floor) 단위로 렌더링 — 7열 그리드, 경로가 없는 자리는 빈 스페이서 */}
         {Array.from({ length: 15 }, (_, i) => i + 1).map(floorNum => {
           const floorNodes = nodes.filter(n => n.floor === floorNum);
           if (floorNodes.length === 0) return null;
 
           return (
-            <div key={`floor-${floorNum}`} style={{ display: 'flex', gap: '80px', justifyContent: 'center', width: '100%' }}>
-              {floorNodes.map(node => {
+            <div key={`floor-${floorNum}`} style={{ display: 'flex', gap: '24px', justifyContent: 'center', width: '100%' }}>
+              {[0, 1, 2, 3, 4, 5, 6].map(pos => {
+                const node = floorNodes.find(n => n.positionX === pos);
+
+                if (!node) {
+                  return <div key={`empty-${floorNum}-${pos}`} style={{ width: '50px', height: '50px', flexShrink: 0 }} />;
+                }
+
                 const isCurrent = node.id === currentNodeId;
                 const isVisited = visitedNodeIds.includes(node.id);
                 const isNextAvailable = !currentNodeId
@@ -91,21 +97,22 @@ export const MapView: React.FC = () => {
                 return (
                   <div
                     key={node.id}
-                    id={node.id} // Xarrow 연결을 위해 실제 DOM id 부여
+                    id={node.id}
                     onClick={() => {
                       if (isNextAvailable) handleNodeClick(node.id, node.type);
                     }}
                     style={{
-                      width: '60px', height: '60px', borderRadius: '50%',
+                      width: '50px', height: '50px', borderRadius: '50%',
                       backgroundColor: isCurrent ? '#00bbff' : (isVisited ? '#006688' : (isNextAvailable ? '#444' : '#222')),
                       border: isCurrent ? '3px solid #fff' : (isVisited ? '2px solid #00bbff' : (isNextAvailable ? '2px solid #888' : '2px dashed #333')),
                       display: 'flex', justifyContent: 'center', alignItems: 'center',
-                      fontSize: '24px', cursor: isNextAvailable ? 'pointer' : 'not-allowed',
+                      fontSize: '20px', cursor: isNextAvailable ? 'pointer' : 'not-allowed',
                       boxShadow: isCurrent ? '0 0 15px #00bbff' : (isVisited ? '0 0 10px #006688' : 'none'),
                       opacity: isVisited && !isCurrent ? 0.8 : 1,
                       transition: 'all 0.3s',
                       position: 'relative',
-                      zIndex: 3 // 선(Line)보다 위에 오게 함 (엣지들의 최상위 z-index가 2라 노드는 3)
+                      flexShrink: 0,
+                      zIndex: 3
                     }}
                     title={`${node.floor}층 - ${node.type}`}
                   >
@@ -144,11 +151,13 @@ export const MapView: React.FC = () => {
                 key={`${node.id}-${nextId}`}
                 start={node.id}
                 end={nextId}
+                startAnchor="top"
+                endAnchor="bottom"
                 color={lineColor}
                 strokeWidth={strokeWidth}
-                path="straight" // 직선 연결
-                showHead={false} // 화살표 머리 제거
-                zIndex={edgeZIndex} // 지나온 길일수록 위에서 렌더링
+                path="straight"
+                showHead={false}
+                zIndex={edgeZIndex}
               />
             );
           })
