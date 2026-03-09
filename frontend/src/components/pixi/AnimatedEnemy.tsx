@@ -8,12 +8,13 @@ interface AnimatedEnemyProps {
   baseX: number;
   baseY: number;
   isTargeting: boolean;
+  canBeTargeted?: boolean; // 단일 공격 카드 선택 시 타겟 가능 표시
   onPointerDown: () => void;
   defaultTextStyle: PIXI.TextStyle;
   hpTextStyle: PIXI.TextStyle;
   intentTextStyle: PIXI.TextStyle;
   texture: PIXI.Texture;
-  isActive?: boolean; // 현재 행동 중인 적 표시 (순차 공격 연출용)
+  isActive?: boolean;
 }
 
 export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
@@ -26,7 +27,8 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
   hpTextStyle,
   intentTextStyle,
   texture,
-  isActive = false
+  isActive = false,
+  canBeTargeted = false
 }) => {
   // 애니메이션용 로컬 오프셋 및 색상
   const [offsetX, setOffsetX] = useState(0);
@@ -63,7 +65,20 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
     }
 
     if (!enemy.visualEffect) {
-      // 이펙트가 없으면 초기화
+      // 타겟 가능 상태: 금색 맥동 + 호흡 스케일
+      if (canBeTargeted && enemy.currentHp > 0) {
+        const t = Date.now() * 0.004;
+        const pulse = Math.sin(t) * 0.5 + 0.5; // 0~1
+        const r = 0xff;
+        const g = Math.floor(0x88 + pulse * 0x44); // 0x88~0xcc
+        const b = Math.floor(0x00 + pulse * 0x33); // 0x00~0x33
+        setTint((r << 16) | (g << 8) | b);
+        setScaleModifier(1.02 + Math.sin(t) * 0.03); // 1.02~1.05 미세 호흡
+        setOffsetX(0);
+        setOffsetY(0);
+        return;
+      }
+      // 이펙트 없고 타겟 불가 → 초기화
       setOffsetX(0);
       setOffsetY(0);
       setTint(0xff0000);

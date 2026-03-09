@@ -259,13 +259,17 @@ export const BattleStage: React.FC = () => {
 
         {/* 적 다중 렌더링 배열 */}
         {enemies.map((enemyObj, index) => {
-          // 죽은 몬스터는 AnimatedEnemy 내부에서 alpha가 0이 되며 서서히 사라짐
-          // if (enemyObj.currentHp <= 0) return null; 
-
           // 다중 배치를 위한 위치 지정 (화면 우측에 좌우로 배열)
           const baseY = 1080 * 0.65;
           const baseX = 1920 * (0.6 + index * 0.18);
           const isTargeting = targetingCardId !== null;
+
+          // 단일 공격 카드 선택 시 살아있는 적에게 타겟 가능 이펙트 표시
+          const needsEnemyTarget = targetingCard?.effects.some(e =>
+            (e.type === 'DAMAGE' || e.type === 'DEBUFF') &&
+            e.target !== 'ALL_ENEMIES' &&
+            e.target !== 'PLAYER'
+          ) ?? false;
 
           return (
             <AnimatedEnemy
@@ -274,6 +278,7 @@ export const BattleStage: React.FC = () => {
               baseX={baseX}
               baseY={baseY}
               isTargeting={isTargeting}
+              canBeTargeted={isTargeting && needsEnemyTarget && enemyObj.currentHp > 0}
               onPointerDown={() => {
                 if (targetingCardId) {
                   playCard(targetingCardId, enemyObj.id);
