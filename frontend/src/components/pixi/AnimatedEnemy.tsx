@@ -64,20 +64,21 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
       }
     }
 
+    // 타겟 가능 상태: 금색 맥동 (visualEffect보다 우선)
+    if (canBeTargeted && enemy.currentHp > 0) {
+      const t = Date.now() * 0.004;
+      const pulse = Math.sin(t) * 0.5 + 0.5;
+      const r = 0xff;
+      const g = Math.floor(0x88 + pulse * 0x44);
+      const b = Math.floor(0x00 + pulse * 0x33);
+      setTint((r << 16) | (g << 8) | b);
+      setScaleModifier(1.02 + Math.sin(t) * 0.03);
+      setOffsetX(0);
+      setOffsetY(0);
+      return;
+    }
+
     if (!enemy.visualEffect) {
-      // 타겟 가능 상태: 금색 맥동 + 호흡 스케일
-      if (canBeTargeted && enemy.currentHp > 0) {
-        const t = Date.now() * 0.004;
-        const pulse = Math.sin(t) * 0.5 + 0.5; // 0~1
-        const r = 0xff;
-        const g = Math.floor(0x88 + pulse * 0x44); // 0x88~0xcc
-        const b = Math.floor(0x00 + pulse * 0x33); // 0x00~0x33
-        setTint((r << 16) | (g << 8) | b);
-        setScaleModifier(1.02 + Math.sin(t) * 0.03); // 1.02~1.05 미세 호흡
-        setOffsetX(0);
-        setOffsetY(0);
-        return;
-      }
       // 이펙트 없고 타겟 불가 → 초기화
       setOffsetX(0);
       setOffsetY(0);
