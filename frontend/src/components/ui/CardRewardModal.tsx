@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDeckStore } from '../../store/useDeckStore';
+import { useRngStore } from '../../store/useRngStore';
 import type { Card } from '../../types/gameTypes';
 import { ALL_CARDS } from '../../assets/data/cards';
 
@@ -13,7 +14,8 @@ export const CardRewardModal: React.FC<CardRewardModalProps> = ({ onClose, onCar
 
   const [rewardCards] = useState<Card[]>(() => {
     const dropPool = ALL_CARDS.filter(c => c.tier !== 'BASIC');
-    const shuffled = [...dropPool].sort(() => 0.5 - Math.random()) as Card[];
+    const lootRng = useRngStore.getState().lootRng;
+    const shuffled = lootRng.shuffle(dropPool) as Card[];
     return shuffled.slice(0, 3);
   });
 

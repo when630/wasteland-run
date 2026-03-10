@@ -4,6 +4,7 @@ import { useDeckStore } from '../store/useDeckStore';
 import { useAudioStore } from '../store/useAudioStore';
 import { resolveCardEffects, type EffectAction } from '../logic/cardEffectHandlers';
 import { onCardPlayed } from '../logic/relicEffects';
+import { useRngStore } from '../store/useRngStore';
 
 /**
  * 카드를 플레이할 때 호출하는 커스텀 훅
@@ -66,7 +67,7 @@ export const useCardPlay = () => {
     if (card.type === 'UTILITY' && relics.includes('arc_heart') && !hasPlayedUtilityThisTurn) {
       const livingEnemies = enemies.filter(e => e.currentHp > 0);
       if (livingEnemies.length > 0) {
-        const randomEnemy = livingEnemies[Math.floor(Math.random() * livingEnemies.length)];
+        const randomEnemy = livingEnemies[useRngStore.getState().battleRng.nextInt(livingEnemies.length)];
         finalTargetId = randomEnemy.id;
         needsEnemyTarget = true;
       }
@@ -153,7 +154,7 @@ export const useCardPlay = () => {
 
     if (battleState.powerDefenseAmmo50) {
       if (card.type === 'PHYSICAL_DEFENSE' || card.type === 'SPECIAL_DEFENSE') {
-        if (Math.random() < 0.5) {
+        if (useRngStore.getState().battleRng.next() < 0.5) {
           addAmmo(1);
           setToastMessage('고철 재활용 -- 탄약 1 획득!');
         }
@@ -265,7 +266,7 @@ function executeBuff(condition: string, setToastMessage: (msg: string) => void) 
     const isStatusCard = (c: { type: string }) => c.type === 'STATUS_BURN' || c.type === 'STATUS_RADIATION';
     const allStatus = [...deckState.drawPile.filter(isStatusCard), ...deckState.discardPile.filter(isStatusCard)];
     if (allStatus.length > 0) {
-      const toRemove = allStatus[Math.floor(Math.random() * allStatus.length)];
+      const toRemove = allStatus[useRngStore.getState().battleRng.nextInt(allStatus.length)];
       useDeckStore.setState((s) => ({
         drawPile: s.drawPile.filter(c => c.id !== toRemove.id),
         discardPile: s.discardPile.filter(c => c.id !== toRemove.id),

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useRunStore } from '../../store/useRunStore';
+import { useRngStore } from '../../store/useRngStore';
 import { RELICS } from '../../assets/data/relics';
 import type { Relic, RelicTier } from '../../types/relicTypes';
 
@@ -28,8 +29,8 @@ export const RelicRewardModal: React.FC<RelicRewardModalProps> = ({ onClose, onR
     if (available.length === 0) return null; // 더 이상 얻을 유물이 없음
 
     // 무작위 1개 셔플 & 픽
-    const randomIdx = Math.floor(Math.random() * available.length);
-    return available[randomIdx];
+    const lootRng = useRngStore.getState().lootRng;
+    return available[lootRng.nextInt(available.length)];
   });
 
   const handleSelectRelic = (relicId: string) => {

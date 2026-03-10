@@ -6,6 +6,7 @@ import { RELICS } from '../assets/data/relics';
 import type { Card } from '../types/gameTypes';
 import type { Relic } from '../types/relicTypes';
 import { customShuffle } from '../utils/rng';
+import { useRngStore } from '../store/useRngStore';
 import { RemoveCardModal } from '../components/ui/RemoveCardModal';
 import shopBg from '../assets/images/shop_map_background.png';
 import npcImg from '../assets/images/merchant.png';
@@ -36,11 +37,12 @@ export const ShopView: React.FC = () => {
   // 컴포넌트 마운트 시 (상점 진입 시마다) 물품 로드
   useEffect(() => {
     // 1. 판매할 카드 6장 무작위 뽑기
+    const lootRng = useRngStore.getState().lootRng;
     const dropPool = ALL_CARDS.filter(c => c.tier !== 'BASIC');
-    const shuffledCards = customShuffle(dropPool);
+    const shuffledCards = customShuffle(dropPool, lootRng);
     const selectedCards = shuffledCards.slice(0, 6).map((card, idx) => {
       // 50~80 랜덤 골드 책정 (10단위)
-      const randomPrice = Math.floor(Math.random() * 4) * 10 + 50;
+      const randomPrice = lootRng.nextInt(4) * 10 + 50;
       return {
         ...card,
         id: `shop_card_${idx}`,
@@ -54,7 +56,7 @@ export const ShopView: React.FC = () => {
     const availableRelics = RELICS.filter(
       r => r.tier !== 'BOSS' && !ownedRelics.includes(r.id)
     );
-    const shuffledRelics = customShuffle(availableRelics);
+    const shuffledRelics = customShuffle(availableRelics, lootRng);
     const selectedRelics = shuffledRelics.slice(0, Math.min(2, shuffledRelics.length)).map(relic => {
       // 티어별 기본 가격 산정 (유물 구매 접근성 상향)
       let price = 80;
@@ -62,7 +64,7 @@ export const ShopView: React.FC = () => {
       else if (relic.tier === 'RARE') price = 200;
 
       // 약간의 랜덤 편차 (-20 ~ +20)
-      price += Math.floor(Math.random() * 5) * 10 - 20;
+      price += lootRng.nextInt(5) * 10 - 20;
       return { ...relic, price, isSoldOut: false };
     });
     setShopRelics(selectedRelics);

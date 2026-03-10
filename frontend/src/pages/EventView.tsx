@@ -4,6 +4,7 @@ import { RANDOM_EVENTS } from '../assets/data/events';
 import type { RandomEvent, EventOption } from '../types/eventTypes';
 import { RemoveCardModal } from '../components/ui/RemoveCardModal';
 import { onRestOrEventEnter } from '../logic/relicEffects';
+import { useRngStore } from '../store/useRngStore';
 import eventBg from '../assets/images/event_map_background.png';
 
 export const EventView: React.FC = () => {
@@ -16,7 +17,8 @@ export const EventView: React.FC = () => {
   const [pendingResultText, setPendingResultText] = useState<string | null>(null);
 
   useEffect(() => {
-    const pick = RANDOM_EVENTS[Math.floor(Math.random() * RANDOM_EVENTS.length)];
+    const eventRng = useRngStore.getState().eventRng;
+    const pick = RANDOM_EVENTS[eventRng.nextInt(RANDOM_EVENTS.length)];
     setCurrentEvent(pick);
 
     // 유물 효과 일괄 적용

@@ -4,6 +4,7 @@ import { useDeckStore } from '../store/useDeckStore';
 import { useMapStore } from '../store/useMapStore';
 import { createStartingDeck } from '../assets/data/cards';
 import { useAudioStore } from '../store/useAudioStore';
+import { useRngStore } from '../store/useRngStore';
 import { CompendiumModal } from '../components/ui/CompendiumModal';
 import { SettingsModal } from '../components/ui/SettingsModal';
 import { StatisticsModal } from '../components/ui/StatisticsModal';
@@ -35,6 +36,7 @@ export const MainMenuView: React.FC = () => {
     useAudioStore.getState().playClick();
 
     // 런 정보 완전 초기화
+    const newSeed = Math.random().toString(36).substring(2, 10);
     useRunStore.setState({
       playerHp: 50,
       playerMaxHp: 70,
@@ -42,7 +44,7 @@ export const MainMenuView: React.FC = () => {
       currentMapNode: null,
       relics: [],
       runStartTime: Date.now(),
-      runSeed: Math.random().toString(36).substring(2, 10),
+      runSeed: newSeed,
       isActive: true,
       enemiesKilled: 0,
       cardsPlayed: 0,
@@ -50,6 +52,9 @@ export const MainMenuView: React.FC = () => {
       totalDamageTaken: 0,
       totalGoldEarned: 0,
     });
+
+    // 시드 RNG 초기화
+    useRngStore.getState().initialize(newSeed);
 
     // 덱 초기화
     useDeckStore.getState().setMasterDeck(createStartingDeck());

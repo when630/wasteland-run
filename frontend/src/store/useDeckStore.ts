@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Card } from '../types/gameTypes';
 import { customShuffle } from '../utils/rng';
+import { useRngStore } from './useRngStore';
 import { useAudioStore } from './useAudioStore';
 import { applyUpgrade } from '../logic/cardUpgrades';
 
@@ -57,7 +58,7 @@ export const useDeckStore = create<DeckState>((set) => ({
   initDeck: () => {
     useAudioStore.getState().playDraw(); // 덱 초기 셔플음
     set((state) => ({
-      drawPile: customShuffle([...state.masterDeck]),
+      drawPile: customShuffle([...state.masterDeck], useRngStore.getState().shuffleRng),
       hand: [],
       discardPile: [],
       exhaustPile: [],
@@ -79,7 +80,7 @@ export const useDeckStore = create<DeckState>((set) => ({
             break;
           }
           // 뽑을 카드가 다 떨어지면 버려진 카드뭉치를 셔플하여 다시 DrawPile로 옮김
-          currentDraw = customShuffle(currentDiscard);
+          currentDraw = customShuffle(currentDiscard, useRngStore.getState().shuffleRng);
           currentDiscard = [];
         }
 

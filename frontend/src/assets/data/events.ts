@@ -1,6 +1,7 @@
 import type { RandomEvent } from '../../types/eventTypes';
 import { useRunStore } from '../../store/useRunStore';
 import { useDeckStore } from '../../store/useDeckStore';
+import { useRngStore } from '../../store/useRngStore';
 import { RELICS } from './relics';
 import { ALL_CARDS, STARTING_CARDS, STATUS_CARDS } from './cards';
 import { customShuffle } from '../../utils/rng';
@@ -22,7 +23,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
           // 희귀 유물 중 미보유 추출
           const rareRelics = RELICS.filter(r => r.tier === 'RARE' && !runStore.relics.includes(r.id));
           if (rareRelics.length > 0) {
-            const pick = rareRelics[Math.floor(Math.random() * rareRelics.length)];
+            const pick = rareRelics[Math.floor(useRngStore.getState().eventRng.next() * rareRelics.length)];
             runStore.addRelic(pick.id);
             return `살갗이 타들어가는 고통을 참아내며 상자를 건졌습니다! 당신은 체력을 10 잃었지만 [${pick.name}] 유물을 손에 넣었습니다.`;
           } else {
@@ -37,7 +38,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
           const deckStore = useDeckStore.getState();
           // STARTING_CARDS 중 특수 공격 카드를 예시로 하나 준다고 가정
           const specialAttacks = STARTING_CARDS.filter(c => c.type === 'SPECIAL_ATTACK');
-          const pick = specialAttacks[Math.floor(Math.random() * specialAttacks.length)];
+          const pick = specialAttacks[Math.floor(useRngStore.getState().eventRng.next() * specialAttacks.length)];
           deckStore.addCardToMasterDeck({ ...pick } as any);
           return `주변의 긴 막대기로 간신히 끄트머리에 걸려있던 물건 하나를 건졌습니다. [${pick.name}] 카드를 얻었습니다.`;
         },
@@ -76,13 +77,13 @@ export const RANDOM_EVENTS: RandomEvent[] = [
           const deckStore = useDeckStore.getState();
           const masterDeck = [...deckStore.masterDeck];
           // 무작위로 1장 희생
-          const removeIdx = Math.floor(Math.random() * masterDeck.length);
+          const removeIdx = Math.floor(useRngStore.getState().eventRng.next() * masterDeck.length);
           const removedCard = masterDeck[removeIdx];
           masterDeck.splice(removeIdx, 1);
 
           // 변화 카드 지급
           const utilities = STARTING_CARDS.filter(c => c.type === 'UTILITY');
-          const pick = utilities[Math.floor(Math.random() * utilities.length)];
+          const pick = utilities[Math.floor(useRngStore.getState().eventRng.next() * utilities.length)];
 
           deckStore.setMasterDeck(masterDeck);
           deckStore.addCardToMasterDeck({ ...pick } as any);
@@ -110,7 +111,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
         label: '[함정 해체 시도]',
         description: '50% 확률로 최대 체력이 5 증가합니다. 50% 확률로 실패하여 체력을 15 잃습니다.',
         onSelect: () => {
-          const isSuccess = Math.random() > 0.5;
+          const isSuccess = useRngStore.getState().eventRng.next() > 0.5;
           const runStore = useRunStore.getState();
           if (isSuccess) {
             useRunStore.setState({ playerMaxHp: runStore.playerMaxHp + 5 });
@@ -149,7 +150,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
 
           const bossRelics = RELICS.filter(r => r.tier === 'BOSS' && !runStore.relics.includes(r.id));
           if (bossRelics.length > 0) {
-            const pick = bossRelics[Math.floor(Math.random() * bossRelics.length)];
+            const pick = bossRelics[Math.floor(useRngStore.getState().eventRng.next() * bossRelics.length)];
             runStore.addRelic(pick.id);
             return `거리를 두고 총을 쏴 함정을 부쉈습니다. 총은 산산조각 났지만([${removedName}] 잃음), 안에서 놀랍게도 [${pick.name}] 유물을 찾아냈습니다!`;
           } else {
@@ -178,7 +179,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
           // 강화되지 않은 카드 목록 추출 후 2장 랜덤 픽
           const unupgraded = deckStore.masterDeck.filter(c => !c.isUpgraded);
           if (unupgraded.length > 0) {
-            const shuffled = customShuffle(unupgraded);
+            const shuffled = customShuffle(unupgraded, useRngStore.getState().eventRng);
             const targets = shuffled.slice(0, Math.min(2, shuffled.length));
 
             targets.forEach(t => {
@@ -198,7 +199,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
         onSelect: () => {
           const deckStore = useDeckStore.getState();
           const defenses = STARTING_CARDS.filter(c => c.type === 'PHYSICAL_DEFENSE');
-          const pick = defenses[Math.floor(Math.random() * defenses.length)];
+          const pick = defenses[Math.floor(useRngStore.getState().eventRng.next() * defenses.length)];
           deckStore.addCardToMasterDeck({ ...pick } as any);
 
           return `오락기를 후려쳐서 쓸만한 판넬 부품을 떼어냈습니다. [${pick.name}] 카드를 얻었습니다.`;
@@ -231,7 +232,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
         onSelect: () => {
           const deckStore = useDeckStore.getState();
           const utilities = STARTING_CARDS.filter(c => c.type === 'UTILITY');
-          const pick = utilities[Math.floor(Math.random() * utilities.length)];
+          const pick = utilities[Math.floor(useRngStore.getState().eventRng.next() * utilities.length)];
           deckStore.addCardToMasterDeck({ ...pick } as any);
           return `깨진 유리병들 사이에서 쓸만한 의학/화학 서적과 주사기를 챙겼습니다. [${pick.name}] 카드를 얻었습니다.`;
         }
@@ -261,7 +262,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
 
           const normalRelics = RELICS.filter(r => r.tier !== 'BOSS' && !runStore.relics.includes(r.id));
           if (normalRelics.length > 0) {
-            const pick = normalRelics[Math.floor(Math.random() * normalRelics.length)];
+            const pick = normalRelics[Math.floor(useRngStore.getState().eventRng.next() * normalRelics.length)];
             runStore.addRelic(pick.id);
             return `시체를 뒤집자 지독한 가스가 뿜어져 나와 얼굴을 덮쳤습니다! (체력 10 감소) 구역질을 참으며 배낭을 뒤져 50 골드와 [${pick.name}] 유물을 찾아냈습니다.`;
           } else {
@@ -293,12 +294,12 @@ export const RANDOM_EVENTS: RandomEvent[] = [
           const runStore = useRunStore.getState();
           runStore.damagePlayer(15);
 
-          const rand = Math.random();
+          const rand = useRngStore.getState().eventRng.next();
           if (rand < 0.33) {
             // 희귀 유물
             const rareRelics = RELICS.filter(r => r.tier === 'RARE' && !runStore.relics.includes(r.id));
             if (rareRelics.length > 0) {
-              const pick = rareRelics[Math.floor(Math.random() * rareRelics.length)];
+              const pick = rareRelics[Math.floor(useRngStore.getState().eventRng.next() * rareRelics.length)];
               runStore.addRelic(pick.id);
               return `"잭팟이다... 운이 좋군..." 사이보그의 입에서 무언가 떨어집니다. 체력을 잃었으나 [${pick.name}] 유물을 습득했습니다!`;
             } else {
@@ -321,10 +322,10 @@ export const RANDOM_EVENTS: RandomEvent[] = [
         onSelect: () => {
           const deckStore = useDeckStore.getState();
           const physics = STARTING_CARDS.filter(c => c.type === 'PHYSICAL_ATTACK');
-          const pick = physics[Math.floor(Math.random() * physics.length)];
+          const pick = physics[Math.floor(useRngStore.getState().eventRng.next() * physics.length)];
           deckStore.addCardToMasterDeck({ ...pick } as any);
 
-          if (Math.random() < 0.5) {
+          if (useRngStore.getState().eventRng.next() < 0.5) {
             return `TRIGGER_ELITE_BATTLE`;
           } else {
             return `사이보그를 박살 내고 쓸만한 무기 부품 모듈([${pick.name}])을 갈취했습니다. 기계는 반격을 시도했지만 안타깝게도 전원이 꺼졌습니다.`;
@@ -354,7 +355,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
           const runStore = useRunStore.getState();
           runStore.addGold(-75);
           const rareCards = ALL_CARDS.filter(c => c.tier === 'RARE');
-          const pick = rareCards[Math.floor(Math.random() * rareCards.length)];
+          const pick = rareCards[Math.floor(useRngStore.getState().eventRng.next() * rareCards.length)];
           useDeckStore.getState().addCardToMasterDeck({ ...pick } as any);
           return `상인이 만족스러운 미소와 함께 보따리에서 빛나는 카드를 꺼내줍니다. 골드 75를 지불하고 [${pick.name}] 카드를 획득했습니다!`;
         }
@@ -366,12 +367,12 @@ export const RANDOM_EVENTS: RandomEvent[] = [
         onSelect: () => {
           const deckStore = useDeckStore.getState();
           const masterDeck = [...deckStore.masterDeck];
-          const removeIdx = Math.floor(Math.random() * masterDeck.length);
+          const removeIdx = Math.floor(useRngStore.getState().eventRng.next() * masterDeck.length);
           const removedCard = masterDeck[removeIdx];
           masterDeck.splice(removeIdx, 1);
 
           const uncommonCards = ALL_CARDS.filter(c => c.tier === 'UNCOMMON');
-          const pick = uncommonCards[Math.floor(Math.random() * uncommonCards.length)];
+          const pick = uncommonCards[Math.floor(useRngStore.getState().eventRng.next() * uncommonCards.length)];
 
           deckStore.setMasterDeck(masterDeck);
           deckStore.addCardToMasterDeck({ ...pick } as any);
@@ -388,7 +389,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
           runStore.addGold(-40);
           const commonRelics = RELICS.filter(r => r.tier === 'COMMON' && !runStore.relics.includes(r.id));
           if (commonRelics.length > 0) {
-            const pick = commonRelics[Math.floor(Math.random() * commonRelics.length)];
+            const pick = commonRelics[Math.floor(useRngStore.getState().eventRng.next() * commonRelics.length)];
             runStore.addRelic(pick.id);
             return `흥정 끝에 적당한 가격에 합의했습니다. 골드 40을 지불하고 [${pick.name}] 유물을 획득했습니다!`;
           } else {
@@ -410,7 +411,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
         description: '체력을 25 회복합니다. 50% 확률로 덱에 [화상] 카드가 2장 추가됩니다.',
         onSelect: () => {
           useRunStore.getState().healPlayer(25);
-          const isTainted = Math.random() < 0.5;
+          const isTainted = useRngStore.getState().eventRng.next() < 0.5;
           if (isTainted) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { id, ...burnBlueprint } = STATUS_CARDS[0];
@@ -435,7 +436,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
         description: '물을 마시지 않습니다. 무작위 [특수 방어] 카드를 1장 얻습니다.',
         onSelect: () => {
           const specialDefenses = ALL_CARDS.filter(c => c.type === 'SPECIAL_DEFENSE');
-          const pick = specialDefenses[Math.floor(Math.random() * specialDefenses.length)];
+          const pick = specialDefenses[Math.floor(useRngStore.getState().eventRng.next() * specialDefenses.length)];
           useDeckStore.getState().addCardToMasterDeck({ ...pick } as any);
           return `물 대신 주변의 기이한 식물 추출물을 채집했습니다. 독성 방어 재료로 쓸 수 있을 것 같습니다. [${pick.name}] 카드를 얻었습니다!`;
         }

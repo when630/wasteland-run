@@ -12,6 +12,7 @@ import { createStartingDeck, STATUS_CARDS } from '../assets/data/cards';
 import { createEnemy, getEnemyIdsByTier } from '../assets/data/enemies';
 import { useRunStore } from '../store/useRunStore';
 import { onBattleStart } from '../logic/relicEffects';
+import { useRngStore } from '../store/useRngStore';
 import battleBg from '../assets/images/stage1_battle_backgroung.png';
 
 export const BattleView: React.FC = () => {
@@ -33,16 +34,17 @@ export const BattleView: React.FC = () => {
     drawCards(5);
 
     // 씬에 따른 몬스터 소환
+    const battleRng = useRngStore.getState().battleRng;
     if (currentScene === 'BOSS') {
       const bossIds = getEnemyIdsByTier('BOSS');
-      spawnEnemies([createEnemy(bossIds[Math.floor(Math.random() * bossIds.length)])]);
+      spawnEnemies([createEnemy(bossIds[battleRng.nextInt(bossIds.length)], battleRng)]);
     } else if (currentScene === 'ELITE') {
       const eliteIds = getEnemyIdsByTier('ELITE');
-      spawnEnemies([createEnemy(eliteIds[Math.floor(Math.random() * eliteIds.length)])]);
+      spawnEnemies([createEnemy(eliteIds[battleRng.nextInt(eliteIds.length)], battleRng)]);
     } else {
       const normalIds = getEnemyIdsByTier('NORMAL');
-      const shuffled = [...normalIds].sort(() => Math.random() - 0.5);
-      spawnEnemies(shuffled.slice(0, 2).map(id => createEnemy(id)));
+      const shuffled = battleRng.shuffle(normalIds);
+      spawnEnemies(shuffled.slice(0, 2).map(id => createEnemy(id, battleRng)));
     }
 
     // 유물 효과 일괄 적용

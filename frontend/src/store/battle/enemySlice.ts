@@ -3,6 +3,7 @@ import type { BattleState, EnemySlice } from './types';
 import { useRunStore } from '../useRunStore';
 import { useDeckStore } from '../useDeckStore';
 import { determineNextIntent } from '../../assets/data/enemies';
+import { useRngStore } from '../useRngStore';
 import { STATUS_CARDS } from '../../assets/data/cards';
 import { calculateDamageToEnemy, calculateDamageToPlayer } from '../../logic/damageCalculation';
 import { onEnemyKilledBySpecial, onFatalDamage } from '../../logic/relicEffects';
@@ -222,7 +223,7 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
       const updatedEnemy = {
         ...enemyObj,
         statuses: processStatusDecay(currentStatuses),
-        currentIntent: determineNextIntent(enemyObj.baseId),
+        currentIntent: determineNextIntent(enemyObj.baseId, useRngStore.getState().intentRng),
         visualEffect: (enemyObj.visualEffect?.type && enemyObj.visualEffect.type !== 'DAMAGE')
           ? enemyObj.visualEffect : undefined
       };

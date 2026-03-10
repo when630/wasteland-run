@@ -221,6 +221,10 @@ export const useRunStore = create<RunState>((set) => ({
           }
         }
 
+        // 시드 RNG 초기화 (저장된 시드 기반)
+        const rngModule = await import('./useRngStore');
+        rngModule.useRngStore.getState().initialize(data.runSeed || Math.random().toString(36).substring(2, 10));
+
         useRunStore.getState().setToastMessage('데이터 수신 완료 — 탐험을 이어갑니다.');
       } else if (data && !data.isActive) {
         console.log('이전 런이 종료된 상태입니다. 새 게임을 시작합니다.');

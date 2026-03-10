@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useRngStore } from './useRngStore';
 
 export type NodeType = 'BATTLE' | 'ELITE' | 'REST' | 'SHOP' | 'EVENT' | 'BOSS';
 
@@ -33,6 +34,7 @@ export const useMapStore = create<MapState>((set) => ({
     const TOTAL_FLOORS = 15;
     const COLUMNS = 7;
     const NUM_PATHS = 6;
+    const mapRng = useRngStore.getState().mapRng;
 
     // 노드 타입 확률: 전투 45%, 이벤트 22%, 엘리트 16%, 휴식 12%, 상인 5%
     const getRandomType = (floor: number): NodeType => {
@@ -41,7 +43,7 @@ export const useMapStore = create<MapState>((set) => ({
       if (floor === TOTAL_FLOORS - 1) return 'REST';
       if (floor === Math.floor(TOTAL_FLOORS / 2)) return 'ELITE';
 
-      const r = Math.random();
+      const r = mapRng.next();
       if (r < 0.45) return 'BATTLE';
       if (r < 0.67) return 'EVENT';
       if (r < 0.83) return 'ELITE';
@@ -70,16 +72,6 @@ export const useMapStore = create<MapState>((set) => ({
       }
     };
 
-    // Fisher-Yates 셔플
-    const shuffle = <T>(arr: T[]): T[] => {
-      const a = [...arr];
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a;
-    };
-
     const paths: Array<Array<[number, number]>> = [];
     const usedStartCols = new Set<number>();
 
@@ -88,11 +80,11 @@ export const useMapStore = create<MapState>((set) => ({
       let startCol: number;
       if (p < 2) {
         do {
-          startCol = Math.floor(Math.random() * COLUMNS);
+          startCol = mapRng.nextInt(COLUMNS);
         } while (p > 0 && usedStartCols.has(startCol));
         usedStartCols.add(startCol);
       } else {
-        startCol = Math.floor(Math.random() * COLUMNS);
+        startCol = mapRng.nextInt(COLUMNS);
       }
 
       const path: Array<[number, number]> = [[1, startCol]];
@@ -106,7 +98,7 @@ export const useMapStore = create<MapState>((set) => ({
         if (currentCol < COLUMNS - 1) options.push(currentCol + 1);
 
         // 셔플 후, 교차하지 않는 첫 번째 선택지 사용
-        const shuffled = shuffle(options);
+        const shuffled = mapRng.shuffle(options);
         let nextCol = shuffled[0];
         for (const opt of shuffled) {
           if (!wouldCross(floor - 1, currentCol, opt)) {
@@ -149,8 +141,8 @@ export const useMapStore = create<MapState>((set) => ({
             positionX: col,
             type: getRandomType(floor),
             nextNodeIds: [],
-            offsetX: Math.round((Math.random() - 0.5) * 2 * jitter),
-            offsetY: Math.round((Math.random() - 0.5) * 2 * jitter)
+            offsetX: Math.round((mapRng.next() - 0.5) * 2 * jitter),
+            offsetY: Math.round((mapRng.next() - 0.5) * 2 * jitter)
           });
         }
       }

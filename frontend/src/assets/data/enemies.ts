@@ -1,5 +1,5 @@
 import type { Enemy, Intent, EnemyTier } from '../../types/enemyTypes';
-import { generateUniqueId } from '../../utils/rng';
+import { generateUniqueId, type SeededRNG } from '../../utils/rng';
 
 export const BASE_ENEMIES: Record<string, Omit<Enemy, 'id' | 'currentHp' | 'shield' | 'resist' | 'currentIntent'>> = {
   // 일반 몬스터
@@ -70,8 +70,8 @@ export const BASE_ENEMIES: Record<string, Omit<Enemy, 'id' | 'currentHp' | 'shie
 /**
  * 몬스터의 baseId에 따라 다음 턴 행동(Intent)을 결정하여 반환하는 함수
  */
-export const determineNextIntent = (baseId: string): Intent => {
-  const rand = Math.random();
+export const determineNextIntent = (baseId: string, rng?: SeededRNG): Intent => {
+  const rand = rng ? rng.next() : Math.random();
 
   switch (baseId) {
     case 'scrap_collector': {
@@ -183,7 +183,7 @@ export const determineNextIntent = (baseId: string): Intent => {
 /**
  * 특정 baseId의 적을 생성하여 새 인스턴스화 하는 공용 함수
  */
-export const createEnemy = (baseId: string): Enemy => {
+export const createEnemy = (baseId: string, rng?: SeededRNG): Enemy => {
   const baseDef = BASE_ENEMIES[baseId];
   if (!baseDef) throw new Error(`Enemy ${baseId} not found`);
 
@@ -193,7 +193,7 @@ export const createEnemy = (baseId: string): Enemy => {
     currentHp: baseDef.maxHp,
     shield: baseDef.tier === 'BOSS' ? 20 : 0, // 보스 패시브: 전투 시작 시 20 쉴드
     resist: 0,
-    currentIntent: determineNextIntent(baseId) // 초기 랜덤 의도 부여
+    currentIntent: determineNextIntent(baseId, rng) // 초기 랜덤 의도 부여
   };
 };
 
