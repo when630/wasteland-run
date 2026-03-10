@@ -10,7 +10,12 @@ import shopBadge from '../assets/images/shop_badge.png';
 import eventBadge from '../assets/images/event_badge.png';
 import bossBadge from '../assets/images/boss_badge.png';
 
-export const MapView: React.FC = () => {
+interface MapViewProps {
+  viewOnly?: boolean;
+  onClose?: () => void;
+}
+
+export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) => {
   const { setScene } = useRunStore();
   const { nodes, currentNodeId, visitedNodeIds, generateMap, moveToNode } = useMapStore();
 
@@ -45,42 +50,71 @@ export const MapView: React.FC = () => {
     <div style={{
       width: '100vw',
       height: '100vh',
-      backgroundColor: '#111',
-      color: '#fff',
+      backgroundImage: `url(${mapBg})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      paddingTop: '50px', // 중앙 정렬에서 스크롤 가능한 상단 정렬로 변경
-      overflowY: 'auto', // 🌟 긴 맵 내용을 볼 수 있도록 수직 스크롤 오버플로우 활성화
+      paddingTop: '50px',
+      overflowY: 'auto',
       overflowX: 'hidden'
     }}>
-      <h1 style={{ fontSize: '48px', marginBottom: '20px', color: '#88aabb', flexShrink: 0 }}>
+      {viewOnly && onClose && (
+        <button
+          onClick={onClose}
+          style={{
+            position: 'fixed', top: '16px', right: '20px',
+            background: 'rgba(62, 42, 20, 0.7)', border: '2px solid #8b6f47', borderRadius: '50%',
+            color: '#e8d5b0', fontSize: '28px', width: '44px', height: '44px',
+            cursor: 'pointer', transition: 'all 0.2s', zIndex: 10000,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            lineHeight: 1, padding: 0
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(62, 42, 20, 0.9)'; e.currentTarget.style.borderColor = '#c4a96a'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(62, 42, 20, 0.7)'; e.currentTarget.style.borderColor = '#8b6f47'; }}
+        >
+          ×
+        </button>
+      )}
+      <h1 style={{
+        fontSize: '48px', marginBottom: '20px', flexShrink: 0,
+        color: '#3e2a14',
+        textShadow: '1px 1px 0 #c4a96a',
+        fontFamily: 'serif'
+      }}>
         황무지 지도
       </h1>
-      <p style={{ fontSize: '20px', color: '#ccc', marginBottom: '40px', flexShrink: 0 }}>
-        여정을 이어갈 다음 노드를 선택하세요.
+      <p style={{ fontSize: '20px', color: '#5a3e28', marginBottom: '40px', flexShrink: 0, fontFamily: 'serif', textShadow: '0 1px 0 rgba(196, 169, 106, 0.5)' }}>
+        {viewOnly ? '현재 진행 상황을 확인하세요.' : '여정을 이어갈 다음 노드를 선택하세요.'}
       </p>
 
-      {/* 맵 노드 트리 렌더링 영역 */}
+      {/* 맵 노드 트리 렌더링 영역 — 양피지 느낌 */}
       <div style={{
         position: 'relative',
         display: 'flex', flexDirection: 'column-reverse', gap: '60px', alignItems: 'center',
-        padding: '40px', border: '1px solid #333', borderRadius: '12px',
-        backgroundImage: `url(${mapBg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundBlendMode: 'overlay',
-        backgroundColor: 'rgba(26, 26, 26, 0.8)', // 기본 #1a1a1a 컬러의 투명 버전 형태
+        padding: '50px 40px', borderRadius: '8px',
+        background: 'linear-gradient(135deg, #d4b896 0%, #e8d5b0 25%, #d9c4a0 50%, #e0cba5 75%, #c8a882 100%)',
+        border: '3px solid #8b6f47',
+        boxShadow: '0 0 30px rgba(0,0,0,0.5), inset 0 0 60px rgba(139, 111, 71, 0.3)',
         minWidth: '600px',
         marginBottom: '100px'
       }}>
-        {/* 층(Floor) 단위로 렌더링 — 7열 그리드, 경로가 없는 자리는 빈 스페이서 */}
+        {/* 양피지 질감 오버레이 */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+          borderRadius: '8px',
+          background: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(139, 111, 71, 0.03) 3px, rgba(139, 111, 71, 0.03) 4px)',
+          pointerEvents: 'none', zIndex: 0
+        }} />
+
+        {/* 층(Floor) 단위로 렌더링 — 7열 그리드 */}
         {Array.from({ length: 15 }, (_, i) => i + 1).map(floorNum => {
           const floorNodes = nodes.filter(n => n.floor === floorNum);
           if (floorNodes.length === 0) return null;
 
           return (
-            <div key={`floor-${floorNum}`} style={{ display: 'flex', gap: '24px', justifyContent: 'center', width: '100%' }}>
+            <div key={`floor-${floorNum}`} style={{ display: 'flex', gap: '24px', justifyContent: 'center', width: '100%', position: 'relative', zIndex: 1 }}>
               {[0, 1, 2, 3, 4, 5, 6].map(pos => {
                 const node = floorNodes.find(n => n.positionX === pos);
 
@@ -99,24 +133,36 @@ export const MapView: React.FC = () => {
                     key={node.id}
                     id={node.id}
                     onClick={() => {
-                      if (isNextAvailable) handleNodeClick(node.id, node.type);
+                      if (!viewOnly && isNextAvailable) handleNodeClick(node.id, node.type);
                     }}
                     style={{
-                      width: '50px', height: '50px', borderRadius: '50%',
-                      backgroundColor: isCurrent ? '#00bbff' : (isVisited ? '#006688' : (isNextAvailable ? '#444' : '#222')),
-                      border: isCurrent ? '3px solid #fff' : (isVisited ? '2px solid #00bbff' : (isNextAvailable ? '2px solid #888' : '2px dashed #333')),
+                      width: '50px', height: '50px',
                       display: 'flex', justifyContent: 'center', alignItems: 'center',
-                      fontSize: '20px', cursor: isNextAvailable ? 'pointer' : 'not-allowed',
-                      boxShadow: isCurrent ? '0 0 15px #00bbff' : (isVisited ? '0 0 10px #006688' : 'none'),
-                      opacity: isVisited && !isCurrent ? 0.8 : 1,
+                      cursor: viewOnly ? 'default' : (isNextAvailable ? 'pointer' : 'default'),
+                      opacity: isVisited && !isCurrent ? 0.5 : (!isNextAvailable && !isCurrent && !isVisited ? 0.35 : 1),
                       transition: 'all 0.3s',
                       position: 'relative',
                       flexShrink: 0,
-                      zIndex: 3
+                      zIndex: 3,
+                      transform: `translate(${node.offsetX}px, ${node.offsetY}px)`,
+                      filter: isCurrent
+                        ? 'drop-shadow(0 0 8px #3e2a14) drop-shadow(0 0 16px rgba(196, 169, 106, 0.8))'
+                        : isNextAvailable
+                          ? 'drop-shadow(0 0 6px rgba(139, 111, 71, 0.6))'
+                          : 'none'
                     }}
                     title={`${node.floor}층 - ${node.type}`}
                   >
-                    <img src={typeToIcon[node.type]} alt={node.type} style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
+                    <img
+                      src={typeToIcon[node.type]}
+                      alt={node.type}
+                      style={{
+                        width: isCurrent ? '110%' : '100%',
+                        height: isCurrent ? '110%' : '100%',
+                        objectFit: 'contain',
+                        transition: 'all 0.3s'
+                      }}
+                    />
                   </div>
                 );
               })}
@@ -132,16 +178,16 @@ export const MapView: React.FC = () => {
             // 현재 활성화된 노드에서 출발하는 선발 길들
             const isAvailablePath = (node.id === currentNodeId) && nodes.find(n => n.id === currentNodeId)?.nextNodeIds.includes(nextId);
 
-            let lineColor = '#333';
+            let lineColor = 'rgba(139, 111, 71, 0.3)';
             let strokeWidth = 2;
             let edgeZIndex = 1;
 
             if (isPastPath) {
-              lineColor = '#00bbff'; // 이미 지나온 경로
+              lineColor = '#5a3e28';
               strokeWidth = 4;
               edgeZIndex = 2;
             } else if (isAvailablePath) {
-              lineColor = '#aaa'; // 다음 개방된 경로
+              lineColor = '#8b6f47';
               strokeWidth = 3;
               edgeZIndex = 2;
             }

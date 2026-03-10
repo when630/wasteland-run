@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { BattleStage } from '../components/pixi/BattleStage';
-import { HUD } from '../components/ui/HUD';
 import { Hand } from '../components/ui/Hand';
 import { ResourcePanel } from '../components/ui/ResourcePanel';
 import { DeckPiles } from '../components/ui/DeckPiles';
@@ -188,7 +187,7 @@ export const BattleView: React.FC = () => {
           {/* C자형 둥근 곡선 (Quadratic Bezier) */}
           <path
             d={`M ${targetingPosition.x} ${targetingPosition.y} 
-                Q ${targetingPosition.x + (mousePos.x - targetingPosition.x) * 0.5 + 100} ${targetingPosition.y - 150},
+                Q ${targetingPosition.x + (mousePos.x - targetingPosition.x) * 0.5 - 150} ${targetingPosition.y - 200},
                 ${mousePos.x} ${mousePos.y}`}
             fill="none"
             stroke="#ffaa00"
@@ -213,7 +212,6 @@ export const BattleView: React.FC = () => {
         {/* pointerEvents: 'none'을 통해 클릭이 기본적으로 아래 Canvas로 투과되게 하고, 
             각종 UI 요소들에만 pointerEvents: 'auto'를 줍니다. */}
         <div style={{ pointerEvents: 'auto' }}>
-          <HUD />
           <ResourcePanel />
           <Hand />
           <DeckPiles />

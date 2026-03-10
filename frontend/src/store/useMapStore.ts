@@ -8,6 +8,8 @@ export interface MapNode {
   positionX: number;  // 층 내 위치 (0~6, 7열 그리드)
   type: NodeType;     // 노드 타입
   nextNodeIds: string[]; // 연결된 다음 노드들의 ID
+  offsetX: number;    // 렌더링 시 X축 랜덤 오프셋 (px)
+  offsetY: number;    // 렌더링 시 Y축 랜덤 오프셋 (px)
 }
 
 interface MapState {
@@ -130,19 +132,25 @@ export const useMapStore = create<MapState>((set) => ({
       floor: TOTAL_FLOORS,
       positionX: 3,
       type: 'BOSS',
-      nextNodeIds: []
+      nextNodeIds: [],
+      offsetX: 0,
+      offsetY: 0
     });
 
     for (const path of paths) {
       for (const [floor, col] of path) {
         const key = `${floor}-${col}`;
         if (!nodeMap.has(key)) {
+          // 1층·보스 직전층은 오프셋 작게, 나머지는 ±10px 범위
+          const jitter = (floor === 1 || floor === TOTAL_FLOORS - 1) ? 4 : 10;
           nodeMap.set(key, {
             id: `f${floor}-p${col}`,
             floor,
             positionX: col,
             type: getRandomType(floor),
-            nextNodeIds: []
+            nextNodeIds: [],
+            offsetX: Math.round((Math.random() - 0.5) * 2 * jitter),
+            offsetY: Math.round((Math.random() - 0.5) * 2 * jitter)
           });
         }
       }

@@ -13,6 +13,7 @@ import { useAuthStore } from './store/useAuthStore';
 import { LeaderboardModal } from './components/ui/LeaderboardModal';
 
 import { useAudioStore } from './store/useAudioStore';
+import { HUD } from './components/ui/HUD';
 
 function SceneManager() {
   const { currentScene } = useRunStore();
@@ -41,24 +42,35 @@ function SceneManager() {
     }
   }, [currentScene]);
 
-  switch (currentScene) {
-    case 'MAIN_MENU':
-      return <MainMenuView />;
-    case 'MAP':
-      return <MapView />;
-    case 'BATTLE':
-    case 'ELITE':
-    case 'BOSS':
-      return <BattleView />;
-    case 'REST':
-      return <RestView />;
-    case 'EVENT':
-      return <EventView />;
-    case 'SHOP':
-      return <ShopView />;
-    default:
-      return <MapView />;
-  }
+  const showHUD = currentScene !== 'MAIN_MENU' && currentScene !== 'MAP';
+
+  const scene = (() => {
+    switch (currentScene) {
+      case 'MAIN_MENU':
+        return <MainMenuView />;
+      case 'MAP':
+        return <MapView />;
+      case 'BATTLE':
+      case 'ELITE':
+      case 'BOSS':
+        return <BattleView />;
+      case 'REST':
+        return <RestView />;
+      case 'EVENT':
+        return <EventView />;
+      case 'SHOP':
+        return <ShopView />;
+      default:
+        return <MapView />;
+    }
+  })();
+
+  return (
+    <>
+      {scene}
+      {showHUD && <HUD />}
+    </>
+  );
 }
 
 function App() {

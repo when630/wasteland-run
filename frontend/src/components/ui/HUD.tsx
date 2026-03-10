@@ -5,13 +5,16 @@ import { useDeckStore } from '../../store/useDeckStore';
 import { RELICS } from '../../assets/data/relics';
 import { useAudioStore } from '../../store/useAudioStore';
 import { SettingsModal } from './SettingsModal';
+import { MapView } from '../../pages/MapView';
 
 export const HUD: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const { playerHp, playerMaxHp, gold, setIsLeaderboardOpen } = useRunStore();
+  const [isMapOverlayOpen, setIsMapOverlayOpen] = useState(false);
+  const { playerHp, playerMaxHp, gold, currentScene, setIsLeaderboardOpen } = useRunStore();
   const { enemies, applyDamageToEnemy } = useBattleStore();
   const { drawPile, hand, discardPile, exhaustPile, setViewingPile } = useDeckStore();
+  const isMap = currentScene === 'MAP';
   const relicsList = useRunStore(state => state.relics);
 
   // 🌟 새롭게 추가된 유물 호버 및 선택 상태
@@ -64,6 +67,29 @@ export const HUD: React.FC = () => {
         </div>
 
         <div style={{ flex: 1 }} /> {/* 우측 아이콘들을 우측 끝으로 밀어주는 역할 */}
+
+        {/* 지도 버튼 — 맵 화면에서만 숨김 */}
+        {!isMap && (
+          <div
+            onClick={() => {
+              useAudioStore.getState().playClick();
+              setIsMapOverlayOpen(true);
+            }}
+            style={{
+              cursor: 'pointer',
+              userSelect: 'none',
+              fontSize: '24px',
+              marginRight: '15px',
+              textShadow: '2px 2px 2px black',
+              transition: 'transform 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            title="지도 보기"
+          >
+            🗺️
+          </div>
+        )}
 
         {/* 🌟 명예의 전당 버튼 (트로피) */}
         <div
@@ -347,6 +373,18 @@ export const HUD: React.FC = () => {
 
       {/* 🌟 환경 설정 모달 렌더링 */}
       {isSettingsOpen && <SettingsModal onClose={() => setIsSettingsOpen(false)} showQuitButton={true} />}
+
+      {/* 맵 오버레이 (전투 중 지도 보기) */}
+      {isMapOverlayOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, width: '100vw', height: '100vh',
+          backgroundColor: 'rgba(0,0,0,0.9)',
+          zIndex: 9999
+        }}>
+          <MapView viewOnly onClose={() => setIsMapOverlayOpen(false)} />
+        </div>
+      )}
     </>
   );
 };

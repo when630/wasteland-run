@@ -5,7 +5,7 @@ import { useCardPlay } from '../../hooks/useCardPlay';
 
 export const Hand: React.FC = () => {
   const { hand } = useDeckStore();
-  const { targetingCardId } = useBattleStore();
+  const { targetingCardId, playerStatus } = useBattleStore();
   const { playCard } = useCardPlay();
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
 
@@ -24,6 +24,9 @@ export const Hand: React.FC = () => {
       height: '300px' // 카드가 떠오를 여유 공간
     }}>
       {hand.map((card, index) => {
+        const isPhysicalAttack = card.type === 'PHYSICAL_ATTACK';
+        const isLocked = isPhysicalAttack && playerStatus.cannotPlayPhysicalAttack;
+        const displayApCost = (isPhysicalAttack && playerStatus.nextPhysicalFree) ? 0 : card.costAp;
         const isSelected = targetingCardId === card.id;
         const isHovered = hoveredCardId === card.id;
         // 타겟팅 라벨 업데이트 (단일 공격/디버프만 적 타겟 요구)
@@ -53,6 +56,7 @@ export const Hand: React.FC = () => {
           <div
             key={card.id}
             onClick={(e) => {
+              if (isLocked) return;
               // DOM 요소를 통한 중심 상단 좌표 계산
               const rect = e.currentTarget.getBoundingClientRect();
               const startX = rect.left + rect.width / 2;
@@ -67,15 +71,15 @@ export const Hand: React.FC = () => {
               position: 'relative',
               width: '130px',
               height: '190px',
-              backgroundColor: '#2a2a2a',
-              // 선택된 카드는 금색 테두리, 일반 호버 시 밝은 회색 테두리
-              border: `2px solid ${isSelected ? '#ffaa00' : isHovered ? '#aaa' : '#555'}`,
+              backgroundColor: isLocked ? '#1a1a1a' : '#2a2a2a',
+              border: `2px solid ${isLocked ? '#aa2222' : isSelected ? '#ffaa00' : isHovered ? '#aaa' : '#555'}`,
               borderRadius: '8px',
               padding: '12px',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              cursor: 'pointer',
+              cursor: isLocked ? 'not-allowed' : 'pointer',
+              opacity: isLocked ? 0.5 : 1,
               pointerEvents: 'auto', // 🌟 카드 본체는 마우스 이벤트 수신
               // 🌟 겹침(오버랩) 마진 효과
               marginLeft: index === 0 ? '0px' : '-50px',
@@ -101,11 +105,12 @@ export const Hand: React.FC = () => {
               </span>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
                 <span style={{
-                  backgroundColor: '#ffcc00', color: '#000', borderRadius: '50%',
+                  backgroundColor: displayApCost === 0 && card.costAp > 0 ? '#44ff44' : '#ffcc00',
+                  color: '#000', borderRadius: '50%',
                   width: '24px', height: '24px', display: 'flex', justifyContent: 'center',
                   alignItems: 'center', fontSize: '14px', fontWeight: 'bold'
                 }}>
-                  {card.costAp}
+                  {displayApCost}
                 </span>
                 {card.costAmmo > 0 && (
                   <span style={{
@@ -133,6 +138,19 @@ export const Hand: React.FC = () => {
             <div style={{ fontSize: '12px', color: '#ddd', textAlign: 'center' }}>
               {card.description}
             </div>
+
+            {/* 잠금 오버레이 */}
+            {isLocked && (
+              <div style={{
+                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                display: 'flex', justifyContent: 'center', alignItems: 'center',
+                borderRadius: '8px',
+                fontSize: '36px',
+                pointerEvents: 'none'
+              }}>
+                🔒
+              </div>
+            )}
           </div>
         );
       })}
