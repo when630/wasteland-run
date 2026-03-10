@@ -19,6 +19,11 @@ public class RunResponseDto {
     private String currentMapNode;
     private boolean isActive;
     private int enemiesKilled;
+    private int cardsPlayed;
+    private long totalDamageDealt;
+    private long totalDamageTaken;
+    private long totalGoldEarned;
+    private String mapJson;
 
     public static RunResponseDto of(RunData runData) {
         return new RunResponseDto(
@@ -33,6 +38,11 @@ public class RunResponseDto {
                 runData.getCurrentScene(),
                 runData.getCurrentMapNode(),
                 runData.isActive(),
-                runData.getEnemiesKilled());
+                runData.getEnemiesKilled(),
+                runData.getCardsPlayed(),
+                runData.getTotalDamageDealt(),
+                runData.getTotalDamageTaken(),
+                runData.getTotalGoldEarned(),
+                runData.getMapJson());
     }
 }

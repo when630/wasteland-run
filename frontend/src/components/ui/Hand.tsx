@@ -24,6 +24,7 @@ export const Hand: React.FC = () => {
       height: '300px' // 카드가 떠오를 여유 공간
     }}>
       {hand.map((card, index) => {
+        const isStatusCard = card.type.startsWith('STATUS_');
         const isPhysicalAttack = card.type === 'PHYSICAL_ATTACK';
         const isLocked = isPhysicalAttack && playerStatus.cannotPlayPhysicalAttack;
         const displayApCost = (isPhysicalAttack && playerStatus.nextPhysicalFree) ? 0 : card.costAp;
@@ -71,8 +72,8 @@ export const Hand: React.FC = () => {
               position: 'relative',
               width: '130px',
               height: '190px',
-              backgroundColor: isLocked ? '#1a1a1a' : '#2a2a2a',
-              border: `2px solid ${isLocked ? '#aa2222' : isSelected ? '#ffaa00' : isHovered ? '#aaa' : '#555'}`,
+              backgroundColor: isStatusCard ? '#3a1520' : isLocked ? '#1a1a1a' : '#2a2a2a',
+              border: `2px solid ${isLocked ? '#aa2222' : isSelected ? '#ffaa00' : isStatusCard ? '#aa3344' : isHovered ? '#aaa' : '#555'}`,
               borderRadius: '8px',
               padding: '12px',
               display: 'flex',
@@ -89,9 +90,11 @@ export const Hand: React.FC = () => {
               zIndex: isSelected ? 200 : isHovered ? 100 : index + 10,
               boxShadow: isSelected
                 ? '0 0 25px rgba(255, 170, 0, 0.9)'
-                : isHovered
-                  ? '0 10px 20px rgba(255, 255, 255, 0.4)'
-                  : '0 4px 10px rgba(0,0,0,0.5)',
+                : isStatusCard
+                  ? '0 0 12px rgba(170, 50, 70, 0.6)'
+                  : isHovered
+                    ? '0 10px 20px rgba(255, 255, 255, 0.4)'
+                    : '0 4px 10px rgba(0,0,0,0.5)',
               transition: 'transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.2s, box-shadow 0.2s, z-index 0s',
               userSelect: 'none'
             }}
@@ -126,8 +129,8 @@ export const Hand: React.FC = () => {
 
             {/* 중앙: 타입 및 타겟 대상 뱃지 */}
             <div style={{ display: 'flex', justifyContent: 'center', gap: '5px', margin: '5px 0' }}>
-              <span style={{ fontSize: '10px', padding: '3px 6px', backgroundColor: '#444', borderRadius: '4px', color: '#bbb' }}>
-                {card.type.replace('_', ' ')}
+              <span style={{ fontSize: '10px', padding: '3px 6px', backgroundColor: isStatusCard ? '#661133' : '#444', borderRadius: '4px', color: isStatusCard ? '#ff8899' : '#bbb' }}>
+                {isStatusCard ? '⚠ 상태이상' : card.type.replace('_', ' ')}
               </span>
               <span style={{ fontSize: '10px', padding: '3px 6px', backgroundColor: needsEnemyTarget ? '#662222' : '#225522', borderRadius: '4px', color: '#ddd' }}>
                 {targetLabel}

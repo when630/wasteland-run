@@ -1,37 +1,69 @@
-import type { Enemy, Intent } from '../../types/enemyTypes';
+import type { Enemy, Intent, EnemyTier } from '../../types/enemyTypes';
 import { generateUniqueId } from '../../utils/rng';
 
 export const BASE_ENEMIES: Record<string, Omit<Enemy, 'id' | 'currentHp' | 'shield' | 'resist' | 'currentIntent'>> = {
+  // 일반 몬스터
   scrap_collector: {
     baseId: 'scrap_collector',
+    tier: 'NORMAL',
     name: '고철 수집가',
     maxHp: 45,
   },
   acid_dog: {
     baseId: 'acid_dog',
+    tier: 'NORMAL',
     name: '산성 침 들개',
     maxHp: 28,
   },
   waste_slime: {
     baseId: 'waste_slime',
+    tier: 'NORMAL',
     name: '폐기물 슬라임',
     maxHp: 65,
   },
+  radiation_spider: {
+    baseId: 'radiation_spider',
+    tier: 'NORMAL',
+    name: '방사능 거미',
+    maxHp: 22,
+  },
+  rust_marauder: {
+    baseId: 'rust_marauder',
+    tier: 'NORMAL',
+    name: '녹슨 약탈자',
+    maxHp: 38,
+  },
+  scrap_turret: {
+    baseId: 'scrap_turret',
+    tier: 'NORMAL',
+    name: '폐 자동포탑',
+    maxHp: 30,
+  },
+  // 엘리트 몬스터
   mutant_behemoth: {
     baseId: 'mutant_behemoth',
+    tier: 'ELITE',
     name: '돌연변이 베히모스',
     maxHp: 110,
   },
   rogue_sentry: {
     baseId: 'rogue_sentry',
+    tier: 'ELITE',
     name: '폭주하는 경비 드론',
     maxHp: 85,
   },
+  mutant_sniper: {
+    baseId: 'mutant_sniper',
+    tier: 'ELITE',
+    name: '변이 저격수',
+    maxHp: 75,
+  },
+  // 보스
   brutus: {
     baseId: 'brutus',
+    tier: 'BOSS',
     name: '고철 기갑수 브루터스',
     maxHp: 140,
-    // 보스는 시작할 때 20의 쉴드가 있어야 하는데, 이건 배틀 스토어 초기화나 여기서 패시브로 설계 가능
   }
 };
 
@@ -64,6 +96,48 @@ export const determineNextIntent = (baseId: string): Intent => {
         return { type: 'BUFF', amount: 5, description: '🛡️ 단단해지기 (방어도 5)' };
       } else {
         return { type: 'ATTACK', amount: 3, damageType: 'PHYSICAL', description: '⚔️ 짓누르기 3' };
+      }
+    }
+    case 'radiation_spider': {
+      // 빠른 독 공격 위주, 체력 낮음
+      if (rand < 0.5) {
+        return { type: 'ATTACK', amount: 4, damageType: 'SPECIAL', description: '☣️ 독 침 4' };
+      } else if (rand < 0.8) {
+        return { type: 'ATTACK', amount: 5, damageType: 'PHYSICAL', description: '⚔️ 물어뜯기 5' };
+      } else {
+        return { type: 'ATTACK', amount: 3, damageType: 'SPECIAL', description: '☣️ 맹독 주입 3', applyDebuff: { status: 'WEAK', amount: 1 } };
+      }
+    }
+    case 'rust_marauder': {
+      // 물리 공격 위주, 다단 히트 가능
+      if (rand < 0.4) {
+        return { type: 'ATTACK', amount: 8, damageType: 'PHYSICAL', description: '⚔️ 녹슨 도끼 내려치기 8' };
+      } else if (rand < 0.7) {
+        return { type: 'ATTACK', amount: 9, damageType: 'PHYSICAL', description: '⚔️ 연속 베기 (3x3)' };
+      } else {
+        return { type: 'BUFF', amount: 6, description: '🛡️ 폐차 문 방어 (방어도 6)' };
+      }
+    }
+    case 'scrap_turret': {
+      // 특수 공격 위주, 원거리
+      if (rand < 0.5) {
+        return { type: 'ATTACK', amount: 6, damageType: 'SPECIAL', description: '☣️ 자동 사격 6' };
+      } else if (rand < 0.8) {
+        return { type: 'BUFF', amount: 4, description: '🛡️ 재장전 (방어도 4)' };
+      } else {
+        return { type: 'ATTACK', amount: 6, damageType: 'SPECIAL', description: '☣️ 연사 (3x2)' };
+      }
+    }
+    case 'mutant_sniper': {
+      // 고데미지 저격 + 은폐 + 독탄
+      if (rand < 0.35) {
+        return { type: 'ATTACK', amount: 20, damageType: 'SPECIAL', description: '☣️ 정밀 저격 20' };
+      } else if (rand < 0.6) {
+        return { type: 'ATTACK', amount: 8, damageType: 'PHYSICAL', description: '⚔️ 근접 나이프 8', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
+      } else if (rand < 0.85) {
+        return { type: 'BUFF', amount: 12, description: '🛡️ 은폐 (방어도 12)' };
+      } else {
+        return { type: 'ATTACK', amount: 12, damageType: 'SPECIAL', description: '☣️ 독탄 12', applyDebuff: { status: 'WEAK', amount: 1 } };
       }
     }
     case 'mutant_behemoth': {
@@ -117,8 +191,14 @@ export const createEnemy = (baseId: string): Enemy => {
     ...baseDef,
     id: generateUniqueId(),
     currentHp: baseDef.maxHp,
-    shield: baseId === 'brutus' ? 20 : 0, // 브루터스 패시브: 전투 시작 시 20 쉴드
+    shield: baseDef.tier === 'BOSS' ? 20 : 0, // 보스 패시브: 전투 시작 시 20 쉴드
     resist: 0,
     currentIntent: determineNextIntent(baseId) // 초기 랜덤 의도 부여
   };
 };
+
+/**
+ * 특정 등급의 적 baseId 목록을 반환
+ */
+export const getEnemyIdsByTier = (tier: EnemyTier): string[] =>
+  Object.values(BASE_ENEMIES).filter(e => e.tier === tier).map(e => e.baseId);

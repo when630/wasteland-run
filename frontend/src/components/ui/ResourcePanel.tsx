@@ -4,7 +4,7 @@ import { useDeckStore } from '../../store/useDeckStore';
 import { useAudioStore } from '../../store/useAudioStore';
 
 export const ResourcePanel: React.FC = () => {
-  const { playerActionPoints, playerAmmo, endPlayerTurn, currentTurn } = useBattleStore();
+  const { playerActionPoints, playerMaxAp, playerAmmo, endPlayerTurn, currentTurn } = useBattleStore();
   const { discardHand } = useDeckStore();
 
   const handleTurnEnd = () => {
@@ -41,7 +41,7 @@ export const ResourcePanel: React.FC = () => {
       }}>
         {/* Slay the Spire 에너지 텍스트 스타일 */}
         <div style={{ fontSize: '28px', fontWeight: '900', textShadow: '2px 2px 2px black' }}>
-          {playerActionPoints}<span style={{ fontSize: '16px' }}>/3</span>
+          {playerActionPoints}<span style={{ fontSize: '16px' }}>/{playerMaxAp}</span>
         </div>
         {/* 남은 탄환 아이콘이나 텍스트 작게 추가 */}
         <div style={{ fontSize: '12px', fontWeight: 'bold', textShadow: '1px 1px 1px black' }}>

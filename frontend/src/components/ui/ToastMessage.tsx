@@ -29,30 +29,51 @@ export const ToastMessage: React.FC = () => {
 
   if (!toastMessage && !isVisible) return null;
 
+  // 메시지 내용에 따른 색상/아이콘 분기
+  const isWarning = /!|부족|불가|없|실패/.test(displayMsg);
+  const isSuccess = /발동|획득|회복|완료|수신/.test(displayMsg);
+
+  let bgColor: string;
+  let borderColor: string;
+  let icon: string;
+
+  if (isWarning) {
+    bgColor = 'rgba(220, 50, 50, 0.95)';
+    borderColor = '#ff8888';
+    icon = '⚠️';
+  } else if (isSuccess) {
+    bgColor = 'rgba(34, 130, 68, 0.95)';
+    borderColor = '#66cc88';
+    icon = '✅';
+  } else {
+    bgColor = 'rgba(180, 140, 40, 0.95)';
+    borderColor = '#ddb844';
+    icon = 'ℹ️';
+  }
+
   return (
     <div
       style={{
         position: 'fixed',
-        top: '20%', // 상단 중앙 부근에 배치
+        top: '20%',
         left: '50%',
         transform: 'translateX(-50%)',
-        backgroundColor: 'rgba(220, 50, 50, 0.95)', // 에러 계열의 붉은 색상
+        backgroundColor: bgColor,
         color: 'white',
         padding: '12px 24px',
         borderRadius: '8px',
         fontSize: '18px',
         fontWeight: 'bold',
         boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
-        border: '1px solid #ff8888',
-        zIndex: 9999, // 항상 최상단
+        border: `1px solid ${borderColor}`,
+        zIndex: 9999,
         pointerEvents: 'none',
         opacity: isVisible ? 1 : 0,
         transition: 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out',
-        // 등장 시 약간 움직이는 애니메이션 (기본 -50%에서 시작하므로 offsetY를 줌)
         marginTop: isVisible ? '0' : '-10px',
       }}
     >
-      ⚠️ {displayMsg}
+      {icon} {displayMsg}
     </div>
   );
 };

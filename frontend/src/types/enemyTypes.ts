@@ -1,5 +1,6 @@
 export type IntentType = 'ATTACK' | 'DEFEND' | 'BUFF' | 'DEBUFF' | 'UNKNOWN';
 export type DamageType = 'PHYSICAL' | 'SPECIAL' | 'PIERCING';
+export type EnemyTier = 'NORMAL' | 'ELITE' | 'BOSS';
 
 export interface Intent {
   type: IntentType;
@@ -12,6 +13,7 @@ export interface Intent {
 export interface Enemy {
   id: string;          // 인스턴스 ID (한 번에 같은 적 여럿 등장 대비)
   baseId: string;      // 적의 원본 ID (예: 'scrap_collector')
+  tier: EnemyTier;     // 적 등급 (일반, 엘리트, 보스)
   name: string;        // 적 이름
   maxHp: number;
   currentHp: number;

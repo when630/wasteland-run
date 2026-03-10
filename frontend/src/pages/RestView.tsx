@@ -1,12 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRunStore } from '../store/useRunStore';
 import { UpgradeCardModal } from '../components/ui/UpgradeCardModal';
 import restBg from '../assets/images/campfire_map_background.png';
 
 export const RestView: React.FC = () => {
-  const { playerHp, playerMaxHp, healPlayer, setScene } = useRunStore();
+  const { playerHp, playerMaxHp, healPlayer, setScene, relics } = useRunStore();
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [healResult, setHealResult] = useState<number | null>(null); // 🌟 회복 연출 상태
+
+  // 🌟 유물 효과: [불에 탄 작전 지도] 모닥불 진입 시 최대 체력 5% 회복
+  useEffect(() => {
+    if (relics.includes('burnt_operation_map')) {
+      const healAmount = Math.ceil(playerMaxHp * 0.05);
+      healPlayer(healAmount);
+      useRunStore.getState().setToastMessage(`불에 탄 작전 지도 — 체력 ${healAmount} 회복!`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 🌟 유물 효과: [균열된 태양석 반응로] 강화 불가
+  const canUpgrade = !relics.includes('cracked_sunstone_reactor');
 
   const handleHeal = async () => {
     const healAmount = Math.ceil(playerMaxHp * 0.3);
@@ -62,19 +75,21 @@ export const RestView: React.FC = () => {
 
             <button
               onClick={handleUpgrade}
+              disabled={!canUpgrade}
               style={{
-                width: '240px', height: '300px', backgroundColor: '#2a1f1a',
-                border: '2px solid #5a3f2a', borderRadius: '12px', cursor: 'pointer',
+                width: '240px', height: '300px', backgroundColor: canUpgrade ? '#2a1f1a' : '#1a1a1a',
+                border: `2px solid ${canUpgrade ? '#5a3f2a' : '#333'}`, borderRadius: '12px',
+                cursor: canUpgrade ? 'pointer' : 'not-allowed',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s', opacity: canUpgrade ? 1 : 0.5
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3a2f2a'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2a1f1a'}
+              onMouseEnter={(e) => { if (canUpgrade) e.currentTarget.style.backgroundColor = '#3a2f2a'; }}
+              onMouseLeave={(e) => { if (canUpgrade) e.currentTarget.style.backgroundColor = '#2a1f1a'; }}
             >
               <span style={{ fontSize: '64px', marginBottom: '20px' }}>🔨</span>
-              <h2 style={{ margin: '0 0 10px 0', color: '#ff88ff' }}>강화</h2>
+              <h2 style={{ margin: '0 0 10px 0', color: canUpgrade ? '#ff88ff' : '#666' }}>강화</h2>
               <p style={{ margin: 0, color: '#aaa', padding: '0 20px', textAlign: 'center' }}>
-                덱의 카드 한 장을 선택하여 업그레이드 합니다.
+                {canUpgrade ? '덱의 카드 한 장을 선택하여 업그레이드 합니다.' : '균열된 태양석 반응로에 의해 강화할 수 없습니다.'}
               </p>
             </button>
           </>

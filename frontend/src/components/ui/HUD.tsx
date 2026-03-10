@@ -5,11 +5,13 @@ import { useDeckStore } from '../../store/useDeckStore';
 import { RELICS } from '../../assets/data/relics';
 import { useAudioStore } from '../../store/useAudioStore';
 import { SettingsModal } from './SettingsModal';
+import { CompendiumModal } from './CompendiumModal';
 import { MapView } from '../../pages/MapView';
 
 export const HUD: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isCompendiumOpen, setIsCompendiumOpen] = useState(false);
   const [isMapOverlayOpen, setIsMapOverlayOpen] = useState(false);
   const { playerHp, playerMaxHp, gold, currentScene, setIsLeaderboardOpen } = useRunStore();
   const { enemies, applyDamageToEnemy } = useBattleStore();
@@ -110,6 +112,27 @@ export const HUD: React.FC = () => {
           title="명예의 전당"
         >
           🏆
+        </div>
+
+        {/* 🌟 도감 버튼 */}
+        <div
+          onClick={() => {
+            useAudioStore.getState().playClick();
+            setIsCompendiumOpen(true);
+          }}
+          style={{
+            cursor: 'pointer',
+            userSelect: 'none',
+            fontSize: '24px',
+            marginRight: '15px',
+            textShadow: '2px 2px 2px black',
+            transition: 'transform 0.2s'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          title="도감"
+        >
+          📖
         </div>
 
         {/* 🌟 환경 설정 버튼 (새 톱니바퀴 모달) */}
@@ -370,6 +393,9 @@ export const HUD: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* 🌟 도감 모달 렌더링 */}
+      {isCompendiumOpen && <CompendiumModal onClose={() => setIsCompendiumOpen(false)} />}
 
       {/* 🌟 환경 설정 모달 렌더링 */}
       {isSettingsOpen && <SettingsModal onClose={() => setIsSettingsOpen(false)} showQuitButton={true} />}

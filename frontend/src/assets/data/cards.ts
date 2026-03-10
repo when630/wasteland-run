@@ -287,7 +287,18 @@ export const STATUS_CARDS: Card[] = [
     costAp: 1,
     costAmmo: 0,
     description: '[상태이상] 사용할 수 있지만 아무런 효과가 없고 손패와 덱을 막습니다.',
-    effects: [], // 아무 효과 없음
+    effects: [],
+  },
+  {
+    baseId: 'status_radiation',
+    id: 'status_radiation_base',
+    name: '방사능 오염',
+    type: CardType.STATUS_RADIATION,
+    tier: 'COMMON',
+    costAp: 1,
+    costAmmo: 0,
+    description: '[상태이상] 사용할 수 있지만 아무런 효과가 없고 손패와 덱을 막습니다. (생체공학 배양 심장)',
+    effects: [],
   }
 ];
 

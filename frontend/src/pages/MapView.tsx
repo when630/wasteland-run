@@ -139,7 +139,7 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
                       width: '50px', height: '50px',
                       display: 'flex', justifyContent: 'center', alignItems: 'center',
                       cursor: viewOnly ? 'default' : (isNextAvailable ? 'pointer' : 'default'),
-                      opacity: isVisited && !isCurrent ? 0.5 : (!isNextAvailable && !isCurrent && !isVisited ? 0.35 : 1),
+                      opacity: (isCurrent || isVisited || isNextAvailable) ? 1 : 0.35,
                       transition: 'all 0.3s',
                       position: 'relative',
                       flexShrink: 0,
@@ -147,9 +147,11 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
                       transform: `translate(${node.offsetX}px, ${node.offsetY}px)`,
                       filter: isCurrent
                         ? 'drop-shadow(0 0 8px #3e2a14) drop-shadow(0 0 16px rgba(196, 169, 106, 0.8))'
-                        : isNextAvailable
-                          ? 'drop-shadow(0 0 6px rgba(139, 111, 71, 0.6))'
-                          : 'none'
+                        : isVisited
+                          ? 'drop-shadow(0 0 6px rgba(90, 62, 40, 0.5))'
+                          : isNextAvailable
+                            ? 'drop-shadow(0 0 6px rgba(139, 111, 71, 0.6))'
+                            : 'none'
                     }}
                     title={`${node.floor}층 - ${node.type}`}
                   >

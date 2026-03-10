@@ -58,10 +58,22 @@ public class RunData extends BaseTimeEntity {
     // [NEW] 런 동안 처치한 적 수
     private int enemiesKilled;
 
+    // [NEW] 런 통계 필드
+    private int cardsPlayed;
+    private long totalDamageDealt;
+    private long totalDamageTaken;
+    private long totalGoldEarned;
+
+    // [NEW] 맵 상태 직렬화 JSON
+    @Column(columnDefinition = "TEXT")
+    private String mapJson;
+
     public void updateRun(int currentHp, int maxHp, int currentLayer, int gold,
             String deckJson, String relicsJson,
             String runSeed, String currentScene,
-            String currentMapNode, boolean isActive, int enemiesKilled) {
+            String currentMapNode, boolean isActive, int enemiesKilled,
+            int cardsPlayed, long totalDamageDealt, long totalDamageTaken, long totalGoldEarned,
+            String mapJson) {
         this.currentHp = currentHp;
         this.maxHp = maxHp;
         this.currentLayer = currentLayer;
@@ -73,5 +85,10 @@ public class RunData extends BaseTimeEntity {
         this.currentMapNode = currentMapNode;
         this.isActive = isActive;
         this.enemiesKilled = enemiesKilled;
+        this.cardsPlayed = cardsPlayed;
+        this.totalDamageDealt = totalDamageDealt;
+        this.totalDamageTaken = totalDamageTaken;
+        this.totalGoldEarned = totalGoldEarned;
+        this.mapJson = mapJson;
     }
 }

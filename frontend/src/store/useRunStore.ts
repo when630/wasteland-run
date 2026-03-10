@@ -26,6 +26,7 @@ interface RunState {
   setMapNode: (nodeId: string | null) => void;
   setScene: (scene: RunState['currentScene']) => void; // 🌟 씬 전환 액션
   addRelic: (relicId: string) => void; // 🌟 유물 추가 액션
+  removeRelic: (relicId: string) => void; // 🌟 유물 제거 액션 (1회용 소모)
   setToastMessage: (msg: string | null) => void; // 🌟 토스트 메시지 액션
   setIsActive: (active: boolean) => void;
   setIsLeaderboardOpen: (isOpen: boolean) => void;
@@ -80,6 +81,10 @@ export const useRunStore = create<RunState>((set) => ({
 
   addRelic: (relicId) => set((state) => ({
     relics: [...state.relics, relicId]
+  })),
+
+  removeRelic: (relicId) => set((state) => ({
+    relics: state.relics.filter(id => id !== relicId)
   })),
 
   setToastMessage: (msg) => set({ toastMessage: msg }),
@@ -141,6 +146,13 @@ export const useRunStore = create<RunState>((set) => ({
       const currentDeck = useDeckStore.getState().masterDeck;
       const currentLayer = useMapStore.getState().currentFloor;
 
+      const mapState = useMapStore.getState();
+      const mapJson = JSON.stringify({
+        nodes: mapState.nodes,
+        currentNodeId: mapState.currentNodeId,
+        visitedNodeIds: mapState.visitedNodeIds
+      });
+
       await authApi.post('/run', {
         currentHp: currentState.playerHp,
         maxHp: currentState.playerMaxHp,
@@ -156,7 +168,8 @@ export const useRunStore = create<RunState>((set) => ({
         cardsPlayed: currentState.cardsPlayed,
         totalDamageDealt: currentState.totalDamageDealt,
         totalDamageTaken: currentState.totalDamageTaken,
-        totalGoldEarned: currentState.totalGoldEarned
+        totalGoldEarned: currentState.totalGoldEarned,
+        mapJson
       });
       // 저장 성공 시 조용히 넘김
     } catch (e) {
@@ -193,6 +206,21 @@ export const useRunStore = create<RunState>((set) => ({
         }
 
         useMapStore.setState({ currentFloor: data.currentLayer });
+
+        // 맵 상태 복원
+        if (data.mapJson) {
+          try {
+            const mapData = JSON.parse(data.mapJson);
+            useMapStore.setState({
+              nodes: mapData.nodes || [],
+              currentNodeId: mapData.currentNodeId || null,
+              visitedNodeIds: mapData.visitedNodeIds || []
+            });
+          } catch (e) {
+            console.warn('맵 데이터 파싱 실패, 맵을 새로 생성합니다.', e);
+          }
+        }
+
         useRunStore.getState().setToastMessage('데이터 수신 완료 — 탐험을 이어갑니다.');
       } else if (data && !data.isActive) {
         console.log('이전 런이 종료된 상태입니다. 새 게임을 시작합니다.');

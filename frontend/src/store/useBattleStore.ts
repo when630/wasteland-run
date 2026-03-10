@@ -21,6 +21,7 @@ interface PlayerBattleStatus {
   apOnSpecialDefend: number;          // 특수 방어 시 다음 턴 AP 추가량
   ammoOnSpecialDefend: number;        // 특수 방어 시 탄약 획득량
   markOfFate: { enemyId: string; healAmount: number; ammoAmount: number } | null;
+  physicalAttacksThisTurn: number; // 고철 부품 팔찌 카운터
 }
 
 interface BattleState {
@@ -28,6 +29,7 @@ interface BattleState {
   battleResult: BattleResult;
   turnCount: number;
   playerActionPoints: number;
+  playerMaxAp: number;
   playerAmmo: number;
   playerStatus: PlayerBattleStatus;
   enemies: Enemy[];
@@ -85,6 +87,7 @@ const DEFAULT_PLAYER_STATUS: PlayerBattleStatus = {
   apOnSpecialDefend: 0,
   ammoOnSpecialDefend: 0,
   markOfFate: null,
+  physicalAttacksThisTurn: 0,
 };
 
 export const useBattleStore = create<BattleState>((set, get) => ({
@@ -92,6 +95,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   battleResult: 'NONE',
   turnCount: 1,
   playerActionPoints: 3,
+  playerMaxAp: 3,
   playerAmmo: 0,
   playerStatus: { ...DEFAULT_PLAYER_STATUS },
   enemies: [],
@@ -108,15 +112,21 @@ export const useBattleStore = create<BattleState>((set, get) => ({
 
   resetBattle: () => {
     const relics = useRunStore.getState().relics;
-    let startingAp = 3;
+    // 지속적 AP 증가 유물 → maxAp에 반영
+    let maxAp = 3;
+    const permanentApRelics = ['arc_heart', 'bionic_culture_heart', 'red_eye_surveillance_module', 'cracked_sunstone_reactor'];
+    permanentApRelics.forEach(id => { if (relics.includes(id)) maxAp += 1; });
+
+    // 첫 턴 일시적 AP 보너스 (maxAp에 반영하지 않음)
+    let startingAp = maxAp;
     if (relics.includes('glow_watch')) startingAp += 1;
-    if (relics.includes('arc_heart')) startingAp += 1;
 
     set({
       currentTurn: 'PLAYER',
       battleResult: 'NONE',
       turnCount: 1,
       playerActionPoints: startingAp,
+      playerMaxAp: maxAp,
       playerAmmo: 0,
       playerStatus: { ...DEFAULT_PLAYER_STATUS },
       targetingCardId: null,
@@ -139,9 +149,8 @@ export const useBattleStore = create<BattleState>((set, get) => ({
     }
 
     set((state) => {
-      const relics = useRunStore.getState().relics;
-      let startingAp = 3;
-      if (relics.includes('arc_heart')) startingAp += 1;
+      // maxAp(지속 유물 반영) + 일시적 보너스
+      let startingAp = state.playerMaxAp;
 
       // 다음 턴 보너스 AP 적용 (AP_ON_SPECIAL_DEFEND 등)
       startingAp += state.bonusApNextTurn;
@@ -304,7 +313,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
       if (isVictory) {
         useRunStore.getState().addEnemiesKilled(newEnemies.length);
 
-        const isBossDefeated = newEnemies.some(e => e.baseId.includes('boss'));
+        const isBossDefeated = newEnemies.some(e => e.tier === 'BOSS');
 
         if (isBossDefeated) {
           const runStore = useRunStore.getState();
@@ -480,6 +489,15 @@ export const useBattleStore = create<BattleState>((set, get) => ({
           if (totalDamageToPlayer > 0) {
             useRunStore.getState().damagePlayer(totalDamageToPlayer);
             useRunStore.getState().addDamageTaken(totalDamageToPlayer);
+
+            // 유물: [빛바랜 가족사진] 치명적 피해 시 부활
+            if (useRunStore.getState().playerHp <= 0 && useRunStore.getState().relics.includes('faded_family_photo')) {
+              const maxHp = useRunStore.getState().playerMaxHp;
+              const reviveHp = Math.ceil(maxHp * 0.3);
+              useRunStore.getState().healPlayer(reviveHp);
+              useRunStore.getState().removeRelic('faded_family_photo');
+              useRunStore.getState().setToastMessage(`빛바랜 가족사진 발동! 체력 ${reviveHp}로 부활!`);
+            }
 
             if (enemyObj.currentIntent!.description.includes('소이탄')) {
               // eslint-disable-next-line @typescript-eslint/no-unused-vars

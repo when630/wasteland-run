@@ -26,4 +26,5 @@ public class RunSaveRequestDto {
     private long totalDamageDealt;
     private long totalDamageTaken;
     private long totalGoldEarned;
+    private String mapJson;
 }

@@ -1,148 +1,226 @@
 import React from 'react';
 import { useRunStore } from '../../store/useRunStore';
 import { useMapStore } from '../../store/useMapStore';
+import { useDeckStore } from '../../store/useDeckStore';
+import { RELICS } from '../../assets/data/relics';
 
 interface GameOverModalProps {
   result: 'VICTORY' | 'DEFEAT';
 }
 
+// 클리어 등급 계산
+const calculateGrade = (isVictory: boolean, playTimeSeconds: number, enemiesKilled: number, playerHp: number, playerMaxHp: number): { grade: string; color: string } => {
+  if (!isVictory) {
+    return { grade: '-', color: '#6b7280' };
+  }
+  let score = 0;
+  // 시간 보너스 (10분 이내 +40, 15분 이내 +30, 20분 이내 +20, 그 이상 +10)
+  if (playTimeSeconds < 600) score += 40;
+  else if (playTimeSeconds < 900) score += 30;
+  else if (playTimeSeconds < 1200) score += 20;
+  else score += 10;
+  // 체력 보너스 (남은 체력 비율)
+  score += Math.floor((playerHp / playerMaxHp) * 30);
+  // 처치 수 보너스
+  score += Math.min(enemiesKilled * 3, 30);
+
+  if (score >= 85) return { grade: 'S', color: '#fbbf24' };
+  if (score >= 70) return { grade: 'A', color: '#34d399' };
+  if (score >= 50) return { grade: 'B', color: '#60a5fa' };
+  return { grade: 'C', color: '#9ca3af' };
+};
+
 export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
-  const { gold, enemiesKilled, cardsPlayed, totalDamageDealt, totalDamageTaken, totalGoldEarned, runStartTime, setIsActive, saveRunData, submitRunStats } = useRunStore();
+  const { playerHp, playerMaxHp, gold, relics, enemiesKilled, cardsPlayed, totalDamageDealt, totalDamageTaken, totalGoldEarned, runStartTime, setIsActive, saveRunData, submitRunStats } = useRunStore();
   const { currentFloor } = useMapStore();
+  const { masterDeck } = useDeckStore();
 
   const isVictory = result === 'VICTORY';
   const playTimeSeconds = Math.floor((Date.now() - runStartTime) / 1000);
   const playTimeMinutes = Math.floor(playTimeSeconds / 60);
   const playTimeRemainSec = playTimeSeconds % 60;
 
+  const { grade, color: gradeColor } = calculateGrade(isVictory, playTimeSeconds, enemiesKilled, playerHp, playerMaxHp);
+
   const handleReturnToTitle = async () => {
-    // 런 통계를 백엔드에 제출
     await submitRunStats(isVictory);
-    // 런 종료 (Game Over 또는 챕터 클리어 시)
     setIsActive(false);
     await saveRunData();
-    window.location.reload(); // 앱 초기화 리로드 (MainMenuView로 리다이렉트됨)
-  };
-
-  const overlayStyle: React.CSSProperties = {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100vw',
-    height: '100vh',
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
-    zIndex: 999, // 다른 모든 UI 위로
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    animation: 'fadeIn 1.5s ease-in-out',
-    color: '#fff',
-    fontFamily: 'sans-serif' // 앱 전역 설정에 따름
-  };
-
-  const titleStyle: React.CSSProperties = {
-    fontSize: isVictory ? '64px' : '72px',
-    color: isVictory ? '#fbbf24' : '#ef4444',
-    textShadow: isVictory ? '0 0 20px rgba(251, 191, 36, 0.5)' : '0 0 20px rgba(239, 68, 68, 0.5)',
-    marginBottom: '20px',
-    letterSpacing: isVictory ? '2px' : '5px'
-  };
-
-  const subtitleStyle: React.CSSProperties = {
-    fontSize: '24px',
-    color: '#d1d5db',
-    textAlign: 'center',
-    lineHeight: '1.6',
-    maxWidth: '600px',
-    marginBottom: '40px'
-  };
-
-  const reportContainerStyle: React.CSSProperties = {
-    backgroundColor: '#1f2937',
-    border: `2px solid ${isVictory ? '#fbbf24' : '#4b5563'}`,
-    borderRadius: '12px',
-    padding: '30px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '15px',
-    marginBottom: '50px',
-    minWidth: '350px'
+    window.location.reload();
   };
 
   const reportItemStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    fontSize: '20px',
+    fontSize: '18px',
     borderBottom: '1px solid #374151',
-    paddingBottom: '10px'
-  };
-
-  const buttonStyle: React.CSSProperties = {
-    padding: '20px 60px',
-    fontSize: '24px',
-    fontWeight: 'bold',
-    backgroundColor: isVictory ? '#b45309' : '#4b5563',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '12px',
-    cursor: 'pointer',
-    boxShadow: `0 0 15px ${isVictory ? 'rgba(180,83,9,0.5)' : 'rgba(75,85,99,0.5)'}`,
-    transition: 'transform 0.2s'
+    paddingBottom: '8px'
   };
 
   return (
-    <div style={overlayStyle}>
-      <h1 style={titleStyle}>{isVictory ? '🎉 1챕터 클리어!' : 'YOU DIED'}</h1>
+    <div style={{
+      position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+      backgroundColor: 'rgba(0, 0, 0, 0.95)', zIndex: 999,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      animation: 'fadeIn 1.5s ease-in-out', color: '#fff', overflowY: 'auto', padding: '40px 0'
+    }}>
+      {/* 타이틀 */}
+      <h1 style={{
+        fontSize: isVictory ? '56px' : '64px',
+        color: isVictory ? '#fbbf24' : '#ef4444',
+        textShadow: isVictory ? '0 0 20px rgba(251, 191, 36, 0.5)' : '0 0 20px rgba(239, 68, 68, 0.5)',
+        marginBottom: '10px', letterSpacing: isVictory ? '2px' : '5px'
+      }}>
+        {isVictory ? '1챕터 클리어!' : 'YOU DIED'}
+      </h1>
 
-      <p style={subtitleStyle}>
+      <p style={{ fontSize: '20px', color: '#d1d5db', textAlign: 'center', lineHeight: '1.6', maxWidth: '600px', marginBottom: '20px' }}>
         {isVictory
           ? '거대한 고철 기갑수 브루터스가 굉음과 함께 쓰러졌습니다.\n당신은 매캐한 연기를 뚫고 황무지의 다음 구역으로 발걸음을 옮깁니다.'
           : '황무지의 가혹한 환경 속에서 당신은 결국 쓰러지고 말았습니다.\n누군가 당신의 장비를 챙겨갈 것입니다...'}
       </p>
 
-      <div style={reportContainerStyle}>
-        <h3 style={{ margin: '0 0 10px 0', textAlign: 'center', color: isVictory ? '#fbbf24' : '#9ca3af', fontSize: '24px' }}>
-          종합 리포트
-        </h3>
-        <div style={reportItemStyle}>
-          <span style={{ color: '#9ca3af' }}>도달한 층수</span>
-          <span style={{ fontWeight: 'bold' }}>{currentFloor} 층</span>
+      {/* 클리어 등급 */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px',
+        padding: '15px 40px', borderRadius: '12px',
+        background: `linear-gradient(135deg, rgba(31,41,55,0.9), rgba(17,24,39,0.9))`,
+        border: `2px solid ${gradeColor}`
+      }}>
+        <span style={{ fontSize: '16px', color: '#9ca3af' }}>클리어 등급</span>
+        <span style={{
+          fontSize: '48px', fontWeight: '900', color: gradeColor,
+          textShadow: `0 0 15px ${gradeColor}50`
+        }}>
+          {grade}
+        </span>
+      </div>
+
+      {/* 메인 컨텐츠 영역 — 2열 레이아웃 */}
+      <div style={{ display: 'flex', gap: '20px', marginBottom: '30px', flexWrap: 'wrap', justifyContent: 'center' }}>
+
+        {/* 좌측: 종합 리포트 */}
+        <div style={{
+          backgroundColor: '#1f2937', border: `2px solid ${isVictory ? '#fbbf24' : '#4b5563'}`,
+          borderRadius: '12px', padding: '25px', display: 'flex', flexDirection: 'column',
+          gap: '12px', minWidth: '320px'
+        }}>
+          <h3 style={{ margin: '0 0 5px 0', textAlign: 'center', color: isVictory ? '#fbbf24' : '#9ca3af', fontSize: '22px' }}>
+            종합 리포트
+          </h3>
+          <div style={reportItemStyle}>
+            <span style={{ color: '#9ca3af' }}>도달한 층수</span>
+            <span style={{ fontWeight: 'bold' }}>{currentFloor} 층</span>
+          </div>
+          <div style={reportItemStyle}>
+            <span style={{ color: '#9ca3af' }}>처치한 적 수</span>
+            <span style={{ fontWeight: 'bold' }}>{enemiesKilled} 마리</span>
+          </div>
+          <div style={reportItemStyle}>
+            <span style={{ color: '#9ca3af' }}>남은 골드</span>
+            <span style={{ fontWeight: 'bold', color: '#fbbf24' }}>{gold} G</span>
+          </div>
+          <div style={reportItemStyle}>
+            <span style={{ color: '#9ca3af' }}>사용한 카드</span>
+            <span style={{ fontWeight: 'bold' }}>{cardsPlayed} 장</span>
+          </div>
+          <div style={reportItemStyle}>
+            <span style={{ color: '#9ca3af' }}>가한 총 피해</span>
+            <span style={{ fontWeight: 'bold', color: '#f87171' }}>{totalDamageDealt}</span>
+          </div>
+          <div style={reportItemStyle}>
+            <span style={{ color: '#9ca3af' }}>받은 총 피해</span>
+            <span style={{ fontWeight: 'bold', color: '#fb923c' }}>{totalDamageTaken}</span>
+          </div>
+          <div style={reportItemStyle}>
+            <span style={{ color: '#9ca3af' }}>획득 총 골드</span>
+            <span style={{ fontWeight: 'bold', color: '#fbbf24' }}>{totalGoldEarned} G</span>
+          </div>
+          <div style={reportItemStyle}>
+            <span style={{ color: '#9ca3af' }}>플레이 시간</span>
+            <span style={{ fontWeight: 'bold' }}>{playTimeMinutes}분 {playTimeRemainSec}초</span>
+          </div>
         </div>
-        <div style={reportItemStyle}>
-          <span style={{ color: '#9ca3af' }}>처치한 적 수</span>
-          <span style={{ fontWeight: 'bold' }}>{enemiesKilled} 마리</span>
-        </div>
-        <div style={reportItemStyle}>
-          <span style={{ color: '#9ca3af' }}>남은 골드</span>
-          <span style={{ fontWeight: 'bold', color: '#fbbf24' }}>{gold} G</span>
-        </div>
-        <div style={reportItemStyle}>
-          <span style={{ color: '#9ca3af' }}>사용한 카드</span>
-          <span style={{ fontWeight: 'bold' }}>{cardsPlayed} 장</span>
-        </div>
-        <div style={reportItemStyle}>
-          <span style={{ color: '#9ca3af' }}>가한 총 피해</span>
-          <span style={{ fontWeight: 'bold', color: '#f87171' }}>{totalDamageDealt}</span>
-        </div>
-        <div style={reportItemStyle}>
-          <span style={{ color: '#9ca3af' }}>받은 총 피해</span>
-          <span style={{ fontWeight: 'bold', color: '#fb923c' }}>{totalDamageTaken}</span>
-        </div>
-        <div style={reportItemStyle}>
-          <span style={{ color: '#9ca3af' }}>획득 총 골드</span>
-          <span style={{ fontWeight: 'bold', color: '#fbbf24' }}>{totalGoldEarned} G</span>
-        </div>
-        <div style={reportItemStyle}>
-          <span style={{ color: '#9ca3af' }}>플레이 시간</span>
-          <span style={{ fontWeight: 'bold' }}>{playTimeMinutes}분 {playTimeRemainSec}초</span>
+
+        {/* 우측: 유물 + 덱 요약 */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', minWidth: '280px' }}>
+
+          {/* 획득 유물 목록 */}
+          <div style={{
+            backgroundColor: '#1f2937', border: '2px solid #4b5563',
+            borderRadius: '12px', padding: '20px'
+          }}>
+            <h3 style={{ margin: '0 0 12px 0', textAlign: 'center', color: '#ffaaaa', fontSize: '20px' }}>
+              획득 유물 ({relics.length}개)
+            </h3>
+            {relics.length === 0 ? (
+              <p style={{ color: '#6b7280', textAlign: 'center', fontSize: '14px' }}>획득한 유물이 없습니다.</p>
+            ) : (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
+                {relics.map((relicId) => {
+                  const relicData = RELICS.find(r => r.id === relicId);
+                  if (!relicData) return null;
+                  return (
+                    <div key={relicId} style={{
+                      width: '40px', height: '40px',
+                      backgroundColor: 'rgba(50, 50, 50, 0.8)',
+                      border: '1px solid #666', borderRadius: '50%',
+                      display: 'flex', justifyContent: 'center', alignItems: 'center',
+                      overflow: 'hidden'
+                    }} title={`${relicData.name}: ${relicData.description}`}>
+                      {relicData.image
+                        ? <img src={relicData.image} alt={relicData.name} style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
+                        : <span style={{ fontSize: '18px' }}>?</span>
+                      }
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* 최종 덱 요약 */}
+          <div style={{
+            backgroundColor: '#1f2937', border: '2px solid #4b5563',
+            borderRadius: '12px', padding: '20px'
+          }}>
+            <h3 style={{ margin: '0 0 12px 0', textAlign: 'center', color: '#60a5fa', fontSize: '20px' }}>
+              최종 덱 ({masterDeck.length}장)
+            </h3>
+            {(() => {
+              const typeCounts: Record<string, number> = {};
+              masterDeck.forEach(card => {
+                const label = card.type.replace(/_/g, ' ');
+                typeCounts[label] = (typeCounts[label] || 0) + 1;
+              });
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {Object.entries(typeCounts).map(([type, count]) => (
+                    <div key={type} style={{
+                      display: 'flex', justifyContent: 'space-between',
+                      fontSize: '14px', color: '#d1d5db'
+                    }}>
+                      <span>{type}</span>
+                      <span style={{ fontWeight: 'bold' }}>{count}장</span>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
         </div>
       </div>
 
       <button
         onClick={handleReturnToTitle}
-        style={buttonStyle}
+        style={{
+          padding: '18px 50px', fontSize: '22px', fontWeight: 'bold',
+          backgroundColor: isVictory ? '#b45309' : '#4b5563', color: '#fff',
+          border: 'none', borderRadius: '12px', cursor: 'pointer',
+          boxShadow: `0 0 15px ${isVictory ? 'rgba(180,83,9,0.5)' : 'rgba(75,85,99,0.5)'}`,
+          transition: 'transform 0.2s'
+        }}
         onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
       >

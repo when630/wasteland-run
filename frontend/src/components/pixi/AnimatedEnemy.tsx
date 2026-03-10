@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Container, Sprite, Text, useTick } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import type { Enemy } from '../../types/enemyTypes';
+import { useRunStore } from '../../store/useRunStore';
 
 interface AnimatedEnemyProps {
   enemy: Enemy;
@@ -166,7 +167,7 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
   });
 
   // 보스 분기 처리
-  const isBoss = enemy.baseId === 'brutus';
+  const isBoss = enemy.tier === 'BOSS';
   const width = isBoss ? 350 : 150;
   const height = isBoss ? 450 : 200;
   const intentYOffset = isBoss ? -290 : -170;
@@ -183,14 +184,21 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
       pointerdown={onPointerDown}
     >
       {/* 적 의도(Intent) */}
-      {enemy.currentIntent && (
-        <Text
-          text={`의도: ${enemy.currentIntent.description}`}
-          y={intentYOffset}
-          anchor={0.5}
-          style={intentTextStyle}
-        />
-      )}
+      {enemy.currentIntent && (() => {
+        let intentDisplay = enemy.currentIntent.description;
+        // 🌟 유물: [적안의 감시 모듈] 데미지 수치 마스킹
+        if (useRunStore.getState().relics.includes('red_eye_surveillance_module')) {
+          intentDisplay = intentDisplay.replace(/\d+/g, '?');
+        }
+        return (
+          <Text
+            text={`의도: ${intentDisplay}`}
+            y={intentYOffset}
+            anchor={0.5}
+            style={intentTextStyle}
+          />
+        );
+      })()}
       {/* 적 이름 */}
       <Text
         text={enemy.name}

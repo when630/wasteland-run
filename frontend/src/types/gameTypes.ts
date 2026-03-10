@@ -7,6 +7,7 @@ export const CardType = {
   SPECIAL_DEFENSE: 'SPECIAL_DEFENSE',
   UTILITY: 'UTILITY',
   STATUS_BURN: 'STATUS_BURN',
+  STATUS_RADIATION: 'STATUS_RADIATION',
 } as const;
 
 export type CardType = typeof CardType[keyof typeof CardType];

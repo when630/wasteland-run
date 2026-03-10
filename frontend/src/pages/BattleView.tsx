@@ -9,8 +9,8 @@ import { CardViewerModal } from '../components/ui/CardViewerModal';
 import { GameOverModal } from '../components/ui/GameOverModal';
 import { useDeckStore } from '../store/useDeckStore';
 import { useBattleStore } from '../store/useBattleStore';
-import { createStartingDeck } from '../assets/data/cards';
-import { createEnemy } from '../assets/data/enemies';
+import { createStartingDeck, STATUS_CARDS } from '../assets/data/cards';
+import { createEnemy, getEnemyIdsByTier } from '../assets/data/enemies';
 import { useRunStore } from '../store/useRunStore';
 import battleBg from '../assets/images/stage1_battle_backgroung.png';
 
@@ -47,24 +47,47 @@ export const BattleView: React.FC = () => {
     initDeck();
     drawCards(5);
 
-    // 씬에 따른 몬스터 소환 분기
+    // 씬에 따른 몬스터 소환 분기 (tier 기반)
     if (currentScene === 'BOSS') {
-      spawnEnemies([createEnemy('brutus')]);
+      const bossIds = getEnemyIdsByTier('BOSS');
+      const bossId = bossIds[Math.floor(Math.random() * bossIds.length)];
+      spawnEnemies([createEnemy(bossId)]);
     } else if (currentScene === 'ELITE') {
-      // 엘리트 몹 2종 중 무작위 1종 스폰 (50%)
-      const eliteType = Math.random() < 0.5 ? 'mutant_behemoth' : 'rogue_sentry';
-      spawnEnemies([createEnemy(eliteType)]);
+      const eliteIds = getEnemyIdsByTier('ELITE');
+      const eliteId = eliteIds[Math.floor(Math.random() * eliteIds.length)];
+      spawnEnemies([createEnemy(eliteId)]);
     } else {
-      // 일반 전투 거나 기본 보장값 (랜덤화도 가능하나 지금은 고정값 유지)
-      spawnEnemies([
-        createEnemy('scrap_collector'),
-        createEnemy('acid_dog')
-      ]);
+      // 일반 전투: NORMAL 등급 중 2마리 랜덤 소환
+      const normalIds = getEnemyIdsByTier('NORMAL');
+      const shuffled = [...normalIds].sort(() => Math.random() - 0.5);
+      spawnEnemies(shuffled.slice(0, 2).map(id => createEnemy(id)));
     }
 
     // 🌟 유물 효과: [피 묻은 가죽 탄띠] (전투 시작 시 탄약 +1)
     if (relics.includes('bloody_bandolier')) {
       addAmmo(1);
+    }
+
+    // 🌟 유물 효과: [구시대의 보안관 배지] (전투 시작 시 물리 방어도 8)
+    if (relics.includes('old_sheriff_badge')) {
+      useBattleStore.getState().addPlayerShield(8);
+    }
+
+    // 🌟 유물 효과: [금이 간 황동 나침반] (엘리트 전투 시 첫 턴 AP +2, 카드 2장 추가 드로우)
+    if (relics.includes('cracked_brass_compass') && currentScene === 'ELITE') {
+      useBattleStore.getState().consumeAp(-2); // AP +2
+      useDeckStore.getState().drawCards(2);
+    }
+
+    // 🌟 유물 효과: [생체공학 배양 심장] (전투 시작 시 방사능 오염 카드 2장 혼합)
+    if (relics.includes('bionic_culture_heart')) {
+      const radiationBlueprint = STATUS_CARDS.find(c => c.baseId === 'status_radiation');
+      if (radiationBlueprint) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, ...blueprint } = radiationBlueprint;
+        useDeckStore.getState().addCardToDiscardPile(blueprint);
+        useDeckStore.getState().addCardToDiscardPile(blueprint);
+      }
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps

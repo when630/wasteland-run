@@ -38,7 +38,12 @@ public class RunService {
                                 requestDto.getCurrentScene(),
                                 requestDto.getCurrentMapNode(),
                                 requestDto.isActive(),
-                                requestDto.getEnemiesKilled());
+                                requestDto.getEnemiesKilled(),
+                                requestDto.getCardsPlayed(),
+                                requestDto.getTotalDamageDealt(),
+                                requestDto.getTotalDamageTaken(),
+                                requestDto.getTotalGoldEarned(),
+                                requestDto.getMapJson());
 
                 RunData saved = runRepository.save(runData);
                 return RunResponseDto.of(saved);

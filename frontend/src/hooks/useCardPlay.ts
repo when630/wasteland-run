@@ -243,8 +243,9 @@ export const useCardPlay = () => {
         } else if (effect.condition === 'PURIFY_1') {
           // 무작위 상태이상 카드 1장 제거 (뽑는 더미/버린 더미에서)
           const deckState = useDeckStore.getState();
-          const statusInDraw = deckState.drawPile.filter(c => c.type === 'STATUS_BURN');
-          const statusInDiscard = deckState.discardPile.filter(c => c.type === 'STATUS_BURN');
+          const isStatusCard = (c: { type: string }) => c.type === 'STATUS_BURN' || c.type === 'STATUS_RADIATION';
+          const statusInDraw = deckState.drawPile.filter(isStatusCard);
+          const statusInDiscard = deckState.discardPile.filter(isStatusCard);
           const allStatus = [...statusInDraw, ...statusInDiscard];
           if (allStatus.length > 0) {
             const toRemove = allStatus[Math.floor(Math.random() * allStatus.length)];
@@ -319,6 +320,16 @@ export const useCardPlay = () => {
     if (battleState.powerPhysicalScalingActive) {
       if (card.type === 'PHYSICAL_ATTACK') {
         useBattleStore.getState().addPhysicalScalingBonus(2);
+      }
+    }
+
+    // 유물: [고철 부품 팔찌] 물리 공격 3장 사용 시 탄약 1 획득
+    if (relics.includes('scrap_parts_bracelet') && card.type === 'PHYSICAL_ATTACK') {
+      const currentCount = useBattleStore.getState().playerStatus.physicalAttacksThisTurn + 1;
+      useBattleStore.getState().setPlayerStatusField({ physicalAttacksThisTurn: currentCount });
+      if (currentCount === 3) {
+        addAmmo(1);
+        setToastMessage('고철 부품 팔찌 발동 — 탄약 1 획득!');
       }
     }
 

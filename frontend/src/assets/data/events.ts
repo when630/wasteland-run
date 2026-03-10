@@ -2,7 +2,7 @@ import type { RandomEvent } from '../../types/eventTypes';
 import { useRunStore } from '../../store/useRunStore';
 import { useDeckStore } from '../../store/useDeckStore';
 import { RELICS } from './relics';
-import { STARTING_CARDS, STATUS_CARDS } from './cards';
+import { ALL_CARDS, STARTING_CARDS, STATUS_CARDS } from './cards';
 import { customShuffle } from '../../utils/rng';
 
 export const RANDOM_EVENTS: RandomEvent[] = [
@@ -336,6 +336,108 @@ export const RANDOM_EVENTS: RandomEvent[] = [
         description: '아무 일도 일어나지 않습니다.',
         onSelect: () => {
           return `"겁쟁이 녀석..." 사이보그의 쉰 목소리를 뒤로 한 채 발걸음을 재촉합니다.`;
+        }
+      }
+    ]
+  },
+  {
+    id: 'evt_wandering_merchant',
+    title: '방랑 상인의 비밀 거래',
+    description: '폐허 사이에서 보따리를 짊어진 떠돌이 상인이 손짓합니다. "좋은 물건 있소. 구경만 해도 괜찮으니 와보시오." 그의 눈빛은 어딘가 교활하지만, 보따리에서 빛나는 것들이 눈에 띕니다.',
+    visualDesc: '패치워크 망토를 두른 상인의 보따리에서 이상한 금속 광택이 번쩍입니다...',
+    options: [
+      {
+        label: '[희귀 카드를 구매한다]',
+        description: '골드 75를 지불합니다. 무작위 [희귀] 카드를 1장 얻습니다.',
+        condition: () => useRunStore.getState().gold >= 75,
+        onSelect: () => {
+          const runStore = useRunStore.getState();
+          runStore.addGold(-75);
+          const rareCards = ALL_CARDS.filter(c => c.tier === 'RARE');
+          const pick = rareCards[Math.floor(Math.random() * rareCards.length)];
+          useDeckStore.getState().addCardToMasterDeck({ ...pick } as any);
+          return `상인이 만족스러운 미소와 함께 보따리에서 빛나는 카드를 꺼내줍니다. 골드 75를 지불하고 [${pick.name}] 카드를 획득했습니다!`;
+        }
+      },
+      {
+        label: '[카드를 교환한다]',
+        description: '덱에서 카드 1장을 무작위로 제거하고, 무작위 [비범한] 카드 1장을 얻습니다.',
+        condition: () => useDeckStore.getState().masterDeck.length > 5,
+        onSelect: () => {
+          const deckStore = useDeckStore.getState();
+          const masterDeck = [...deckStore.masterDeck];
+          const removeIdx = Math.floor(Math.random() * masterDeck.length);
+          const removedCard = masterDeck[removeIdx];
+          masterDeck.splice(removeIdx, 1);
+
+          const uncommonCards = ALL_CARDS.filter(c => c.tier === 'UNCOMMON');
+          const pick = uncommonCards[Math.floor(Math.random() * uncommonCards.length)];
+
+          deckStore.setMasterDeck(masterDeck);
+          deckStore.addCardToMasterDeck({ ...pick } as any);
+
+          return `"등가교환이라... 공정한 거래지." 상인이 당신의 [${removedCard.name}]을 가져가고 대신 [${pick.name}] 카드를 건네줍니다.`;
+        }
+      },
+      {
+        label: '[상인의 유물을 흥정한다]',
+        description: '골드 40을 지불합니다. 무작위 [일반] 유물을 1개 얻습니다.',
+        condition: () => useRunStore.getState().gold >= 40,
+        onSelect: () => {
+          const runStore = useRunStore.getState();
+          runStore.addGold(-40);
+          const commonRelics = RELICS.filter(r => r.tier === 'COMMON' && !runStore.relics.includes(r.id));
+          if (commonRelics.length > 0) {
+            const pick = commonRelics[Math.floor(Math.random() * commonRelics.length)];
+            runStore.addRelic(pick.id);
+            return `흥정 끝에 적당한 가격에 합의했습니다. 골드 40을 지불하고 [${pick.name}] 유물을 획득했습니다!`;
+          } else {
+            runStore.addGold(40); // 환불
+            return `"미안하오, 맞는 물건이 없구려..." 상인이 아쉬운 듯 고개를 젓습니다.`;
+          }
+        }
+      }
+    ]
+  },
+  {
+    id: 'evt_contaminated_oasis',
+    title: '오염된 오아시스',
+    description: '황무지 한가운데에 물이 고인 웅덩이를 발견했습니다. 물은 투명하고 깨끗해 보이지만, 주변의 식물들이 기형적으로 자라 있어 방사능 오염이 의심됩니다. 목마름과 의심 사이에서 갈등합니다.',
+    visualDesc: '맑은 물 웅덩이 주변에 비정상적으로 거대한 버섯과 뒤틀린 식물들이 자라있습니다...',
+    options: [
+      {
+        label: '[물을 벌컥벌컥 마신다]',
+        description: '체력을 25 회복합니다. 50% 확률로 덱에 [화상] 카드가 2장 추가됩니다.',
+        onSelect: () => {
+          useRunStore.getState().healPlayer(25);
+          const isTainted = Math.random() < 0.5;
+          if (isTainted) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, ...burnBlueprint } = STATUS_CARDS[0];
+            useDeckStore.getState().addCardToMasterDeck(burnBlueprint as any);
+            useDeckStore.getState().addCardToMasterDeck(burnBlueprint as any);
+            return `시원한 물이 온몸에 퍼지며 상처가 아물어갑니다. (체력 25 회복) ...하지만 곧 몸 안에서 이상한 열기가 느껴집니다. 오염된 물이었습니다! (덱에 [화상] 카드 2장 추가)`;
+          } else {
+            return `시원한 물이 온몸에 퍼지며 상처가 아물어갑니다. (체력 25 회복) 다행히도 물은 안전했습니다!`;
+          }
+        }
+      },
+      {
+        label: '[물을 정화해서 조금만 마신다]',
+        description: '체력을 10 회복합니다. 부작용이 없습니다.',
+        onSelect: () => {
+          useRunStore.getState().healPlayer(10);
+          return `시간을 들여 간이 정수 작업을 한 뒤 조심스럽게 물을 마셨습니다. 완전히 갈증을 해소하진 못했지만 안전합니다. (체력 10 회복)`;
+        }
+      },
+      {
+        label: '[물가의 변이 식물을 채집한다]',
+        description: '물을 마시지 않습니다. 무작위 [특수 방어] 카드를 1장 얻습니다.',
+        onSelect: () => {
+          const specialDefenses = ALL_CARDS.filter(c => c.type === 'SPECIAL_DEFENSE');
+          const pick = specialDefenses[Math.floor(Math.random() * specialDefenses.length)];
+          useDeckStore.getState().addCardToMasterDeck({ ...pick } as any);
+          return `물 대신 주변의 기이한 식물 추출물을 채집했습니다. 독성 방어 재료로 쓸 수 있을 것 같습니다. [${pick.name}] 카드를 얻었습니다!`;
         }
       }
     ]
