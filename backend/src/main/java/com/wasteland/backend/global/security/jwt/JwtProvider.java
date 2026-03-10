@@ -22,10 +22,12 @@ import java.util.stream.Collectors;
 public class JwtProvider {
 
     private static final String AUTHORITIES_KEY = "auth";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24; // 24시간 (임시 테스트용)
 
     @Value("${jwt.secret}")
     private String secretKeyString;
+
+    @Value("${jwt.expire-time-ms:86400000}")
+    private long accessTokenExpireTime;
 
     private SecretKey key;
 
@@ -40,7 +42,7 @@ public class JwtProvider {
                 .collect(Collectors.joining(","));
 
         long now = (new Date()).getTime();
-        Date validity = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
+        Date validity = new Date(now + accessTokenExpireTime);
 
         return Jwts.builder()
                 .subject(authentication.getName())

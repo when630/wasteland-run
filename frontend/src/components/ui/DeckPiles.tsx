@@ -1,12 +1,13 @@
 import React from 'react';
 import { useDeckStore } from '../../store/useDeckStore';
+import { colors } from '../../styles/theme';
 
 export const DeckPiles: React.FC = () => {
   const { drawPile, discardPile, exhaustPile, setViewingPile } = useDeckStore();
 
   const buttonStyle = {
-    backgroundColor: '#2a2a2a',
-    border: '1px solid #555',
+    backgroundColor: colors.bg.medium,
+    border: `1px solid ${colors.border.subtle}`,
     borderRadius: '8px',
     padding: '8px 16px',
     color: '#ddd',
@@ -33,7 +34,7 @@ export const DeckPiles: React.FC = () => {
           style={buttonStyle}
           onClick={() => setViewingPile('DRAW')}
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#444'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2a2a2a'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.bg.medium}
         >
           <span style={{ fontSize: '12px', color: '#aaa', marginBottom: '4px' }}>뽑을 덱</span>
           <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#fff' }}>{drawPile.length}</span>
@@ -55,7 +56,7 @@ export const DeckPiles: React.FC = () => {
           style={buttonStyle}
           onClick={() => setViewingPile('DISCARD')}
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#444'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2a2a2a'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.bg.medium}
         >
           <span style={{ fontSize: '12px', color: '#aaa', marginBottom: '4px' }}>버린 덱</span>
           <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffaaaa' }}>{discardPile.length}</span>
@@ -66,7 +67,7 @@ export const DeckPiles: React.FC = () => {
           style={buttonStyle}
           onClick={() => setViewingPile('EXHAUST')}
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#444'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2a2a2a'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.bg.medium}
         >
           <span style={{ fontSize: '12px', color: '#aaa', marginBottom: '4px' }}>소멸 덱</span>
           <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#aaaaaa' }}>{exhaustPile.length}</span>

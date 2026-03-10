@@ -1,5 +1,6 @@
 package com.wasteland.backend.global.config;
 
+import com.wasteland.backend.global.exception.BusinessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -11,6 +12,12 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<Map<String, String>> handleBusinessException(BusinessException e) {
+        return ResponseEntity.status(e.getStatus())
+                .body(Map.of("error", e.getMessage()));
+    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException e) {

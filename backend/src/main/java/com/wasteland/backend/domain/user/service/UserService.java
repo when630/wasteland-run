@@ -5,6 +5,8 @@ import com.wasteland.backend.domain.user.dto.AuthResponseDto;
 import com.wasteland.backend.domain.user.entity.User;
 import com.wasteland.backend.domain.user.entity.User.Role;
 import com.wasteland.backend.domain.user.repository.UserRepository;
+import com.wasteland.backend.global.exception.DuplicateUsernameException;
+import com.wasteland.backend.global.exception.UserNotFoundException;
 import com.wasteland.backend.global.security.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,7 +29,7 @@ public class UserService {
     @Transactional
     public AuthResponseDto register(AuthRequestDto requestDto) {
         if (userRepository.existsByUsername(requestDto.getUsername())) {
-            throw new IllegalArgumentException("이미 존재하는 유저명입니다.");
+            throw new DuplicateUsernameException("이미 존재하는 유저명입니다.");
         }
 
         User user = User.builder()
@@ -54,6 +56,11 @@ public class UserService {
 
         String token = createTokenForUser(user);
         return new AuthResponseDto(token, user.getUsername());
+    }
+
+    public User findByUsernameOrThrow(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다: " + username));
     }
 
     private String createTokenForUser(User user) {

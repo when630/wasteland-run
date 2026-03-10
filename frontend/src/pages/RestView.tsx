@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRunStore } from '../store/useRunStore';
 import { UpgradeCardModal } from '../components/ui/UpgradeCardModal';
+import { onRestOrEventEnter } from '../logic/relicEffects';
 import restBg from '../assets/images/campfire_map_background.png';
 
 export const RestView: React.FC = () => {
@@ -8,18 +9,17 @@ export const RestView: React.FC = () => {
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [healResult, setHealResult] = useState<number | null>(null); // 🌟 회복 연출 상태
 
-  // 🌟 유물 효과: [불에 탄 작전 지도] 모닥불 진입 시 최대 체력 5% 회복
+  // 유물 효과 일괄 적용
+  const relicEffects = onRestOrEventEnter(relics, playerMaxHp);
+  const canUpgrade = relicEffects.canUpgrade;
+
   useEffect(() => {
-    if (relics.includes('burnt_operation_map')) {
-      const healAmount = Math.ceil(playerMaxHp * 0.05);
-      healPlayer(healAmount);
-      useRunStore.getState().setToastMessage(`불에 탄 작전 지도 — 체력 ${healAmount} 회복!`);
+    if (relicEffects.healAmount > 0) {
+      healPlayer(relicEffects.healAmount);
+      useRunStore.getState().setToastMessage(`불에 탄 작전 지도 — 체력 ${relicEffects.healAmount} 회복!`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // 🌟 유물 효과: [균열된 태양석 반응로] 강화 불가
-  const canUpgrade = !relics.includes('cracked_sunstone_reactor');
 
   const handleHeal = async () => {
     const healAmount = Math.ceil(playerMaxHp * 0.3);

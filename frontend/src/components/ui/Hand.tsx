@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDeckStore } from '../../store/useDeckStore';
 import { useBattleStore } from '../../store/useBattleStore';
 import { useCardPlay } from '../../hooks/useCardPlay';
+import { colors } from '../../styles/theme';
 
 export const Hand: React.FC = () => {
   const { hand } = useDeckStore();
@@ -72,8 +73,8 @@ export const Hand: React.FC = () => {
               position: 'relative',
               width: '130px',
               height: '190px',
-              backgroundColor: isStatusCard ? '#3a1520' : isLocked ? '#1a1a1a' : '#2a2a2a',
-              border: `2px solid ${isLocked ? '#aa2222' : isSelected ? '#ffaa00' : isStatusCard ? '#aa3344' : isHovered ? '#aaa' : '#555'}`,
+              backgroundColor: isStatusCard ? '#3a1520' : isLocked ? colors.bg.dark : colors.bg.medium,
+              border: `2px solid ${isLocked ? '#aa2222' : isSelected ? colors.accent.orange : isStatusCard ? '#aa3344' : isHovered ? '#aaa' : colors.border.subtle}`,
               borderRadius: '8px',
               padding: '12px',
               display: 'flex',

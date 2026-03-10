@@ -3,6 +3,7 @@ import { useRunStore } from '../store/useRunStore';
 import { RANDOM_EVENTS } from '../assets/data/events';
 import type { RandomEvent, EventOption } from '../types/eventTypes';
 import { RemoveCardModal } from '../components/ui/RemoveCardModal';
+import { onRestOrEventEnter } from '../logic/relicEffects';
 import eventBg from '../assets/images/event_map_background.png';
 
 export const EventView: React.FC = () => {
@@ -15,13 +16,12 @@ export const EventView: React.FC = () => {
   const [pendingResultText, setPendingResultText] = useState<string | null>(null);
 
   useEffect(() => {
-    // 씬 마운트 시 보유한 이벤트 중 하나를 무작위로 추첨
     const pick = RANDOM_EVENTS[Math.floor(Math.random() * RANDOM_EVENTS.length)];
     setCurrentEvent(pick);
 
-    // 🌟 유물 효과: [불에 탄 작전 지도] 이벤트 진입 시 최대 체력 5% 회복
-    if (relics.includes('burnt_operation_map')) {
-      const healAmount = Math.ceil(playerMaxHp * 0.05);
+    // 유물 효과 일괄 적용
+    const { healAmount } = onRestOrEventEnter(relics, playerMaxHp);
+    if (healAmount > 0) {
       healPlayer(healAmount);
       useRunStore.getState().setToastMessage(`불에 탄 작전 지도 — 체력 ${healAmount} 회복!`);
     }

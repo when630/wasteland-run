@@ -2,6 +2,7 @@ import React from 'react';
 import { useBattleStore } from '../../store/useBattleStore';
 import { useDeckStore } from '../../store/useDeckStore';
 import { useAudioStore } from '../../store/useAudioStore';
+import { colors } from '../../styles/theme';
 
 export const ResourcePanel: React.FC = () => {
   const { playerActionPoints, playerMaxAp, playerAmmo, endPlayerTurn, currentTurn } = useBattleStore();
@@ -29,7 +30,7 @@ export const ResourcePanel: React.FC = () => {
         height: '80px',
         borderRadius: '50%', // 둥근 구슬 모양
         background: 'radial-gradient(circle at 30% 30%, #ff8c00, #b22222)',
-        border: '3px solid #ffd700',
+        border: `3px solid ${colors.accent.gold}`,
         boxShadow: '0 0 15px rgba(255, 60, 0, 0.6)',
         display: 'flex',
         flexDirection: 'column',

@@ -5,7 +5,7 @@ import com.wasteland.backend.domain.leaderboard.dto.LeaderboardSubmitDto;
 import com.wasteland.backend.domain.leaderboard.entity.Leaderboard;
 import com.wasteland.backend.domain.leaderboard.repository.LeaderboardRepository;
 import com.wasteland.backend.domain.user.entity.User;
-import com.wasteland.backend.domain.user.repository.UserRepository;
+import com.wasteland.backend.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,12 +18,11 @@ import java.util.stream.Collectors;
 public class LeaderboardService {
 
     private final LeaderboardRepository leaderboardRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Transactional
     public void submitScore(String username, LeaderboardSubmitDto submitDto) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User user = userService.findByUsernameOrThrow(username);
 
         Leaderboard leaderboardEntry = Leaderboard.builder()
                 .user(user)

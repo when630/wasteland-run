@@ -1,5 +1,6 @@
 package com.wasteland.backend.domain.run.entity;
 
+import com.wasteland.backend.domain.run.dto.RunSaveRequestDto;
 import com.wasteland.backend.domain.user.entity.User;
 import com.wasteland.backend.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -68,27 +69,22 @@ public class RunData extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String mapJson;
 
-    public void updateRun(int currentHp, int maxHp, int currentLayer, int gold,
-            String deckJson, String relicsJson,
-            String runSeed, String currentScene,
-            String currentMapNode, boolean isActive, int enemiesKilled,
-            int cardsPlayed, long totalDamageDealt, long totalDamageTaken, long totalGoldEarned,
-            String mapJson) {
-        this.currentHp = currentHp;
-        this.maxHp = maxHp;
-        this.currentLayer = currentLayer;
-        this.gold = gold;
-        this.deckJson = deckJson;
-        this.relicsJson = relicsJson;
-        this.runSeed = runSeed;
-        this.currentScene = currentScene;
-        this.currentMapNode = currentMapNode;
-        this.isActive = isActive;
-        this.enemiesKilled = enemiesKilled;
-        this.cardsPlayed = cardsPlayed;
-        this.totalDamageDealt = totalDamageDealt;
-        this.totalDamageTaken = totalDamageTaken;
-        this.totalGoldEarned = totalGoldEarned;
-        this.mapJson = mapJson;
+    public void updateFrom(RunSaveRequestDto dto) {
+        this.currentHp = dto.getCurrentHp();
+        this.maxHp = dto.getMaxHp();
+        this.currentLayer = dto.getCurrentLayer();
+        this.gold = dto.getGold();
+        this.deckJson = dto.getDeckJson();
+        this.relicsJson = dto.getRelicsJson();
+        this.runSeed = dto.getRunSeed();
+        this.currentScene = dto.getCurrentScene();
+        this.currentMapNode = dto.getCurrentMapNode();
+        this.isActive = dto.isActive();
+        this.enemiesKilled = dto.getEnemiesKilled();
+        this.cardsPlayed = dto.getCardsPlayed();
+        this.totalDamageDealt = dto.getTotalDamageDealt();
+        this.totalDamageTaken = dto.getTotalDamageTaken();
+        this.totalGoldEarned = dto.getTotalGoldEarned();
+        this.mapJson = dto.getMapJson();
     }
 }

@@ -2,10 +2,12 @@ package com.wasteland.backend.domain.run.dto;
 
 import com.wasteland.backend.domain.run.entity.RunData;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
+@Builder
 public class RunResponseDto {
     private Long runId;
     private int currentHp;
@@ -26,23 +28,24 @@ public class RunResponseDto {
     private String mapJson;
 
     public static RunResponseDto of(RunData runData) {
-        return new RunResponseDto(
-                runData.getId(),
-                runData.getCurrentHp(),
-                runData.getMaxHp(),
-                runData.getCurrentLayer(),
-                runData.getGold(),
-                runData.getDeckJson(),
-                runData.getRelicsJson(),
-                runData.getRunSeed(),
-                runData.getCurrentScene(),
-                runData.getCurrentMapNode(),
-                runData.isActive(),
-                runData.getEnemiesKilled(),
-                runData.getCardsPlayed(),
-                runData.getTotalDamageDealt(),
-                runData.getTotalDamageTaken(),
-                runData.getTotalGoldEarned(),
-                runData.getMapJson());
+        return RunResponseDto.builder()
+                .runId(runData.getId())
+                .currentHp(runData.getCurrentHp())
+                .maxHp(runData.getMaxHp())
+                .currentLayer(runData.getCurrentLayer())
+                .gold(runData.getGold())
+                .deckJson(runData.getDeckJson())
+                .relicsJson(runData.getRelicsJson())
+                .runSeed(runData.getRunSeed())
+                .currentScene(runData.getCurrentScene())
+                .currentMapNode(runData.getCurrentMapNode())
+                .isActive(runData.isActive())
+                .enemiesKilled(runData.getEnemiesKilled())
+                .cardsPlayed(runData.getCardsPlayed())
+                .totalDamageDealt(runData.getTotalDamageDealt())
+                .totalDamageTaken(runData.getTotalDamageTaken())
+                .totalGoldEarned(runData.getTotalGoldEarned())
+                .mapJson(runData.getMapJson())
+                .build();
     }
 }

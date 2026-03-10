@@ -5,24 +5,21 @@ import com.wasteland.backend.domain.stats.dto.UserStatsDto;
 import com.wasteland.backend.domain.stats.entity.UserStats;
 import com.wasteland.backend.domain.stats.repository.UserStatsRepository;
 import com.wasteland.backend.domain.user.entity.User;
-import com.wasteland.backend.domain.user.repository.UserRepository;
+import com.wasteland.backend.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class UserStatsService {
 
   private final UserStatsRepository userStatsRepository;
-  private final UserRepository userRepository;
+  private final UserService userService;
 
   @Transactional
   public void submitRunStats(String username, RunStatsSubmitDto dto) {
-    User user = userRepository.findByUsername(username)
-        .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    User user = userService.findByUsernameOrThrow(username);
 
     // 유저의 기존 통계를 가져오거나, 없으면 새로 생성
     UserStats stats = userStatsRepository.findByUser(user)
@@ -56,8 +53,7 @@ public class UserStatsService {
 
   @Transactional(readOnly = true)
   public UserStatsDto getUserStats(String username) {
-    User user = userRepository.findByUsername(username)
-        .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    User user = userService.findByUsernameOrThrow(username);
 
     UserStats stats = userStatsRepository.findByUser(user)
         .orElseGet(() -> {
