@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDeckStore } from '../../store/useDeckStore';
 import { useRngStore } from '../../store/useRngStore';
+import { useResponsive } from '../../hooks/useResponsive';
 import type { Card } from '../../types/gameTypes';
 import { ALL_CARDS } from '../../assets/data/cards';
 import { useRunStore } from '../../store/useRunStore';
@@ -12,6 +13,7 @@ interface CardRewardModalProps {
 
 export const CardRewardModal: React.FC<CardRewardModalProps> = ({ onClose, onCardSelected }) => {
   const { addCardToMasterDeck } = useDeckStore();
+  const { isMobile } = useResponsive();
 
   const [rewardCards] = useState<Card[]>(() => {
     const chapter = useRunStore.getState().currentChapter;
@@ -36,20 +38,20 @@ export const CardRewardModal: React.FC<CardRewardModalProps> = ({ onClose, onCar
       backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
     }}>
-      <h2 style={{ fontSize: '36px', color: '#ffdd44', marginBottom: '30px' }}>
+      <h2 style={{ fontSize: isMobile ? '24px' : '36px', color: '#ffdd44', marginBottom: isMobile ? '15px' : '30px' }}>
         🃏 전리품: 카드 선택
       </h2>
-      <p style={{ fontSize: '18px', color: '#ccc', marginBottom: '40px' }}>
+      <p style={{ fontSize: isMobile ? '14px' : '18px', color: '#ccc', marginBottom: isMobile ? '20px' : '40px' }}>
         덱에 추가할 카드를 한 장 선택하세요.
       </p>
 
-      <div style={{ display: 'flex', gap: '30px' }}>
+      <div style={{ display: 'flex', gap: isMobile ? '10px' : '30px', flexWrap: isMobile ? 'wrap' : undefined, justifyContent: 'center', padding: isMobile ? '0 10px' : undefined }}>
         {rewardCards.map((card, index) => (
           <div
             key={`reward-${index}`}
             onClick={() => handleSelectCard(card)}
             style={{
-              width: '200px', height: '300px',
+              width: isMobile ? '140px' : '200px', height: isMobile ? '220px' : '300px',
               backgroundColor: card.type.includes('ATTACK') ? '#4a2a2a' : card.type.includes('DEFENSE') ? '#2a4a3a' : '#2a2a4a',
               border: '2px solid #777', borderRadius: '12px',
               padding: '20px', cursor: 'pointer',
@@ -66,7 +68,7 @@ export const CardRewardModal: React.FC<CardRewardModalProps> = ({ onClose, onCar
               e.currentTarget.style.borderColor = '#777';
             }}
           >
-            <h3 style={{ margin: '0 0 10px 0', fontSize: '20px', color: '#fff', textAlign: 'center' }}>{card.name}</h3>
+            <h3 style={{ margin: '0 0 10px 0', fontSize: isMobile ? '15px' : '20px', color: '#fff', textAlign: 'center' }}>{card.name}</h3>
             <div style={{
               backgroundColor: 'rgba(0,0,0,0.5)', padding: '5px 10px',
               borderRadius: '20px', color: '#00ffff', marginBottom: '20px', fontSize: '14px'

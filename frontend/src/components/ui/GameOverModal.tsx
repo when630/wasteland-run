@@ -2,6 +2,7 @@ import React from 'react';
 import { useRunStore } from '../../store/useRunStore';
 import { useMapStore } from '../../store/useMapStore';
 import { useDeckStore } from '../../store/useDeckStore';
+import { useResponsive } from '../../hooks/useResponsive';
 import { RELICS } from '../../assets/data/relics';
 
 interface GameOverModalProps {
@@ -32,6 +33,7 @@ const calculateGrade = (isVictory: boolean, playTimeSeconds: number, enemiesKill
 
 export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
   const { playerHp, playerMaxHp, gold, relics, currentChapter, enemiesKilled, cardsPlayed, totalDamageDealt, totalDamageTaken, totalGoldEarned, runStartTime, setIsActive, saveRunData, submitRunStats } = useRunStore();
+  const { isMobile } = useResponsive();
   const { currentFloor } = useMapStore();
   const { masterDeck } = useDeckStore();
 
@@ -67,7 +69,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
     }}>
       {/* 타이틀 */}
       <h1 style={{
-        fontSize: isVictory ? '56px' : '64px',
+        fontSize: isMobile ? (isVictory ? '32px' : '40px') : (isVictory ? '56px' : '64px'),
         color: isVictory ? '#fbbf24' : '#ef4444',
         textShadow: isVictory ? '0 0 20px rgba(251, 191, 36, 0.5)' : '0 0 20px rgba(239, 68, 68, 0.5)',
         marginBottom: '10px', letterSpacing: isVictory ? '2px' : '5px'
@@ -75,7 +77,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
         {isVictory ? `${currentChapter}챕터 클리어!` : 'YOU DIED'}
       </h1>
 
-      <p style={{ fontSize: '20px', color: '#d1d5db', textAlign: 'center', lineHeight: '1.6', maxWidth: '600px', marginBottom: '20px' }}>
+      <p style={{ fontSize: isMobile ? '14px' : '20px', color: '#d1d5db', textAlign: 'center', lineHeight: '1.6', maxWidth: isMobile ? '90%' : '600px', marginBottom: '20px', padding: isMobile ? '0 10px' : undefined }}>
         {isVictory
           ? (currentChapter >= 3
             ? '최종 지시자 오메가가 폭발과 함께 붕괴합니다.\n방주의 잔해 너머로 새벽빛이 비추고, 당신은 마침내 황무지를 관통했습니다.'
@@ -108,7 +110,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
         <div style={{
           backgroundColor: '#1f2937', border: `2px solid ${isVictory ? '#fbbf24' : '#4b5563'}`,
           borderRadius: '12px', padding: '25px', display: 'flex', flexDirection: 'column',
-          gap: '12px', minWidth: '320px'
+          gap: '12px', minWidth: isMobile ? '280px' : '320px', maxWidth: isMobile ? '90vw' : undefined
         }}>
           <h3 style={{ margin: '0 0 5px 0', textAlign: 'center', color: isVictory ? '#fbbf24' : '#9ca3af', fontSize: '22px' }}>
             종합 리포트

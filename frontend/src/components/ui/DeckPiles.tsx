@@ -1,22 +1,24 @@
 import React from 'react';
 import { useDeckStore } from '../../store/useDeckStore';
+import { useResponsive } from '../../hooks/useResponsive';
 import { colors } from '../../styles/theme';
 
 export const DeckPiles: React.FC = () => {
   const { drawPile, discardPile, exhaustPile, setViewingPile } = useDeckStore();
+  const { isMobile } = useResponsive();
 
   const buttonStyle = {
     backgroundColor: colors.bg.medium,
     border: `1px solid ${colors.border.subtle}`,
     borderRadius: '8px',
-    padding: '8px 16px',
+    padding: isMobile ? '5px 10px' : '8px 16px',
     color: '#ddd',
     cursor: 'pointer',
     userSelect: 'none' as const,
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'center',
-    minWidth: '70px',
+    minWidth: isMobile ? '50px' : '70px',
     transition: 'background-color 0.2s',
   };
 

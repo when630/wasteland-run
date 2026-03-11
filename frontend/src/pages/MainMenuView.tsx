@@ -5,20 +5,22 @@ import { useMapStore } from '../store/useMapStore';
 import { createStartingDeck } from '../assets/data/cards';
 import { useAudioStore } from '../store/useAudioStore';
 import { useRngStore } from '../store/useRngStore';
+import { useResponsive } from '../hooks/useResponsive';
 import { CompendiumModal } from '../components/ui/CompendiumModal';
 import { SettingsModal } from '../components/ui/SettingsModal';
 import { StatisticsModal } from '../components/ui/StatisticsModal';
 
 export const MainMenuView: React.FC = () => {
   const { isActive, setScene } = useRunStore();
+  const { isMobile } = useResponsive();
   const [isHovered, setIsHovered] = useState<string | null>(null);
   const [isCompendiumOpen, setIsCompendiumOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isStatisticsOpen, setIsStatisticsOpen] = useState(false);
 
   const buttonStyle = (id: string, disabled: boolean = false) => ({
-    padding: '15px 40px',
-    fontSize: '24px',
+    padding: isMobile ? '10px 20px' : '15px 40px',
+    fontSize: isMobile ? '18px' : '24px',
     fontWeight: 'bold',
     color: disabled ? '#555' : isHovered === id ? '#fff' : '#aaa',
     backgroundColor: 'transparent',
@@ -28,7 +30,7 @@ export const MainMenuView: React.FC = () => {
     transform: isHovered === id && !disabled ? 'scale(1.1)' : 'scale(1)',
     transition: 'all 0.2s ease-in-out',
     fontFamily: '"Courier New", Courier, monospace',
-    width: '300px',
+    width: isMobile ? '250px' : '300px',
     textAlign: 'left' as const,
   });
 
@@ -82,16 +84,16 @@ export const MainMenuView: React.FC = () => {
       color: '#fff',
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'flex-start',
+      alignItems: isMobile ? 'center' : 'flex-start',
       justifyContent: 'center',
-      paddingLeft: '15%',
+      paddingLeft: isMobile ? '0' : '15%',
       backgroundImage: 'radial-gradient(circle at right bottom, #2a0a0a 0%, #000 70%)',
     }}>
 
       {/* 타이틀 로고/텍스트 영역 */}
-      <div style={{ marginBottom: '80px', pointerEvents: 'none' }}>
+      <div style={{ marginBottom: isMobile ? '40px' : '80px', pointerEvents: 'none', textAlign: isMobile ? 'center' : undefined }}>
         <h1 style={{
-          fontSize: '96px',
+          fontSize: isMobile ? '48px' : '96px',
           margin: 0,
           color: '#ff4444',
           textShadow: '4px 4px 0px #440000, 0 0 20px rgba(255,60,60,0.5)',
@@ -101,10 +103,10 @@ export const MainMenuView: React.FC = () => {
           WASTELAND RUN
         </h1>
         <p style={{
-          fontSize: '24px',
+          fontSize: isMobile ? '12px' : '24px',
           color: '#888',
           marginTop: '10px',
-          letterSpacing: '10px',
+          letterSpacing: isMobile ? '3px' : '10px',
           fontFamily: '"Courier New", Courier, monospace',
           textTransform: 'uppercase'
         }}>

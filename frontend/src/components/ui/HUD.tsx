@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useRunStore } from '../../store/useRunStore';
 import { useDeckStore } from '../../store/useDeckStore';
 import { useAudioStore } from '../../store/useAudioStore';
+import { useResponsive } from '../../hooks/useResponsive';
 import { SettingsModal } from './SettingsModal';
 import { CompendiumModal } from './CompendiumModal';
 import { DebugMenu } from './DebugMenu';
@@ -21,13 +22,14 @@ export const HUD: React.FC = () => {
     3: '거대 기업의 방주',
   };
   const { drawPile, hand, discardPile, exhaustPile, setViewingPile } = useDeckStore();
+  const { isMobile } = useResponsive();
   const isMap = currentScene === 'MAP';
 
   const iconStyle: React.CSSProperties = {
     cursor: 'pointer',
     userSelect: 'none',
-    fontSize: '24px',
-    marginRight: '15px',
+    fontSize: isMobile ? '18px' : '24px',
+    marginRight: isMobile ? '8px' : '15px',
     textShadow: '2px 2px 2px black',
     transition: 'transform 0.2s'
   };
@@ -47,8 +49,8 @@ export const HUD: React.FC = () => {
         zIndex: 10
       }}>
         {/* 좌측 정보 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', fontSize: '18px', fontWeight: 'bold', textShadow: '2px 2px 2px black' }}>
-          <div style={{ color: '#aaa', fontSize: '16px' }}>{CHAPTER_NAMES[currentChapter] || `챕터 ${currentChapter}`}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '20px', fontSize: isMobile ? '14px' : '18px', fontWeight: 'bold', textShadow: '2px 2px 2px black' }}>
+          {!isMobile && <div style={{ color: '#aaa', fontSize: '14px' }}>{CHAPTER_NAMES[currentChapter] || `챕터 ${currentChapter}`}</div>}
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: colors.accent.red }}>
             <span>❤️</span><span>{playerHp} / {playerMaxHp}</span>
           </div>

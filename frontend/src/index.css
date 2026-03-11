@@ -8,6 +8,8 @@ body {
   font-family: 'Courier New', Courier, monospace;
   /* 기본 황무지 픽셀느낌 폰트 대체 */
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 #root {
@@ -17,6 +19,12 @@ body {
 
 * {
   box-sizing: border-box;
+}
+
+/* 모달 페이드인 애니메이션 */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* 타겟팅 모드용 전역 커서 (십자가 + 원 모양) */

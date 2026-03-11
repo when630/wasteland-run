@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDeckStore } from '../../store/useDeckStore';
 import { useBattleStore } from '../../store/useBattleStore';
 import { useCardPlay } from '../../hooks/useCardPlay';
+import { useResponsive } from '../../hooks/useResponsive';
 import { colors } from '../../styles/theme';
 import { calculatePreviewDamage } from '../../logic/damageCalculation';
 
@@ -10,20 +11,26 @@ export const Hand: React.FC = () => {
   const { targetingCardId, playerStatus, enemies, powerPhysicalScalingBonus, playerAmmo } = useBattleStore();
   const { playCard } = useCardPlay();
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
+  const { isMobile, isTablet } = useResponsive();
+
+  const cardWidth = isMobile ? 90 : isTablet ? 110 : 130;
+  const cardHeight = isMobile ? 135 : isTablet ? 160 : 190;
+  const cardOverlap = isMobile ? -30 : isTablet ? -40 : -50;
+  const containerHeight = isMobile ? 200 : isTablet ? 250 : 300;
 
   return (
     <div style={{
       position: 'absolute',
-      bottom: '-30px', /* 핸드 뭉치 자체를 좀 더 화면 밖으로 내림 */
+      bottom: isMobile ? '-20px' : '-30px',
       left: '50%',
       transform: 'translateX(-50%)',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'flex-end',
-      pointerEvents: 'none', // 카드 자체에만 반응하기 위해 컨테이너는 none으로 설정
+      pointerEvents: 'none',
       zIndex: 50,
-      width: '80%', // 너무 퍼지지 않게 핸드 영역 지정
-      height: '300px' // 카드가 떠오를 여유 공간
+      width: isMobile ? '95%' : '80%',
+      height: `${containerHeight}px`
     }}>
       {hand.map((card, index) => {
         const isStatusCard = card.type.startsWith('STATUS_');
@@ -52,8 +59,9 @@ export const Hand: React.FC = () => {
         const offset = index - (totalCards - 1) / 2;
 
         // 양 끝 카드는 많이 꺾이고, 떨어질수록 위치가 내려감 (2차 함수형 커브)
-        const baseRotation = offset * 4; // 카드당 4도 간격 꺾임
-        const baseYTranslate = Math.pow(Math.abs(offset), 2) * 5; // 카드당 높이 커브 조절 (0, 5, 20px 차이)
+        const rotationStep = isMobile ? 3 : 4;
+        const baseRotation = offset * rotationStep;
+        const baseYTranslate = Math.pow(Math.abs(offset), 2) * (isMobile ? 3 : 5);
 
         // 호버 시 계산 (회전 해제, 크게 떠오름)
         // 선택 시 계산 (호버보다 훨씬 높이 떠오름)
@@ -78,12 +86,12 @@ export const Hand: React.FC = () => {
             }}
             style={{
               position: 'relative',
-              width: '130px',
-              height: '190px',
+              width: `${cardWidth}px`,
+              height: `${cardHeight}px`,
               backgroundColor: isStatusCard ? '#3a1520' : isLocked ? colors.bg.dark : colors.bg.medium,
               border: `2px solid ${isLocked ? '#aa2222' : isSelected ? colors.accent.orange : isStatusCard ? '#aa3344' : isHovered ? '#aaa' : colors.border.subtle}`,
               borderRadius: '8px',
-              padding: '12px',
+              padding: isMobile ? '6px' : '12px',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
@@ -91,7 +99,7 @@ export const Hand: React.FC = () => {
               opacity: isLocked ? 0.5 : 1,
               pointerEvents: 'auto', // 🌟 카드 본체는 마우스 이벤트 수신
               // 🌟 겹침(오버랩) 마진 효과
-              marginLeft: index === 0 ? '0px' : '-50px',
+              marginLeft: index === 0 ? '0px' : `${cardOverlap}px`,
               // 🌟 Slay the Spire 식 트랜스폼
               transform: `translateY(${finalTranslateY}px) rotate(${finalRotation}deg) scale(${finalScale})`,
               transformOrigin: 'bottom center',
@@ -111,15 +119,15 @@ export const Hand: React.FC = () => {
           >
             {/* 상단: 이름 및 코스트 */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#fff', wordBreak: 'keep-all' }}>
+              <span style={{ fontWeight: 'bold', fontSize: isMobile ? '10px' : '13px', color: '#fff', wordBreak: 'keep-all' }}>
                 {card.name}
               </span>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
                 <span style={{
                   backgroundColor: displayApCost === 0 && card.costAp > 0 ? '#44ff44' : '#ffcc00',
                   color: '#000', borderRadius: '50%',
-                  width: '24px', height: '24px', display: 'flex', justifyContent: 'center',
-                  alignItems: 'center', fontSize: '14px', fontWeight: 'bold'
+                  width: isMobile ? '20px' : '24px', height: isMobile ? '20px' : '24px', display: 'flex', justifyContent: 'center',
+                  alignItems: 'center', fontSize: isMobile ? '11px' : '14px', fontWeight: 'bold'
                 }}>
                   {displayApCost}
                 </span>
@@ -135,18 +143,20 @@ export const Hand: React.FC = () => {
               </div>
             </div>
 
-            {/* 중앙: 타입 및 타겟 대상 뱃지 */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '5px', margin: '5px 0' }}>
-              <span style={{ fontSize: '10px', padding: '3px 6px', backgroundColor: isStatusCard ? '#661133' : '#444', borderRadius: '4px', color: isStatusCard ? '#ff8899' : '#bbb' }}>
-                {isStatusCard ? '⚠ 상태이상' : card.type.replace('_', ' ')}
-              </span>
-              <span style={{ fontSize: '10px', padding: '3px 6px', backgroundColor: needsEnemyTarget ? '#662222' : '#225522', borderRadius: '4px', color: '#ddd' }}>
-                {targetLabel}
-              </span>
-            </div>
+            {/* 중앙: 타입 및 타겟 대상 뱃지 (모바일에서 숨김) */}
+            {!isMobile && (
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '5px', margin: '5px 0' }}>
+                <span style={{ fontSize: '10px', padding: '3px 6px', backgroundColor: isStatusCard ? '#661133' : '#444', borderRadius: '4px', color: isStatusCard ? '#ff8899' : '#bbb' }}>
+                  {isStatusCard ? '⚠ 상태이상' : card.type.replace('_', ' ')}
+                </span>
+                <span style={{ fontSize: '10px', padding: '3px 6px', backgroundColor: needsEnemyTarget ? '#662222' : '#225522', borderRadius: '4px', color: '#ddd' }}>
+                  {targetLabel}
+                </span>
+              </div>
+            )}
 
             {/* 하단: 효과 텍스트 */}
-            <div style={{ fontSize: '12px', color: '#ddd', textAlign: 'center' }}>
+            <div style={{ fontSize: isMobile ? '9px' : '12px', color: '#ddd', textAlign: 'center' }}>
               {card.description}
             </div>
 

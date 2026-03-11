@@ -2,11 +2,13 @@ import React from 'react';
 import { useBattleStore } from '../../store/useBattleStore';
 import { useDeckStore } from '../../store/useDeckStore';
 import { useAudioStore } from '../../store/useAudioStore';
+import { useResponsive } from '../../hooks/useResponsive';
 import { colors } from '../../styles/theme';
 
 export const ResourcePanel: React.FC = () => {
   const { playerActionPoints, playerMaxAp, playerAmmo, endPlayerTurn, currentTurn } = useBattleStore();
   const { discardHand } = useDeckStore();
+  const { isMobile } = useResponsive();
 
   const handleTurnEnd = () => {
     useAudioStore.getState().playClick();
@@ -24,10 +26,10 @@ export const ResourcePanel: React.FC = () => {
       {/* 🌟 에너지(AP) 및 탄약 뱃지 (좌측 하단, 드로우 덱 우측 위쪽) */}
       <div style={{
         position: 'absolute',
-        bottom: '60px',
-        left: '120px',
-        width: '80px',
-        height: '80px',
+        bottom: isMobile ? '40px' : '60px',
+        left: isMobile ? '60px' : '120px',
+        width: isMobile ? '60px' : '80px',
+        height: isMobile ? '60px' : '80px',
         borderRadius: '50%', // 둥근 구슬 모양
         background: 'radial-gradient(circle at 30% 30%, #ff8c00, #b22222)',
         border: `3px solid ${colors.accent.gold}`,
@@ -41,11 +43,10 @@ export const ResourcePanel: React.FC = () => {
         pointerEvents: 'none' // 클릭 이벤트 무시
       }}>
         {/* Slay the Spire 에너지 텍스트 스타일 */}
-        <div style={{ fontSize: '28px', fontWeight: '900', textShadow: '2px 2px 2px black' }}>
-          {playerActionPoints}<span style={{ fontSize: '16px' }}>/{playerMaxAp}</span>
+        <div style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: '900', textShadow: '2px 2px 2px black' }}>
+          {playerActionPoints}<span style={{ fontSize: isMobile ? '12px' : '16px' }}>/{playerMaxAp}</span>
         </div>
-        {/* 남은 탄환 아이콘이나 텍스트 작게 추가 */}
-        <div style={{ fontSize: '12px', fontWeight: 'bold', textShadow: '1px 1px 1px black' }}>
+        <div style={{ fontSize: isMobile ? '10px' : '12px', fontWeight: 'bold', textShadow: '1px 1px 1px black' }}>
           Ammo: {playerAmmo}
         </div>
       </div>
@@ -56,15 +57,15 @@ export const ResourcePanel: React.FC = () => {
         disabled={currentTurn !== 'PLAYER'}
         style={{
           position: 'absolute',
-          right: '50px',
-          bottom: '150px',
-          padding: '12px 30px',
+          right: isMobile ? '15px' : '50px',
+          bottom: isMobile ? '100px' : '150px',
+          padding: isMobile ? '8px 18px' : '12px 30px',
           backgroundColor: currentTurn === 'PLAYER' ? '#2c5364' : '#555',
           color: currentTurn === 'PLAYER' ? '#a2f5df' : '#bbb',
           border: '2px solid',
           borderColor: currentTurn === 'PLAYER' ? '#4dc3a3' : '#333',
           borderRadius: '30px',
-          fontSize: '20px',
+          fontSize: isMobile ? '14px' : '20px',
           fontWeight: 'bold',
           letterSpacing: '2px',
           boxShadow: currentTurn === 'PLAYER' ? '0 0 10px rgba(77, 195, 163, 0.4)' : 'none',

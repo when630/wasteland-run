@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CardRewardModal } from './CardRewardModal';
 import { RelicRewardModal } from './RelicRewardModal';
 import { useRunStore } from '../../store/useRunStore';
+import { useResponsive } from '../../hooks/useResponsive';
 import { colors } from '../../styles/theme';
 
 interface VictoryRewardPanelProps {
@@ -11,6 +12,7 @@ interface VictoryRewardPanelProps {
 
 export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContinue, currentScene }) => {
   const { addGold } = useRunStore();
+  const { isMobile } = useResponsive();
 
   const [goldClaimed, setGoldClaimed] = useState(false);
   const [cardClaimed, setCardClaimed] = useState(false);
@@ -35,15 +37,15 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
       alignItems: 'center', justifyContent: 'center',
       color: 'white'
     }}>
-      <h1 style={{ fontSize: '48px', color: '#44ff44', marginBottom: '10px' }}>
+      <h1 style={{ fontSize: isMobile ? '32px' : '48px', color: '#44ff44', marginBottom: '10px' }}>
         전투 승리!
       </h1>
-      <p style={{ fontSize: '18px', color: '#ccc', marginBottom: '30px' }}>
+      <p style={{ fontSize: isMobile ? '14px' : '18px', color: '#ccc', marginBottom: isMobile ? '15px' : '30px' }}>
         수고하셨습니다. 보상을 챙기거나 스킵하고 넘어갈 수 있습니다.
       </p>
 
       <div style={{
-        margin: '0 0 30px 0', padding: '20px', width: '360px',
+        margin: '0 0 30px 0', padding: isMobile ? '15px' : '20px', width: isMobile ? '90vw' : '360px', maxWidth: '360px',
         backgroundColor: '#2a1f1a', borderRadius: '12px', border: '2px solid #aa7700',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px'
       }}>
