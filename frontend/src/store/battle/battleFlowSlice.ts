@@ -3,6 +3,7 @@ import type { BattleState, BattleFlowSlice } from './types';
 import { DEFAULT_PLAYER_STATUS } from './types';
 import { useRunStore } from '../useRunStore';
 import { onBattleReset } from '../../logic/relicEffects';
+import { resetVfx } from '../../components/pixi/vfx/vfxDispatcher';
 
 let damageNumberCounter = 0;
 
@@ -16,6 +17,7 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
 
   resetBattle: () => {
     const { maxAp, startingAp } = onBattleReset(useRunStore.getState().relics);
+    resetVfx();
 
     set({
       currentTurn: 'PLAYER',

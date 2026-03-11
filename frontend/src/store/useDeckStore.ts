@@ -4,6 +4,10 @@ import { customShuffle } from '../utils/rng';
 import { useRngStore } from './useRngStore';
 import { useAudioStore } from './useAudioStore';
 import { applyUpgrade } from '../logic/cardUpgrades';
+import { dispatchCardAnim, getDrawPilePos, getHandCenterPos, cardTypeToColor } from '../components/ui/cardAnimations';
+
+// 드로우 세대 카운터 — Strict Mode 이중 마운트 시 이전 배치의 setTimeout 무효화
+let drawGeneration = 0;
 
 export type PileType = 'NONE' | 'DECK' | 'DRAW' | 'DISCARD' | 'EXHAUST';
 
@@ -56,6 +60,7 @@ export const useDeckStore = create<DeckState>((set) => ({
 
   // 새로운 전투 시작 시 masterDeck의 복사본을 받아 셔플하여 drawPile로 세팅
   initDeck: () => {
+    drawGeneration++; // 이전 드로우 타이머 전부 무효화
     useAudioStore.getState().playDraw(); // 덱 초기 셔플음
     set((state) => ({
       drawPile: customShuffle([...state.masterDeck], useRngStore.getState().shuffleRng),
@@ -66,37 +71,58 @@ export const useDeckStore = create<DeckState>((set) => ({
   },
 
   // 덱(Draw Pile)에서 핸드(Hand)로 카드 이동 처리
+  // 카드가 날아오는 애니메이션 도착 시점에 맞춰 핸드에 하나씩 추가
   drawCards: (count: number) => {
-    if (count > 0) useAudioStore.getState().playDraw(); // 카드 뽑는 소리
-    set((state) => {
-      let currentDraw = [...state.drawPile];
-      let currentDiscard = [...state.discardPile];
-      const newHand = [...state.hand];
+    if (count > 0) useAudioStore.getState().playDraw();
 
-      for (let i = 0; i < count; i++) {
-        if (currentDraw.length === 0) {
-          if (currentDiscard.length === 0) {
-            // 뽑을 카드도 버려진 카드도 없다면 반복 종료(덱 텅 빔 무한루프 방지)
-            break;
-          }
-          // 뽑을 카드가 다 떨어지면 버려진 카드뭉치를 셔플하여 다시 DrawPile로 옮김
-          currentDraw = customShuffle(currentDiscard, useRngStore.getState().shuffleRng);
-          currentDiscard = [];
-        }
+    // 현재 상태 스냅샷으로 뽑을 카드 결정
+    const snap = useDeckStore.getState();
+    let currentDraw = [...snap.drawPile];
+    let currentDiscard = [...snap.discardPile];
+    const drawnCards: Card[] = [];
 
-        const drawnCard = currentDraw.shift();
-        if (drawnCard) {
-          // 🌟 핸드 최대 10장 제한
-          if (newHand.length >= 10) break;
-          newHand.push(drawnCard);
-        }
+    for (let i = 0; i < count; i++) {
+      if (currentDraw.length === 0) {
+        if (currentDiscard.length === 0) break;
+        currentDraw = customShuffle(currentDiscard, useRngStore.getState().shuffleRng);
+        currentDiscard = [];
       }
 
-      return {
-        drawPile: currentDraw,
-        discardPile: currentDiscard,
-        hand: newHand,
-      };
+      const drawnCard = currentDraw.shift();
+      if (drawnCard) {
+        if (snap.hand.length + drawnCards.length >= 10) break;
+        drawnCards.push(drawnCard);
+      }
+    }
+
+    // 뽑을 덱/버린 덱 즉시 갱신 (카드가 덱에서 빠짐)
+    set({ drawPile: currentDraw, discardPile: currentDiscard });
+
+    // 애니메이션 디스패치 + 도착 시점에 핸드 추가
+    const gen = drawGeneration; // 현재 세대 캡처
+    const from = getDrawPilePos();
+    const to = getHandCenterPos();
+    drawnCards.forEach((card, i) => {
+      const delay = i * 120;
+      const duration = 400;
+
+      dispatchCardAnim({
+        type: 'DRAW',
+        cardName: card.name,
+        cardColor: cardTypeToColor(card.type),
+        fromX: from.x,
+        fromY: from.y,
+        toX: to.x + (i - (drawnCards.length - 1) / 2) * 30,
+        toY: to.y,
+        delay,
+        duration,
+      });
+
+      // 애니메이션 도착 직전에 핸드에 카드 추가 (자연스러운 전환)
+      setTimeout(() => {
+        if (gen !== drawGeneration) return; // Strict Mode 이중 호출 방지
+        set((s) => ({ hand: [...s.hand, card] }));
+      }, delay + Math.round(duration * 0.85));
     });
   },
 
@@ -110,12 +136,42 @@ export const useDeckStore = create<DeckState>((set) => ({
       const newHand = [...state.hand];
       newHand.splice(cardIndex, 1);
 
+      // 카드 사용 애니메이션 디스패치
+      const from = getHandCenterPos();
+      const color = cardTypeToColor(playedCard.type);
+
       if (playedCard.isExhaust) {
+        // 소멸: 제자리에서 위로 살짝 올라가며 파티클로 분해
+        dispatchCardAnim({
+          type: 'EXHAUST',
+          cardName: playedCard.name,
+          cardColor: color,
+          fromX: from.x,
+          fromY: from.y,
+          toX: from.x,
+          toY: from.y - 80,
+          delay: 0,
+          duration: 400,
+        });
         return {
           hand: newHand,
           exhaustPile: [...state.exhaustPile, playedCard],
         };
       }
+
+      // 버리기: 버린 덱 쪽으로 날아감
+      const discardPos = { x: window.innerWidth - 120, y: window.innerHeight - 55 };
+      dispatchCardAnim({
+        type: 'DISCARD',
+        cardName: playedCard.name,
+        cardColor: color,
+        fromX: from.x,
+        fromY: from.y,
+        toX: discardPos.x,
+        toY: discardPos.y,
+        delay: 0,
+        duration: 350,
+      });
 
       return {
         hand: newHand,
@@ -126,10 +182,28 @@ export const useDeckStore = create<DeckState>((set) => ({
 
   // 턴 종료 시 손에 쥔 모든 카드를 버린뭉치로 보내기
   discardHand: () => {
-    set((state) => ({
-      hand: [],
-      discardPile: [...state.discardPile, ...state.hand],
-    }));
+    set((state) => {
+      // 버리기 애니메이션
+      const from = getHandCenterPos();
+      const discardPos = { x: window.innerWidth - 120, y: window.innerHeight - 55 };
+      state.hand.forEach((card, i) => {
+        dispatchCardAnim({
+          type: 'DISCARD',
+          cardName: card.name,
+          cardColor: cardTypeToColor(card.type),
+          fromX: from.x + (i - (state.hand.length - 1) / 2) * 20,
+          fromY: from.y,
+          toX: discardPos.x,
+          toY: discardPos.y,
+          delay: i * 50,
+          duration: 250,
+        });
+      });
+      return {
+        hand: [],
+        discardPile: [...state.discardPile, ...state.hand],
+      };
+    });
   },
 
   // 턴 종료 시 N장을 보존(Retain)하고 나머지만 버린뭉치로 보냄

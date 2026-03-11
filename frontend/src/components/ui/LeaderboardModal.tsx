@@ -50,14 +50,14 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({ onClose }) =
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
     }}>
       <div style={{
-        width: '600px', maxHeight: '80vh', padding: '30px', backgroundColor: '#1a1f24',
+        width: 'min(600px, 95vw)', maxHeight: '80vh', padding: window.innerWidth < 768 ? '16px' : '30px', backgroundColor: '#1a1f24',
         borderRadius: '16px', border: '2px solid #5a7a9a',
-        display: 'flex', flexDirection: 'column', gap: '20px',
+        display: 'flex', flexDirection: 'column', gap: '15px',
         boxShadow: '0 0 30px rgba(90, 122, 154, 0.4)',
-        overflowY: 'hidden'
+        overflowY: 'hidden', boxSizing: 'border-box',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ color: '#88aabb', fontSize: '32px', margin: 0 }}>명예의 전당 (Top 50)</h2>
+          <h2 style={{ color: '#88aabb', fontSize: window.innerWidth < 768 ? '20px' : '32px', margin: 0 }}>명예의 전당</h2>
           <button
             onClick={onClose}
             style={{
@@ -74,26 +74,26 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({ onClose }) =
           ) : leaders.length === 0 ? (
             <div style={{ color: '#ccc', textAlign: 'center', padding: '40px' }}>아직 등록된 기록이 없습니다. 최초의 생존자가 되어보세요!</div>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', color: '#ddd' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', color: '#ddd', fontSize: window.innerWidth < 768 ? '12px' : '14px' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid #5a7a9a', textAlign: 'left' }}>
-                  <th style={{ padding: '10px' }}>순위</th>
-                  <th style={{ padding: '10px' }}>요원명</th>
-                  <th style={{ padding: '10px' }}>점수</th>
-                  <th style={{ padding: '10px' }}>도달 층수</th>
-                  <th style={{ padding: '10px' }}>클리어 타임</th>
+                  <th style={{ padding: window.innerWidth < 768 ? '6px' : '10px' }}>#</th>
+                  <th style={{ padding: window.innerWidth < 768 ? '6px' : '10px' }}>요원명</th>
+                  <th style={{ padding: window.innerWidth < 768 ? '6px' : '10px' }}>점수</th>
+                  <th style={{ padding: window.innerWidth < 768 ? '6px' : '10px' }}>층수</th>
+                  <th style={{ padding: window.innerWidth < 768 ? '6px' : '10px' }}>시간</th>
                 </tr>
               </thead>
               <tbody>
                 {leaders.map((item, idx) => (
                   <tr key={idx} style={{ borderBottom: '1px solid #334455', backgroundColor: idx % 2 === 0 ? '#1f262c' : 'transparent' }}>
-                    <td style={{ padding: '12px', color: idx < 3 ? '#ffd700' : '#ccc', fontWeight: idx < 3 ? 'bold' : 'normal' }}>
+                    <td style={{ padding: window.innerWidth < 768 ? '8px 6px' : '12px', color: idx < 3 ? '#ffd700' : '#ccc', fontWeight: idx < 3 ? 'bold' : 'normal' }}>
                       {idx + 1}
                     </td>
-                    <td style={{ padding: '12px', fontWeight: 'bold' }}>{item.username}</td>
-                    <td style={{ padding: '12px', color: '#ffaa00' }}>{item.score}</td>
-                    <td style={{ padding: '12px' }}>{item.clearLayer}층</td>
-                    <td style={{ padding: '12px' }}>{formatTime(item.playTimeSeconds)}</td>
+                    <td style={{ padding: window.innerWidth < 768 ? '8px 6px' : '12px', fontWeight: 'bold', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.username}</td>
+                    <td style={{ padding: window.innerWidth < 768 ? '8px 6px' : '12px', color: '#ffaa00' }}>{item.score}</td>
+                    <td style={{ padding: window.innerWidth < 768 ? '8px 6px' : '12px' }}>{item.clearLayer}</td>
+                    <td style={{ padding: window.innerWidth < 768 ? '8px 6px' : '12px' }}>{formatTime(item.playTimeSeconds)}</td>
                   </tr>
                 ))}
               </tbody>

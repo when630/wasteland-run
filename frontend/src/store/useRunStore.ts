@@ -6,7 +6,7 @@ interface RunState {
   playerMaxHp: number;
   gold: number;
   currentMapNode: string | null;
-  currentScene: 'MAIN_MENU' | 'MAP' | 'BATTLE' | 'ELITE' | 'REST' | 'EVENT' | 'SHOP' | 'BOSS'; // 🌟 씬 타입 확장
+  currentScene: 'MAIN_MENU' | 'MAP' | 'BATTLE' | 'ELITE' | 'REST' | 'EVENT' | 'SHOP' | 'BOSS' | 'DEBUG_BATTLE'; // 🌟 씬 타입 확장
   currentChapter: number; // 현재 챕터 (1~3)
   relics: string[];
   toastMessage: string | null; // 🌟 전역 알림 메시지 상태
@@ -142,6 +142,7 @@ export const useRunStore = create<RunState>((set) => ({
   },
 
   saveRunData: async () => {
+    if (!localStorage.getItem('token')) return;
     try {
       // 덱과 유물 정보 등은 다른 store에서 가져와야 하므로 getState()를 통해 동적으로 취합
       const { useDeckStore } = await import('./useDeckStore');
@@ -178,12 +179,17 @@ export const useRunStore = create<RunState>((set) => ({
         mapJson
       });
       // 저장 성공 시 조용히 넘김
-    } catch (e) {
-      console.error('Run Data 저장 실패', e);
+    } catch {
+      // 백엔드 미연결 시 조용히 무시 (로컬 상태로 정상 진행)
     }
   },
 
   loadRunData: async () => {
+    // 토큰 없으면 요청 자체를 하지 않음
+    if (!localStorage.getItem('token')) {
+      set({ currentScene: 'MAIN_MENU', isActive: false, enemiesKilled: 0, cardsPlayed: 0, totalDamageDealt: 0, totalDamageTaken: 0, totalGoldEarned: 0 });
+      return;
+    }
     try {
       const { data } = await authApi.get('/run');
       if (data && data.isActive) {
@@ -237,8 +243,8 @@ export const useRunStore = create<RunState>((set) => ({
         console.log('이전 런이 종료된 상태입니다. 새 게임을 시작합니다.');
         set({ currentScene: 'MAIN_MENU', isActive: false, enemiesKilled: 0, cardsPlayed: 0, totalDamageDealt: 0, totalDamageTaken: 0, totalGoldEarned: 0 });
       }
-    } catch (e) {
-      console.warn('저장된 진행 상황을 찾지 못했습니다. 메인 메뉴로 시작합니다.', e);
+    } catch {
+      // 백엔드 미연결 — 로컬 새 게임으로 시작
       set({ currentScene: 'MAIN_MENU', isActive: false, enemiesKilled: 0, cardsPlayed: 0, totalDamageDealt: 0, totalDamageTaken: 0, totalGoldEarned: 0 });
     }
   }

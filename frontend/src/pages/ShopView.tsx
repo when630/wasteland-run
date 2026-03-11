@@ -156,32 +156,32 @@ export const ShopView: React.FC = () => {
       backgroundBlendMode: 'overlay',
       backgroundColor: 'rgba(24, 24, 27, 0.7)',
       color: '#e5e7eb',
-      display: 'flex', flexDirection: 'row', // 🌟 가로 2단 분리 레이아웃
-      overflow: 'hidden'
+      display: 'flex', flexDirection: window.innerWidth < 768 ? 'column' as const : 'row' as const,
+      overflow: window.innerWidth < 768 ? 'auto' : 'hidden',
     }}>
 
       {/* 🌟 좌측 패널: 상점 진열대 (약 60%) */}
       <div style={{
-        flex: 6,
-        padding: '20px',
+        flex: window.innerWidth < 768 ? undefined : 6,
+        padding: window.innerWidth < 768 ? '12px' : '20px',
         display: 'flex', flexDirection: 'column',
-        gap: '15px',
-        overflowY: 'hidden' // 스크롤 발생을 완전히 차단
+        gap: '12px',
+        overflowY: window.innerWidth < 768 ? 'auto' : 'hidden'
       }}>
         {/* 상단 타이틀 및 골드 정보 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', padding: '10px 20px', borderRadius: '12px' }}>
-          <h1 style={{ fontSize: '32px', color: '#fbbf24', margin: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', padding: window.innerWidth < 768 ? '8px 12px' : '10px 20px', borderRadius: '12px', flexWrap: 'wrap', gap: '4px' }}>
+          <h1 style={{ fontSize: window.innerWidth < 768 ? '20px' : '32px', color: '#fbbf24', margin: 0 }}>
             💰 고철 암시장
           </h1>
-          <div style={{ fontSize: '20px', color: '#fbbf24', fontWeight: 'bold' }}>
-            보유 골드: {gold} G
+          <div style={{ fontSize: window.innerWidth < 768 ? '16px' : '20px', color: '#fbbf24', fontWeight: 'bold' }}>
+            {gold} G
           </div>
         </div>
 
         {/* 🌟 장비(카드) 판매 구역 (6장 최적화) */}
         <div style={{ backgroundColor: '#27272a', padding: '15px', borderRadius: '12px' }}>
           <h2 style={{ color: '#fff', margin: '0 0 10px 0', borderBottom: '1px solid #52525b', paddingBottom: '8px', fontSize: '20px' }}>장비 구입 (Cards)</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 130px)', gap: '10px', justifyContent: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? 'repeat(3, 1fr)' : 'repeat(3, 130px)', gap: '10px', justifyContent: 'center' }}>
             {shopCards.map((item, idx) => {
               let cardBg = '#2a2a4a';
               if (item.type.includes('ATTACK')) cardBg = '#4a2a2a';
@@ -192,7 +192,7 @@ export const ShopView: React.FC = () => {
                   <div
                     onClick={() => handleBuyCard(idx)}
                     style={{
-                      width: '130px', height: '170px',
+                      width: window.innerWidth < 768 ? '100%' : '130px', height: window.innerWidth < 768 ? '140px' : '170px',
                       backgroundColor: cardBg,
                       border: `2px solid #52525b`, borderRadius: '10px',
                       padding: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -305,39 +305,44 @@ export const ShopView: React.FC = () => {
 
       </div>
 
-      {/* 🌟 우측 패널: 거대 NPC 및 나가기 버튼 (약 40%) */}
+      {/* 🌟 우측 패널: 거대 NPC 및 나가기 버튼 (모바일에서는 축소) */}
       <div style={{
-        flex: 4,
+        flex: window.innerWidth < 768 ? undefined : 4,
         display: 'flex', flexDirection: 'column',
         justifyContent: 'flex-end', alignItems: 'center',
-        padding: '20px',
+        padding: window.innerWidth < 768 ? '16px' : '20px',
         position: 'relative',
-        borderLeft: '2px dashed rgba(255,255,255,0.1)',
+        borderLeft: window.innerWidth < 768 ? undefined : '2px dashed rgba(255,255,255,0.1)',
         backgroundColor: 'rgba(0,0,0,0.3)'
       }}>
-        {/* 매우 큰 NPC 이미지 */}
-        <img
-          src={npcImg}
-          alt="고철 상인"
-          style={{
-            height: '75vh', // 화면 높이의 75% 차지
-            width: '100%',
-            objectFit: 'contain',
-            objectPosition: 'bottom center', // 하단 정렬
-            filter: 'drop-shadow(5px 10px 15px rgba(0,0,0,0.8))',
-            pointerEvents: 'none' // 클릭 방해 방지
-          }}
-        />
+        {/* NPC 이미지 — 모바일에서는 숨김 */}
+        {window.innerWidth >= 768 && (
+          <img
+            src={npcImg}
+            alt="고철 상인"
+            style={{
+              height: '75vh',
+              width: '100%',
+              objectFit: 'contain',
+              objectPosition: 'bottom center',
+              filter: 'drop-shadow(5px 10px 15px rgba(0,0,0,0.8))',
+              pointerEvents: 'none'
+            }}
+          />
+        )}
 
         {/* 나가기 버튼 */}
         <button
           onClick={handleLeave}
           style={{
-            marginTop: '20px', padding: '20px 60px', fontSize: '24px', fontWeight: 'bold',
+            marginTop: window.innerWidth < 768 ? '0' : '20px',
+            padding: window.innerWidth < 768 ? '14px 30px' : '20px 60px',
+            fontSize: window.innerWidth < 768 ? '18px' : '24px', fontWeight: 'bold',
             backgroundColor: '#3f3f46', color: '#fff', border: '2px solid #a1a1aa',
             borderRadius: '12px', cursor: 'pointer',
             boxShadow: '0 4px 10px rgba(0,0,0,0.5)',
-            transition: 'all 0.2s', zIndex: 10
+            transition: 'all 0.2s', zIndex: 10,
+            width: window.innerWidth < 768 ? '100%' : undefined,
           }}
           onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#52525b'; e.currentTarget.style.transform = 'scale(1.05)'; }}
           onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#3f3f46'; e.currentTarget.style.transform = 'scale(1)'; }}

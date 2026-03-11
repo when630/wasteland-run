@@ -27,8 +27,8 @@ body {
   to { opacity: 1; }
 }
 
-/* 타겟팅 모드용 전역 커서 (십자가 + 원 모양) */
+/* 타겟팅 모드: 시스템 커서 숨김 (TargetingLine SVG 조준점 사용) */
 .targeting-mode,
 .targeting-mode * {
-  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="none" stroke="%23ffaa00" stroke-width="2"/><path d="M16 2v28M2 16h28" stroke="%23ffaa00" stroke-width="2"/></svg>') 16 16, crosshair !important;
+  cursor: none !important;
 }

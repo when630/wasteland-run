@@ -29,8 +29,7 @@ authApi.interceptors.request.use(
 authApi.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      console.warn('토큰이 만료되었거나 유효하지 않습니다.');
+    if (error.response?.status === 401 || error.response?.status === 403) {
       useAuthStore.getState().logout();
     }
     return Promise.reject(error);

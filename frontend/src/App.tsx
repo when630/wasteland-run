@@ -32,6 +32,7 @@ function SceneManager() {
         break;
       case 'BATTLE':
       case 'ELITE':
+      case 'DEBUG_BATTLE':
         audioStore.playBgm('BATTLE');
         break;
       case 'BOSS':
@@ -42,7 +43,7 @@ function SceneManager() {
     }
   }, [currentScene]);
 
-  const showHUD = currentScene !== 'MAIN_MENU' && currentScene !== 'MAP';
+  const showHUD = currentScene !== 'MAIN_MENU' && currentScene !== 'MAP' && currentScene !== 'DEBUG_BATTLE';
 
   const scene = (() => {
     switch (currentScene) {
@@ -53,6 +54,7 @@ function SceneManager() {
       case 'BATTLE':
       case 'ELITE':
       case 'BOSS':
+      case 'DEBUG_BATTLE':
         return <BattleView />;
       case 'REST':
         return <RestView />;

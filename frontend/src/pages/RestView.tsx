@@ -44,21 +44,21 @@ export const RestView: React.FC = () => {
       color: '#fff',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
     }}>
-      <h1 style={{ fontSize: '48px', color: '#ffaa66', marginBottom: '10px' }}>
+      <h1 style={{ fontSize: window.innerWidth < 768 ? '28px' : '48px', color: '#ffaa66', marginBottom: '10px', textAlign: 'center', padding: '0 16px' }}>
         🔥 타오르는 모닥불
       </h1>
-      <p style={{ fontSize: '20px', color: '#ccc', marginBottom: '50px' }}>
+      <p style={{ fontSize: window.innerWidth < 768 ? '14px' : '20px', color: '#ccc', marginBottom: window.innerWidth < 768 ? '24px' : '50px', textAlign: 'center', padding: '0 16px' }}>
         잠시 몸을 녹이고 정비할 시간입니다. 현재 HP: {playerHp}/{playerMaxHp}
       </p>
 
-      <div style={{ display: 'flex', gap: '30px' }}>
+      <div style={{ display: 'flex', gap: window.innerWidth < 768 ? '16px' : '30px', flexDirection: window.innerWidth < 768 ? 'column' as const : 'row' as const, alignItems: 'center', padding: '0 16px' }}>
         {/* 🌟 회복 결과 연출이 없을 때만 선택지 표시 */}
         {healResult === null ? (
           <>
             <button
               onClick={handleHeal}
               style={{
-                width: '240px', height: '300px', backgroundColor: '#2a1f1a',
+                width: window.innerWidth < 768 ? '80vw' : '240px', height: window.innerWidth < 768 ? '180px' : '300px', backgroundColor: '#2a1f1a',
                 border: '2px solid #5a3f2a', borderRadius: '12px', cursor: 'pointer',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 transition: 'all 0.2s'
@@ -77,7 +77,7 @@ export const RestView: React.FC = () => {
               onClick={handleUpgrade}
               disabled={!canUpgrade}
               style={{
-                width: '240px', height: '300px', backgroundColor: canUpgrade ? '#2a1f1a' : '#1a1a1a',
+                width: window.innerWidth < 768 ? '80vw' : '240px', height: window.innerWidth < 768 ? '180px' : '300px', backgroundColor: canUpgrade ? '#2a1f1a' : '#1a1a1a',
                 border: `2px solid ${canUpgrade ? '#5a3f2a' : '#333'}`, borderRadius: '12px',
                 cursor: canUpgrade ? 'pointer' : 'not-allowed',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -97,7 +97,7 @@ export const RestView: React.FC = () => {
           /* 🌟 회복 결과 연출 */
           <div style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px',
-            backgroundColor: 'rgba(0, 80, 40, 0.6)', padding: '50px 80px', borderRadius: '16px',
+            backgroundColor: 'rgba(0, 80, 40, 0.6)', padding: window.innerWidth < 768 ? '24px' : '50px 80px', borderRadius: '16px',
             border: '2px solid #22c55e', animation: 'fadeIn 0.5s ease-out'
           }}>
             <span style={{ fontSize: '72px' }}>💚</span>

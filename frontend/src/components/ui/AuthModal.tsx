@@ -54,12 +54,13 @@ export const AuthModal: React.FC = () => {
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
     }}>
       <div style={{
-        width: '400px', padding: '40px', backgroundColor: '#2a1f1a',
+        width: 'min(400px, 90vw)', padding: window.innerWidth < 768 ? '24px' : '40px', backgroundColor: '#2a1f1a',
         borderRadius: '16px', border: '2px solid #aa7700',
         display: 'flex', flexDirection: 'column', gap: '20px',
-        boxShadow: '0 0 30px rgba(170, 119, 0, 0.3)'
+        boxShadow: '0 0 30px rgba(170, 119, 0, 0.3)',
+        boxSizing: 'border-box',
       }}>
-        <h2 style={{ color: '#ffd700', fontSize: '32px', textAlign: 'center', margin: 0 }}>
+        <h2 style={{ color: '#ffd700', fontSize: window.innerWidth < 768 ? '24px' : '32px', textAlign: 'center', margin: 0 }}>
           {isLoginMode ? '웨이스트랜드 접속' : '새로운 생존자 등록'}
         </h2>
 

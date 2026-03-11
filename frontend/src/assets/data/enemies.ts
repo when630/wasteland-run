@@ -4,6 +4,15 @@ import { generateUniqueId, type SeededRNG } from '../../utils/rng';
 type BaseEnemy = Omit<Enemy, 'id' | 'currentHp' | 'shield' | 'resist' | 'currentIntent'> & { chapter?: number; initialShield?: number };
 
 export const BASE_ENEMIES: Record<string, BaseEnemy> = {
+  // ===== 디버그: 훈련용 허수아비 =====
+  training_dummy: {
+    baseId: 'training_dummy',
+    tier: 'NORMAL',
+    name: '훈련용 허수아비',
+    maxHp: 9999,
+    chapter: 0,
+  },
+
   // ===== 챕터 1: 오염된 외곽 도시 =====
   scrap_collector: {
     baseId: 'scrap_collector',
@@ -540,6 +549,9 @@ export const determineNextIntent = (baseId: string, rng?: SeededRNG): Intent => 
         return { type: 'ATTACK', amount: 15, damageType: 'SPECIAL', description: '☣️ 나노 침식파 15', applyDebuff: { status: 'WEAK', amount: 2 } };
       }
     }
+
+    case 'training_dummy':
+      return { type: 'DEFEND', description: '🎯 대기 중...' };
 
     default:
       return { type: 'UNKNOWN', description: '???' };

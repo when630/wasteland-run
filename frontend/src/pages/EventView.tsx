@@ -108,16 +108,17 @@ export const EventView: React.FC = () => {
       color: '#fff',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
     }}>
-      <h1 style={{ fontSize: '48px', color: '#a78bfa', marginBottom: '10px' }}>
+      <h1 style={{ fontSize: window.innerWidth < 768 ? '24px' : '48px', color: '#a78bfa', marginBottom: '10px', textAlign: 'center', padding: '0 16px' }}>
         ❓ {currentEvent.title}
       </h1>
 
       <div style={{
-        backgroundColor: '#1f2937', padding: '40px', borderRadius: '16px',
-        maxWidth: '800px', textAlign: 'center', marginBottom: '40px',
-        border: '1px solid #374151', minHeight: '150px'
+        backgroundColor: '#1f2937', padding: window.innerWidth < 768 ? '20px' : '40px', borderRadius: '16px',
+        maxWidth: '800px', width: window.innerWidth < 768 ? '90vw' : undefined, textAlign: 'center', marginBottom: window.innerWidth < 768 ? '20px' : '40px',
+        border: '1px solid #374151', minHeight: window.innerWidth < 768 ? undefined : '150px',
+        boxSizing: 'border-box',
       }}>
-        <p style={{ fontSize: '20px', color: '#d1d5db', lineHeight: '1.6', marginBottom: '20px' }}>
+        <p style={{ fontSize: window.innerWidth < 768 ? '14px' : '20px', color: '#d1d5db', lineHeight: '1.6', marginBottom: '20px' }}>
           {currentEvent.description}
         </p>
         <p style={{ fontSize: '16px', color: '#9ca3af', fontStyle: 'italic' }}>
@@ -127,7 +128,7 @@ export const EventView: React.FC = () => {
 
       {/* 이벤트 선택지 렌더링 : 결과가 아직 안 나왔을 때만 렌더링 */}
       {!resultText ? (
-        <div style={{ display: 'flex', gap: '20px', flexDirection: 'column', width: '600px' }}>
+        <div style={{ display: 'flex', gap: '15px', flexDirection: 'column', width: window.innerWidth < 768 ? '90vw' : '600px' }}>
           {currentEvent.options.map((option, idx) => {
             // 조건문이 존재하고 해당 조건을 만족하지 못하면 disabled 처리
             const isDisabled = option.condition ? !option.condition() : false;
@@ -166,8 +167,8 @@ export const EventView: React.FC = () => {
       ) : (
         /* 결과 노출용 컴포넌트 */
         <div style={{
-          backgroundColor: '#064e3b', padding: '30px', borderRadius: '12px',
-          border: '2px solid #10b981', maxWidth: '600px', textAlign: 'center',
+          backgroundColor: '#064e3b', padding: window.innerWidth < 768 ? '20px' : '30px', borderRadius: '12px',
+          border: '2px solid #10b981', maxWidth: '600px', width: window.innerWidth < 768 ? '90vw' : undefined, textAlign: 'center', boxSizing: 'border-box',
           animation: 'fadeIn 0.5s ease-in-out'
         }}>
           <h3 style={{ color: '#34d399', fontSize: '24px', marginBottom: '20px' }}>선택 결과</h3>

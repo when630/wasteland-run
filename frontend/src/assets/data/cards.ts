@@ -482,6 +482,15 @@ export const ALL_CARDS: Partial<Card>[] = [
 
 export const STARTING_CARDS: Partial<Card>[] = ALL_CARDS.filter(c => c.tier === 'BASIC');
 
+/**
+ * 디버그용: 모든 카드를 1장씩 포함하는 테스트 덱
+ */
+export const createAllCardsDeck = (): Card[] => {
+  return ALL_CARDS
+    .filter(c => !c.type?.toString().startsWith('STATUS_'))
+    .map(c => ({ ...c, id: generateUniqueId() } as Card));
+};
+
 export const STATUS_CARDS: Card[] = [
   {
     baseId: 'status_burn',

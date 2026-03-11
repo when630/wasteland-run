@@ -30,8 +30,8 @@ export const MainMenuView: React.FC = () => {
     transform: isHovered === id && !disabled ? 'scale(1.1)' : 'scale(1)',
     transition: 'all 0.2s ease-in-out',
     fontFamily: '"Courier New", Courier, monospace',
-    width: isMobile ? '250px' : '300px',
     textAlign: 'left' as const,
+    whiteSpace: 'nowrap' as const,
   });
 
   const handleNewGame = async () => {
@@ -172,6 +172,23 @@ export const MainMenuView: React.FC = () => {
         >
           ▶ 설정
         </button>
+
+        <div style={{ marginTop: '20px', borderTop: '1px solid #333', paddingTop: '20px' }}>
+          <button
+            style={{ ...buttonStyle('debug'), fontSize: isMobile ? '14px' : '18px', color: isHovered === 'debug' ? '#ff0' : '#665' }}
+            onMouseEnter={() => setIsHovered('debug')}
+            onMouseLeave={() => setIsHovered(null)}
+            onClick={() => {
+              useAudioStore.getState().playClick();
+              const seed = 'debug_' + Date.now();
+              useRngStore.getState().initialize(seed);
+              useRunStore.setState({ playerHp: 9999, playerMaxHp: 9999, isActive: false });
+              setScene('DEBUG_BATTLE');
+            }}
+          >
+            ▶ 카드 테스트 (허수아비)
+          </button>
+        </div>
 
       </div>
 

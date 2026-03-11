@@ -35,6 +35,28 @@ const getAudioCtx = () => {
   return audioCtx;
 };
 
+// 사용자 상호작용 감지 — 브라우저 자동재생 정책 우회
+let userHasInteracted = false;
+let pendingBgmTrack: keyof typeof BGM_TRACKS | null = null;
+
+function onFirstInteraction() {
+  if (userHasInteracted) return;
+  userHasInteracted = true;
+  window.removeEventListener('click', onFirstInteraction);
+  window.removeEventListener('keydown', onFirstInteraction);
+  window.removeEventListener('touchstart', onFirstInteraction);
+  // 대기 중인 BGM 재생
+  if (pendingBgmTrack) {
+    useAudioStore.getState().playBgm(pendingBgmTrack);
+    pendingBgmTrack = null;
+  }
+}
+if (typeof window !== 'undefined') {
+  window.addEventListener('click', onFirstInteraction);
+  window.addEventListener('keydown', onFirstInteraction);
+  window.addEventListener('touchstart', onFirstInteraction);
+}
+
 export const useAudioStore = create<AudioState>((set, get) => ({
   bgmVolume: 0.3,
   sfxVolume: 0.5,
@@ -52,6 +74,12 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   setSfxVolume: (vol: number) => set({ sfxVolume: vol }),
 
   playBgm: (track) => {
+    // 사용자 상호작용 전이면 대기열에 저장
+    if (!userHasInteracted) {
+      pendingBgmTrack = track;
+      return;
+    }
+
     const { currentBgmAudio, currentBgmTrack, bgmVolume } = get();
     const targetUrl = BGM_TRACKS[track];
 
@@ -63,13 +91,13 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     if (currentBgmAudio) {
       currentBgmAudio.pause();
       currentBgmAudio.removeAttribute('src');
-      currentBgmAudio.load(); // 리소스 해제
+      currentBgmAudio.load();
     }
 
     const newAudio = new Audio(targetUrl);
     newAudio.loop = true;
     newAudio.volume = bgmVolume;
-    newAudio.play().catch(e => console.warn("BGM 재생 실패 (파일 부재 혹은 브라우저 정책):", e));
+    newAudio.play().catch(() => { /* 파일 부재 시 무시 */ });
 
     set({ currentBgmAudio: newAudio, currentBgmTrack: track });
   },

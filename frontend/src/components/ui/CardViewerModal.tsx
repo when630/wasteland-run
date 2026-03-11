@@ -41,7 +41,7 @@ export const CardViewerModal: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      padding: '40px'
+      padding: window.innerWidth < 768 ? '16px 8px' : '40px'
     }}>
       {/* 닫기 영역: 뒷배경 아무곳이나 클릭해도 닫힘 */}
       <div
@@ -50,37 +50,41 @@ export const CardViewerModal: React.FC = () => {
       />
 
       {/* 모달 헤더 */}
-      <div style={{ position: 'relative', zIndex: 101, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <h1 style={{ color: '#fff', margin: '0 0 20px 0' }}>{title} ({cardsToShow.length}장)</h1>
+      <div style={{ position: 'relative', zIndex: 101, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '800px' }}>
+        <h1 style={{ color: '#fff', margin: '0 0 15px 0', fontSize: window.innerWidth < 768 ? '20px' : '32px' }}>{title} ({cardsToShow.length}장)</h1>
 
         {/* 카드 그리드 영역 */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(5, 1fr)',
-          gap: '20px',
+          gridTemplateColumns: window.innerWidth < 768 ? 'repeat(3, 1fr)' : 'repeat(5, 1fr)',
+          gap: window.innerWidth < 768 ? '10px' : '20px',
           maxHeight: '70vh',
-          overflowY: 'auto', // 카드가 많을 땐 스크롤 가능하게
-          padding: '20px'
+          overflowY: 'auto',
+          padding: window.innerWidth < 768 ? '8px' : '20px',
+          width: '100%', boxSizing: 'border-box',
         }}>
-          {cardsToShow.map((card, idx) => (
+          {cardsToShow.map((card, idx) => {
+            const isMobile = window.innerWidth < 768;
+            return (
             <div
               key={`${card.id}-${idx}`}
               style={{
-                width: '130px',
-                height: '190px',
+                width: isMobile ? '100%' : '130px',
+                height: isMobile ? '150px' : '190px',
                 backgroundColor: '#2a2a2a',
                 border: '2px solid #555',
                 borderRadius: '8px',
-                padding: '12px',
+                padding: isMobile ? '8px' : '12px',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 boxShadow: '0 4px 10px rgba(0,0,0,0.5)',
-                userSelect: 'none'
+                userSelect: 'none',
+                boxSizing: 'border-box',
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#fff', wordBreak: 'keep-all' }}>
+                <span style={{ fontWeight: 'bold', fontSize: isMobile ? '10px' : '13px', color: '#fff', wordBreak: 'keep-all', flex: 1, overflow: 'hidden' }}>
                   {card.name}
                 </span>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
@@ -109,13 +113,14 @@ export const CardViewerModal: React.FC = () => {
                 </span>
               </div>
 
-              <div style={{ fontSize: '12px', color: '#ddd', textAlign: 'center' }}>
+              <div style={{ fontSize: isMobile ? '9px' : '12px', color: '#ddd', textAlign: 'center', lineHeight: 1.3, overflow: 'hidden' }}>
                 {card.description}
               </div>
             </div>
-          ))}
+          );
+          })}
           {cardsToShow.length === 0 && (
-            <div style={{ color: '#888', gridColumn: '1 / span 5', textAlign: 'center', marginTop: '50px' }}>
+            <div style={{ color: '#888', gridColumn: window.innerWidth < 768 ? '1 / span 3' : '1 / span 5', textAlign: 'center', marginTop: '50px' }}>
               카드가 없습니다.
             </div>
           )}

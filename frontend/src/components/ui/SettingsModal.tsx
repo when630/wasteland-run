@@ -44,17 +44,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showQuitB
     backgroundColor: '#111',
     border: '2px solid #555',
     borderRadius: '12px',
-    padding: '40px',
-    width: '400px',
+    padding: window.innerWidth < 768 ? '24px' : '40px',
+    width: 'min(400px, 90vw)',
     display: 'flex',
     flexDirection: 'column',
-    gap: '30px',
-    boxShadow: '0 0 20px rgba(0,0,0,0.8)'
+    gap: '24px',
+    boxShadow: '0 0 20px rgba(0,0,0,0.8)',
+    boxSizing: 'border-box',
   };
 
   const titleStyle: React.CSSProperties = {
     margin: 0,
-    fontSize: '32px',
+    fontSize: window.innerWidth < 768 ? '24px' : '32px',
     color: '#ccc',
     textAlign: 'center',
     borderBottom: '1px solid #333',

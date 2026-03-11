@@ -1,42 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Container, Sprite, Text, useTick } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import type { Enemy } from '../../types/enemyTypes';
+import type { Card } from '../../types/gameTypes';
 import { useRunStore } from '../../store/useRunStore';
+import { calculatePreviewDamage } from '../../logic/damageCalculation';
+import { HpBar } from './HpBar';
 
 interface AnimatedEnemyProps {
   enemy: Enemy;
+  enemies: Enemy[];
   baseX: number;
   baseY: number;
   isTargeting: boolean;
-  canBeTargeted?: boolean; // 단일 공격 카드 선택 시 타겟 가능 표시
+  canBeTargeted?: boolean;
   onPointerDown: () => void;
   defaultTextStyle: PIXI.TextStyle;
-  hpTextStyle: PIXI.TextStyle;
   intentTextStyle: PIXI.TextStyle;
   texture: PIXI.Texture;
   isActive?: boolean;
+  targetingCard?: Card;
+  physicalScalingBonus?: number;
+  playerAmmo?: number;
 }
 
 export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
   enemy,
+  enemies,
   baseX,
   baseY,
   isTargeting,
   onPointerDown,
   defaultTextStyle,
-  hpTextStyle,
   intentTextStyle,
   texture,
   isActive = false,
-  canBeTargeted = false
+  canBeTargeted = false,
+  targetingCard,
+  physicalScalingBonus = 0,
+  playerAmmo = 0,
 }) => {
   // 애니메이션용 로컬 오프셋 및 색상
   const [offsetX, setOffsetX] = useState(0);
-  const [offsetY, setOffsetY] = useState(0); // 🌟 Y축 떨림용
-  const [tint, setTint] = useState<number>(0xff0000); // 기본 몬스터 색상 (빨간색)
-  const [alpha, setAlpha] = useState(1); // 사망 시 페이드아웃을 위한 투명도 상태
-  const [scaleModifier, setScaleModifier] = useState(1); // 🌟 독 수축 효과용
+  const [offsetY, setOffsetY] = useState(0);
+  const [tint, setTint] = useState<number>(0xff0000);
+  const [alpha, setAlpha] = useState(1);
+  const [scaleModifier, setScaleModifier] = useState(1);
+  const [isHovered, setIsHovered] = useState(false);
+
+  // 호버 시 예상 데미지 계산
+  const previewDamage = useMemo(() => {
+    if (!isHovered || !targetingCard || !canBeTargeted) return 0;
+    if (targetingCard.type !== 'PHYSICAL_ATTACK' && targetingCard.type !== 'SPECIAL_ATTACK') return 0;
+    return calculatePreviewDamage(targetingCard, enemy, enemies, physicalScalingBonus, playerAmmo);
+  }, [isHovered, targetingCard, canBeTargeted, enemy, enemies, physicalScalingBonus, playerAmmo]);
 
   // 활성 상태(공격 모션) 연출용
   const activeTimerRef = React.useRef<number>(0);
@@ -175,6 +192,15 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
   const hpYOffset = isBoss ? 260 : 140;
   const statYOffset = isBoss ? 290 : 170;
 
+  // 예상 데미지 텍스트 스타일
+  const previewTextStyle = useMemo(() => new PIXI.TextStyle({
+    fill: 0xffffff,
+    fontSize: 16,
+    fontWeight: 'bold',
+    stroke: 0x000000,
+    strokeThickness: 3,
+  }), []);
+
   return (
     <Container
       x={baseX + offsetX}
@@ -182,6 +208,8 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
       alpha={alpha}
       interactive={isTargeting && enemy.currentHp > 0}
       pointerdown={onPointerDown}
+      pointerover={() => setIsHovered(true)}
+      pointerout={() => setIsHovered(false)}
     >
       {/* 적 의도(Intent) */}
       {enemy.currentIntent && (() => {
@@ -213,13 +241,27 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
         anchor={0.5}
         tint={tint}
       />
-      {/* 적 체력 */}
-      <Text
-        text={`HP: ${enemy.currentHp} / ${enemy.maxHp}`}
-        y={hpYOffset}
-        anchor={0.5}
-        style={hpTextStyle}
+      {/* 적 체력 바 */}
+      <HpBar
+        currentHp={enemy.currentHp}
+        maxHp={enemy.maxHp}
+        width={isBoss ? 200 : 120}
+        height={isBoss ? 16 : 12}
+        x={isBoss ? -100 : -60}
+        y={hpYOffset - 6}
+        fillColor={0xff4444}
+        previewDamage={previewDamage}
+        fontSize={isBoss ? 14 : 11}
       />
+      {/* 호버 시 예상 데미지 표시 */}
+      {previewDamage > 0 && isHovered && (
+        <Text
+          text={`-${previewDamage}`}
+          y={hpYOffset - 28}
+          anchor={0.5}
+          style={previewTextStyle}
+        />
+      )}
       {/* 적 방어력 */}
       {(enemy.shield > 0 || enemy.resist > 0) && (
         <Text

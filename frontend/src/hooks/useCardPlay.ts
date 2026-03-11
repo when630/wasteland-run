@@ -5,6 +5,9 @@ import { useAudioStore } from '../store/useAudioStore';
 import { resolveCardEffects, type EffectAction } from '../logic/cardEffectHandlers';
 import { onCardPlayed } from '../logic/relicEffects';
 import { useRngStore } from '../store/useRngStore';
+import { dispatchVfx } from '../components/pixi/vfx/vfxDispatcher';
+import { VFX_PROFILES } from '../components/pixi/vfx/vfxProfiles';
+import { PLAYER_POS, enemyPos } from '../components/pixi/vfx/battleLayout';
 
 /**
  * 카드를 플레이할 때 호출하는 커스텀 훅
@@ -143,6 +146,63 @@ export const useCardPlay = () => {
     if (hasDamage) useAudioStore.getState().playHit();
     else if (hasBuff) useAudioStore.getState().playHeal();
     else useAudioStore.getState().playDraw();
+
+    // VFX 디스패치
+    const vfxProfile = VFX_PROFILES[card.baseId];
+
+    // 방어/유틸 카드 VFX — 플레이어 위치에 이펙트
+    if (vfxProfile && !hasDamage) {
+      dispatchVfx({
+        cardBaseId: card.baseId,
+        sourceX: PLAYER_POS.x,
+        sourceY: PLAYER_POS.y,
+        targetPositions: [{ x: PLAYER_POS.x, y: PLAYER_POS.y }],
+      });
+    }
+
+    // 공격 카드 VFX — 적 위치에 이펙트
+    if (vfxProfile && hasDamage) {
+      const livingEnemies = enemies.filter(e => e.currentHp > 0);
+
+      if (vfxProfile.isAoe) {
+        // AoE: 생존 적 전체 좌표 전달
+        const positions = livingEnemies.map((_, idx) => {
+          const originalIdx = enemies.indexOf(livingEnemies[idx]);
+          return enemyPos(originalIdx >= 0 ? originalIdx : idx);
+        });
+        dispatchVfx({
+          cardBaseId: card.baseId,
+          sourceX: PLAYER_POS.x,
+          sourceY: PLAYER_POS.y,
+          targetPositions: positions,
+        });
+      } else if (vfxProfile.multiHitCount > 1) {
+        // 멀티히트 (chainsaw): 150ms 간격 분산 디스패치
+        const targetEnemyIndex = targetEnemy ? enemies.findIndex(e => e.id === targetEnemy.id) : 0;
+        const pos = enemyPos(targetEnemyIndex >= 0 ? targetEnemyIndex : 0);
+        for (let hit = 0; hit < vfxProfile.multiHitCount; hit++) {
+          setTimeout(() => {
+            dispatchVfx({
+              cardBaseId: card.baseId,
+              sourceX: PLAYER_POS.x,
+              sourceY: PLAYER_POS.y,
+              targetPositions: [pos],
+              hitIndex: hit,
+            });
+          }, hit * 150);
+        }
+      } else {
+        // 단일 타겟
+        const targetEnemyIndex = targetEnemy ? enemies.findIndex(e => e.id === targetEnemy.id) : 0;
+        const pos = enemyPos(targetEnemyIndex >= 0 ? targetEnemyIndex : 0);
+        dispatchVfx({
+          cardBaseId: card.baseId,
+          sourceX: PLAYER_POS.x,
+          sourceY: PLAYER_POS.y,
+          targetPositions: [pos],
+        });
+      }
+    }
 
     // 유물 효과: 카드 사용 후 보너스
     const relicBonus = onCardPlayed(relics, card);

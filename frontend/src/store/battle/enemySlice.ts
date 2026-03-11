@@ -8,6 +8,8 @@ import { STATUS_CARDS } from '../../assets/data/cards';
 import { calculateDamageToEnemy, calculateDamageToPlayer } from '../../logic/damageCalculation';
 import { onEnemyKilledBySpecial, onFatalDamage } from '../../logic/relicEffects';
 import { processStatusDamage, parseAttackIntent, processStatusDecay } from '../../logic/enemyTurnLogic';
+import { dispatchVfx } from '../../components/pixi/vfx/vfxDispatcher';
+import { PLAYER_POS, enemyPos } from '../../components/pixi/vfx/battleLayout';
 
 export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (set, get) => ({
   enemies: [],
@@ -69,6 +71,22 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
         };
       });
 
+      // 사망한 적 VFX 디스패치
+      try {
+        newEnemies.forEach((e, idx) => {
+          const orig = state.enemies[idx];
+          if (orig && orig.currentHp > 0 && e.currentHp <= 0) {
+            const pos = enemyPos(idx);
+            dispatchVfx({
+              cardBaseId: '__enemy_death__',
+              sourceX: pos.x,
+              sourceY: pos.y,
+              targetPositions: [{ x: pos.x, y: pos.y }],
+            });
+          }
+        });
+      } catch { /* VFX는 게임 로직에 영향 없음 */ }
+
       const isVictory = newEnemies.every(e => e.currentHp <= 0);
 
       if (isVictory) {
@@ -122,15 +140,38 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
       // 1. 상태이상 데미지 처리
       const statusResult = processStatusDamage(enemy);
 
-      // 상태이상 데미지 넘버
+      // 상태이상 데미지 넘버 + VFX
       const statusDamage = enemy.currentHp - statusResult.newHp;
       if (statusDamage > 0) {
         const statusColor = statusResult.vfx?.type === 'POISON_TICK' ? 0x22ff44
           : statusResult.vfx?.type === 'BURN_TICK' ? 0xff6600 : 0xff6600;
         get().pushDamageNumber(enemy.id, statusDamage, statusColor);
+
+        // 상태이상 틱 VFX 디스패치
+        try {
+          const pos = enemyPos(enemyIndex);
+          const vfxKey = statusResult.vfx?.type === 'POISON_TICK' ? '__enemy_poison_tick__' : '__enemy_burn_tick__';
+          dispatchVfx({
+            cardBaseId: vfxKey,
+            sourceX: pos.x,
+            sourceY: pos.y,
+            targetPositions: [{ x: pos.x, y: pos.y }],
+          });
+        } catch { /* VFX는 게임 로직에 영향 없음 */ }
       }
 
       if (statusResult.isDead) {
+        // 상태이상 사망 VFX
+        try {
+          const pos = enemyPos(enemyIndex);
+          dispatchVfx({
+            cardBaseId: '__enemy_death__',
+            sourceX: pos.x,
+            sourceY: pos.y,
+            targetPositions: [{ x: pos.x, y: pos.y }],
+          });
+        } catch { /* VFX는 게임 로직에 영향 없음 */ }
+
         const newEnemies = [...state.enemies];
         newEnemies[enemyIndex] = { ...enemy, currentHp: 0, statuses: {}, currentIntent: null, visualEffect: statusResult.vfx };
 
@@ -175,12 +216,54 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
           newResist = dmgResult.newResist;
           hitQueue = dmgResult.hitQueue;
 
+          // 적 공격 VFX 디스패치 (다단히트 시 히트 수만큼 분산)
+          try {
+            const atkVfxType = isSpecial ? 'RANGED' : 'MELEE';
+            const srcPos = enemyPos(enemyIndex);
+            for (let h = 0; h < hitCount; h++) {
+              if (h === 0) {
+                dispatchVfx({
+                  cardBaseId: `__enemy_${atkVfxType.toLowerCase()}__`,
+                  sourceX: srcPos.x,
+                  sourceY: srcPos.y,
+                  targetPositions: [{ x: PLAYER_POS.x, y: PLAYER_POS.y }],
+                  hitIndex: h,
+                });
+              } else {
+                setTimeout(() => {
+                  dispatchVfx({
+                    cardBaseId: `__enemy_${atkVfxType.toLowerCase()}__`,
+                    sourceX: srcPos.x,
+                    sourceY: srcPos.y,
+                    targetPositions: [{ x: PLAYER_POS.x, y: PLAYER_POS.y }],
+                    hitIndex: h,
+                  });
+                }, h * 150);
+              }
+            }
+          } catch { /* VFX는 게임 로직에 영향 없음 */ }
+
           if (!isSpecial && reflectPhysical > 0 && dmgResult.totalDamage > 0) {
+            const reflectDmg = Math.min(reflectPhysical, enemyObj.currentHp);
             enemyObj = {
               ...enemyObj,
               currentHp: Math.max(0, enemyObj.currentHp - reflectPhysical),
             };
             useRunStore.getState().addDamageDealt(Math.min(reflectPhysical, enemyObj.currentHp + reflectPhysical));
+
+            // 반사 데미지 VFX 디스패치
+            try {
+              const ePos = enemyPos(enemyIndex);
+              dispatchVfx({
+                cardBaseId: '__enemy_reflect__',
+                sourceX: PLAYER_POS.x,
+                sourceY: PLAYER_POS.y,
+                targetPositions: [{ x: ePos.x, y: ePos.y }],
+              });
+              if (reflectDmg > 0) {
+                get().pushDamageNumber(enemy.id, reflectDmg, 0xff8844);
+              }
+            } catch { /* VFX는 게임 로직에 영향 없음 */ }
           }
 
           if (isSpecial && dmgResult.specialDefended && ammoOnSpecialDefend > 0) {
@@ -226,6 +309,17 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
             shield: enemyObj.shield + enemyObj.currentIntent.amount,
             visualEffect: { type: 'BUFF' as const, tick: Date.now() }
           };
+
+          // 적 버프 VFX 디스패치
+          try {
+            const buffPos = enemyPos(enemyIndex);
+            dispatchVfx({
+              cardBaseId: '__enemy_buff__',
+              sourceX: buffPos.x,
+              sourceY: buffPos.y,
+              targetPositions: [{ x: buffPos.x, y: buffPos.y }],
+            });
+          } catch { /* VFX는 게임 로직에 영향 없음 */ }
         }
       }
 

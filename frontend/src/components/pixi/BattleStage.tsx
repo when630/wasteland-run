@@ -8,12 +8,16 @@ import { useAudioStore } from '../../store/useAudioStore';
 import { useCardPlay } from '../../hooks/useCardPlay';
 import { AnimatedEnemy } from './AnimatedEnemy';
 import { DamageNumber } from './DamageNumber';
+import { HpBar } from './HpBar';
+import { VfxLayer } from './vfx/VfxLayer';
+import { dispatchVfx } from './vfx/vfxDispatcher';
+import { PLAYER_POS } from './vfx/battleLayout';
 import playerImg from '../../assets/images/player.png';
 
 export const BattleStage: React.FC = () => {
   // 스토어에서 런 상태 및 전투 상태 가져오기
   const { playerHp, playerMaxHp } = useRunStore();
-  const { currentTurn, enemies, playerStatus, playerDebuffs, powerDefenseAmmo50, powerPhysicalScalingActive, powerPhysicalScalingBonus, targetingCardId, playerHitQueue, consumePlayerHitQueue, activeEnemyIndex, damageNumbers, clearExpiredDamageNumbers } = useBattleStore();
+  const { currentTurn, enemies, playerStatus, playerDebuffs, powerDefenseAmmo50, powerPhysicalScalingActive, powerPhysicalScalingBonus, targetingCardId, playerAmmo, playerHitQueue, consumePlayerHitQueue, activeEnemyIndex, damageNumbers, clearExpiredDamageNumbers } = useBattleStore();
   const { hand } = useDeckStore();
   const { playCard } = useCardPlay();
 
@@ -26,17 +30,7 @@ export const BattleStage: React.FC = () => {
     fontSize: 18,
   }), []);
 
-  const hpTextStyle = useMemo(() => new PIXI.TextStyle({
-    fill: 0x44ff44, // 플레이어 체력은 녹색 톤으로
-    fontSize: 20,
-    fontWeight: 'bold',
-  }), []);
-
-  const enemyHpTextStyle = useMemo(() => new PIXI.TextStyle({
-    fill: 0xff4444, // 적 체력은 붉은 톤
-    fontSize: 20,
-    fontWeight: 'bold',
-  }), []);
+  // (HP 바로 대체됨 — hpTextStyle, enemyHpTextStyle 제거)
 
   const intentTextStyle = useMemo(() => new PIXI.TextStyle({
     fill: 0x4499ff,
@@ -94,6 +88,7 @@ export const BattleStage: React.FC = () => {
   const [playerAlphaFlicker, setPlayerAlphaFlicker] = useState(1);
   const [shakeX, setShakeX] = useState(0);
   const [shakeY, setShakeY] = useState(0);
+  const vfxShakeRef = React.useRef({ x: 0, y: 0 });
   const isAnimatingRef = React.useRef(false); // 🌟 useRef로 락 관리 (React 배칭 문제 방지)
   const timersRef = React.useRef<ReturnType<typeof setTimeout>[]>([]); // 🌟 클린업용 타이머 추적
   const shakeIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
@@ -146,7 +141,15 @@ export const BattleStage: React.FC = () => {
           consumePlayerHitQueue(); // 다음 큐 아이템으로
         }, 300);
       } else if (hitType === 'BURN') {
-        // 🌟 화상 틱: 오렌지 점멸 + Y 떨림
+        // 🌟 화상 틱: 오렌지 점멸 + Y 떨림 + Pixi VFX
+        try {
+          dispatchVfx({
+            cardBaseId: '__enemy_burn_tick__',
+            sourceX: PLAYER_POS.x,
+            sourceY: PLAYER_POS.y,
+            targetPositions: [{ x: PLAYER_POS.x, y: PLAYER_POS.y }],
+          });
+        } catch { /* VFX는 게임 로직에 영향 없음 */ }
         setPlayerTint(0xff6600);
         let tickCount = 0;
         const burnInterval = setInterval(() => {
@@ -161,7 +164,15 @@ export const BattleStage: React.FC = () => {
           consumePlayerHitQueue();
         }, 350);
       } else if (hitType === 'POISON') {
-        // 🌟 맹독 틱: 녹색 점멸 + 투명도 깜빡
+        // 🌟 맹독 틱: 녹색 점멸 + 투명도 깜빡 + Pixi VFX
+        try {
+          dispatchVfx({
+            cardBaseId: '__enemy_poison_tick__',
+            sourceX: PLAYER_POS.x,
+            sourceY: PLAYER_POS.y,
+            targetPositions: [{ x: PLAYER_POS.x, y: PLAYER_POS.y }],
+          });
+        } catch { /* VFX는 게임 로직에 영향 없음 */ }
         setPlayerTint(0x22ff44);
         let tickCount = 0;
         const poisonInterval = setInterval(() => {
@@ -206,8 +217,8 @@ export const BattleStage: React.FC = () => {
     >
       <Container
         scale={scale}
-        x={(screenWidth - 1920 * scale) / 2 + shakeX}
-        y={(screenHeight - 1080 * scale) / 2 + shakeY}
+        x={(screenWidth - 1920 * scale) / 2 + shakeX + vfxShakeRef.current.x}
+        y={(screenHeight - 1080 * scale) / 2 + shakeY + vfxShakeRef.current.y}
       >
         {/* 허공(배경) 클릭 감지용 투명 레이어 */}
         {targetingCardId !== null && (
@@ -266,12 +277,15 @@ export const BattleStage: React.FC = () => {
             anchor={0.5}
             style={defaultTextStyle}
           />
-          {/* 플레이어 체력 */}
-          <Text
-            text={`HP: ${playerHp} / ${playerMaxHp}`}
-            y={160}
-            anchor={0.5}
-            style={hpTextStyle}
+          {/* 플레이어 체력 바 */}
+          <HpBar
+            currentHp={playerHp}
+            maxHp={playerMaxHp}
+            width={120}
+            height={14}
+            x={-60}
+            y={155}
+            fillColor={0x44ff44}
           />
           {/* 플레이어 방어 버프 */}
           {(playerStatus.shield > 0 || playerStatus.resist > 0) && (
@@ -339,6 +353,7 @@ export const BattleStage: React.FC = () => {
             <AnimatedEnemy
               key={enemyObj.id}
               enemy={enemyObj}
+              enemies={enemies}
               baseX={baseX}
               baseY={baseY}
               isTargeting={isTargeting}
@@ -349,10 +364,12 @@ export const BattleStage: React.FC = () => {
                 }
               }}
               defaultTextStyle={defaultTextStyle}
-              hpTextStyle={enemyHpTextStyle}
               intentTextStyle={intentTextStyle}
               texture={placeholderTexture}
               isActive={activeEnemyIndex === index}
+              targetingCard={targetingCard || undefined}
+              physicalScalingBonus={powerPhysicalScalingBonus}
+              playerAmmo={playerAmmo}
             />
           );
         })}
@@ -365,6 +382,9 @@ export const BattleStage: React.FC = () => {
           anchor={0.5}
           style={turnTextStyle}
         />
+
+        {/* VFX 레이어 — 적 뒤, 데미지넘버 앞 */}
+        <VfxLayer onShakeUpdate={(x, y) => { vfxShakeRef.current.x = x; vfxShakeRef.current.y = y; }} />
 
         {/* 떠다니는 데미지 넘버 */}
         {damageNumbers.map((dn) => {
