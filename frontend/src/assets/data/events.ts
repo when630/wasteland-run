@@ -442,5 +442,142 @@ export const RANDOM_EVENTS: RandomEvent[] = [
         }
       }
     ]
+  },
+  {
+    id: 'evt_hologram_diary',
+    title: '홀로그램 일기장',
+    description: '잔해 속에서 아직 작동하는 홀로그램 프로젝터를 발견했습니다. 누군가의 전투 기록과 생존 일기가 담겨 있습니다. 프로젝터 자체도 분해하면 가치가 있어 보입니다.',
+    visualDesc: '푸른 홀로그램 빛이 어둠 속에서 일렁이며 낡은 전투 기록을 투사하고 있습니다...',
+    options: [
+      {
+        label: '[기록을 분석한다]',
+        description: '덱의 카드 1장을 업그레이드합니다.',
+        condition: () => useDeckStore.getState().masterDeck.some(c => !c.isUpgraded),
+        onSelect: () => {
+          return 'TRIGGER_CARD_UPGRADE';
+        }
+      },
+      {
+        label: '[프로젝터를 분해한다]',
+        description: '골드 35를 획득하고 무작위 [일반] 카드 1장을 얻습니다.',
+        onSelect: () => {
+          useRunStore.getState().addGold(35);
+          const commonCards = ALL_CARDS.filter(c => c.tier === 'COMMON');
+          const pick = commonCards[Math.floor(useRngStore.getState().eventRng.next() * commonCards.length)];
+          useDeckStore.getState().addCardToMasterDeck({ ...pick } as any);
+          return `프로젝터를 능숙하게 분해하여 부품을 챙겼습니다. 골드 35를 얻고 [${pick.name}] 카드를 획득했습니다.`;
+        }
+      },
+      {
+        label: '[무시하고 지나간다]',
+        description: '아무 일도 일어나지 않습니다.',
+        onSelect: () => {
+          return '과거의 기록에 관심을 두지 않고 발걸음을 옮겼습니다.';
+        }
+      }
+    ]
+  },
+  {
+    id: 'evt_mutant_trader',
+    title: '변이체 거래상',
+    description: '세 개의 눈과 비늘로 뒤덮인 변이체가 길을 막아섭니다. "거래를 하자, 인간. 네 몸이든, 네 기술이든... 아니면 네 목숨이든." 기형적인 외모와는 달리 말투는 정중합니다.',
+    visualDesc: '형광 초록빛 비늘이 번득이는 변이체가 낡은 가죽 가방에서 기이한 물건들을 꺼내고 있습니다...',
+    options: [
+      {
+        label: '[최대 체력을 판다]',
+        description: '최대 체력이 8 영구 감소합니다. 무작위 [희귀] 유물을 1개 획득합니다.',
+        condition: () => useRunStore.getState().playerMaxHp > 8,
+        onSelect: () => {
+          const runStore = useRunStore.getState();
+          const newMaxHp = runStore.playerMaxHp - 8;
+          const newHp = Math.min(runStore.playerHp, newMaxHp);
+          useRunStore.setState({ playerMaxHp: newMaxHp, playerHp: newHp });
+
+          const rareRelics = RELICS.filter(r => r.tier === 'RARE' && !runStore.relics.includes(r.id));
+          if (rareRelics.length > 0) {
+            const pick = rareRelics[Math.floor(useRngStore.getState().eventRng.next() * rareRelics.length)];
+            runStore.addRelic(pick.id);
+            return `변이체가 당신의 생명력 일부를 빨아들였습니다. (최대 체력 -8) 대가로 빛나는 유물 [${pick.name}]을 건네줍니다.`;
+          } else {
+            runStore.addGold(60);
+            return `변이체가 당신의 생명력 일부를 빨아들였습니다. (최대 체력 -8) 줄 유물이 없어 골드 60을 대신 건네줍니다.`;
+          }
+        }
+      },
+      {
+        label: '[카드를 2장 제거한다]',
+        description: '덱에서 카드 2장을 선택하여 제거합니다. 최대 체력이 15 영구 증가합니다.',
+        condition: () => useDeckStore.getState().masterDeck.length >= 2,
+        onSelect: () => {
+          const runStore = useRunStore.getState();
+          useRunStore.setState({ playerMaxHp: runStore.playerMaxHp + 15 });
+          runStore.healPlayer(15);
+          return 'TRIGGER_CARD_REMOVE_2';
+        }
+      },
+      {
+        label: '[공격한다]',
+        description: '변이체와 전투를 시작합니다.',
+        onSelect: () => {
+          return 'TRIGGER_ELITE_BATTLE';
+        }
+      }
+    ]
+  },
+  {
+    id: 'evt_collapsed_shelter',
+    title: '무너진 방공호',
+    description: '폭격으로 반쯤 무너진 방공호의 입구를 발견했습니다. 안쪽에서 희미한 불빛이 새어나오지만, 천장이 언제 무너질지 모릅니다. 허리에 찬 무전기에서 가끔 잡음이 들립니다.',
+    visualDesc: '콘크리트 잔해 사이로 비치는 희미한 불빛과 먼지가 자욱한 방공호 입구...',
+    options: [
+      {
+        label: '[깊이 들어간다]',
+        description: '40% 확률로 [희귀] 카드 + 골드 50. 60% 확률로 체력 -20 + [화상] 카드 추가.',
+        onSelect: () => {
+          const rng = useRngStore.getState().eventRng;
+          if (rng.next() < 0.4) {
+            useRunStore.getState().addGold(50);
+            const rareCards = ALL_CARDS.filter(c => c.tier === 'RARE');
+            const pick = rareCards[Math.floor(rng.next() * rareCards.length)];
+            useDeckStore.getState().addCardToMasterDeck({ ...pick } as any);
+            return `방공호 깊숙한 곳에서 잘 보존된 보급품을 발견했습니다! 골드 50과 [${pick.name}] 카드를 획득했습니다!`;
+          } else {
+            useRunStore.getState().damagePlayer(20);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, ...burnBlueprint } = STATUS_CARDS[0];
+            useDeckStore.getState().addCardToMasterDeck(burnBlueprint as any);
+            return '천장이 무너지며 불타는 잔해가 쏟아졌습니다! 간신히 빠져나왔지만 큰 부상을 입었습니다. (체력 -20, 덱에 [화상] 카드 추가)';
+          }
+        }
+      },
+      {
+        label: '[입구만 뒤진다]',
+        description: '골드 25를 획득하고 체력을 10 회복합니다.',
+        onSelect: () => {
+          useRunStore.getState().addGold(25);
+          useRunStore.getState().healPlayer(10);
+          return '입구 근처에서 쓸만한 물자를 챙기고 안전하게 쉬었습니다. (골드 25 획득, 체력 10 회복)';
+        }
+      },
+      {
+        label: '[무전기로 도움을 요청한다]',
+        description: '50% 확률로 무작위 유물(보스 제외)을 획득합니다. 50% 확률로 아무 일도 일어나지 않습니다.',
+        onSelect: () => {
+          const runStore = useRunStore.getState();
+          if (useRngStore.getState().eventRng.next() < 0.5) {
+            const availableRelics = RELICS.filter(r => r.tier !== 'BOSS' && !runStore.relics.includes(r.id));
+            if (availableRelics.length > 0) {
+              const pick = availableRelics[Math.floor(useRngStore.getState().eventRng.next() * availableRelics.length)];
+              runStore.addRelic(pick.id);
+              return `무전기에서 응답이 왔습니다! 근처의 생존자가 보급품을 놓고 갔습니다. [${pick.name}] 유물을 획득했습니다!`;
+            } else {
+              return '무전기에서 응답이 왔지만, 보낼 물자가 없다고 합니다. 허탈한 기분입니다.';
+            }
+          } else {
+            return '무전기에서는 잡음만 들릴 뿐, 아무도 응답하지 않았습니다.';
+          }
+        }
+      }
+    ]
   }
 ];

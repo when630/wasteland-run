@@ -3,6 +3,7 @@ import { useRunStore } from '../store/useRunStore';
 import { RANDOM_EVENTS } from '../assets/data/events';
 import type { RandomEvent, EventOption } from '../types/eventTypes';
 import { RemoveCardModal } from '../components/ui/RemoveCardModal';
+import { UpgradeCardModal } from '../components/ui/UpgradeCardModal';
 import { onRestOrEventEnter } from '../logic/relicEffects';
 import { useRngStore } from '../store/useRngStore';
 import eventBg from '../assets/images/event_map_background.png';
@@ -12,9 +13,12 @@ export const EventView: React.FC = () => {
   const [currentEvent, setCurrentEvent] = useState<RandomEvent | null>(null);
   const [resultText, setResultText] = useState<string | null>(null);
 
-  // 기계공 이벤트 등 모달 호출 제어 상태
+  // 모달 호출 제어 상태
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [pendingResultText, setPendingResultText] = useState<string | null>(null);
+  const [remainingCardRemoves, setRemainingCardRemoves] = useState(0);
+  const [removeModalKey, setRemoveModalKey] = useState(0);
 
   useEffect(() => {
     const eventRng = useRngStore.getState().eventRng;
@@ -37,9 +41,22 @@ export const EventView: React.FC = () => {
 
     // 특수 트리거 분리
     if (result === 'TRIGGER_CARD_REMOVE') {
+      setRemainingCardRemoves(1);
       setIsRemoveModalOpen(true);
-      // 모달이 닫힌 직후 보여줄 결과 메시지 선-예약
       setPendingResultText('기계공이 카드를 받아들고 기괴한 웃음을 지으며 완전히 분해해버렸습니다. (카드 제거 완료)');
+      return;
+    }
+
+    if (result === 'TRIGGER_CARD_REMOVE_2') {
+      setRemainingCardRemoves(2);
+      setIsRemoveModalOpen(true);
+      setPendingResultText('카드 2장을 제거하고 몸의 부담을 덜었습니다. 최대 체력이 15 증가했습니다!');
+      return;
+    }
+
+    if (result === 'TRIGGER_CARD_UPGRADE') {
+      setIsUpgradeModalOpen(true);
+      setPendingResultText('홀로그램의 기록을 분석하여 전투 기술을 개선했습니다. (카드 업그레이드 완료)');
       return;
     }
 
@@ -54,7 +71,21 @@ export const EventView: React.FC = () => {
   };
 
   const handleRemoveComplete = () => {
+    if (remainingCardRemoves > 1) {
+      setRemainingCardRemoves(prev => prev - 1);
+      setRemoveModalKey(prev => prev + 1);
+      return;
+    }
+    setRemainingCardRemoves(0);
     setIsRemoveModalOpen(false);
+    if (pendingResultText) {
+      setResultText(pendingResultText);
+      setPendingResultText(null);
+    }
+  };
+
+  const handleUpgradeComplete = () => {
+    setIsUpgradeModalOpen(false);
     if (pendingResultText) {
       setResultText(pendingResultText);
       setPendingResultText(null);
@@ -161,8 +192,16 @@ export const EventView: React.FC = () => {
       {/* 이벤트 도중 카드 액션 트리거 시 마운트되는 부가 모달 */}
       {isRemoveModalOpen && (
         <RemoveCardModal
-          onClose={() => setIsRemoveModalOpen(false)}
+          key={removeModalKey}
+          onClose={() => { setIsRemoveModalOpen(false); setRemainingCardRemoves(0); }}
           onRemoveComplete={handleRemoveComplete}
+          title={remainingCardRemoves > 1 ? `제거할 카드를 선택하세요 (${remainingCardRemoves}장 남음)` : undefined}
+        />
+      )}
+      {isUpgradeModalOpen && (
+        <UpgradeCardModal
+          onClose={() => setIsUpgradeModalOpen(false)}
+          onUpgradeComplete={handleUpgradeComplete}
         />
       )}
     </div>
