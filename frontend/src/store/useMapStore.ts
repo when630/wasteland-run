@@ -44,8 +44,16 @@ export const useMapStore = create<MapState>((set) => ({
       if (floor === Math.floor(TOTAL_FLOORS / 2)) return 'ELITE';
 
       const r = mapRng.next();
+      if (chapter >= 3) {
+        // 챕터 3: 엘리트 25%, 휴식 7%, 전투 38%, 이벤트 18%, 상인 12%
+        if (r < 0.38) return 'BATTLE';
+        if (r < 0.56) return 'EVENT';
+        if (r < 0.81) return 'ELITE';
+        if (r < 0.88) return 'REST';
+        return 'SHOP';
+      }
       if (chapter >= 2) {
-        // 챕터 2+: 엘리트 21%, 휴식 9%, 전투 40%, 이벤트 22%, 상인 8%
+        // 챕터 2: 엘리트 21%, 휴식 9%, 전투 40%, 이벤트 22%, 상인 8%
         if (r < 0.40) return 'BATTLE';
         if (r < 0.62) return 'EVENT';
         if (r < 0.83) return 'ELITE';

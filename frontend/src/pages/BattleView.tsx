@@ -130,7 +130,7 @@ export const BattleView: React.FC = () => {
 
   const handleVictoryContinue = async () => {
     if (currentScene === 'BOSS') {
-      const maxChapter = 2; // 현재 최대 챕터
+      const maxChapter = 3; // 현재 최대 챕터
       if (currentChapter < maxChapter) {
         // 다음 챕터로 전환
         setShowBossClear(true);
@@ -193,8 +193,8 @@ export const BattleView: React.FC = () => {
       )}
 
       {battleResult === 'DEFEAT' && <GameOverModal result="DEFEAT" />}
-      {showBossClear && currentChapter < 2 && <ChapterTransitionModal />}
-      {showBossClear && currentChapter >= 2 && <GameOverModal result="VICTORY" />}
+      {showBossClear && currentChapter < 3 && <ChapterTransitionModal />}
+      {showBossClear && currentChapter >= 3 && <GameOverModal result="VICTORY" />}
 
       <CardViewerModal />
     </div>

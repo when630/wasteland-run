@@ -152,6 +152,74 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     chapter: 2,
     initialShield: 25,
   },
+
+  // ===== 챕터 3: 거대 기업의 방주 =====
+  security_drone: {
+    baseId: 'security_drone',
+    tier: 'NORMAL',
+    name: '기업 경비 드론',
+    maxHp: 40,
+    chapter: 3,
+  },
+  bio_experiment: {
+    baseId: 'bio_experiment',
+    tier: 'NORMAL',
+    name: '생체 실험체',
+    maxHp: 55,
+    chapter: 3,
+  },
+  corporate_guard: {
+    baseId: 'corporate_guard',
+    tier: 'NORMAL',
+    name: '기업 경비원',
+    maxHp: 42,
+    chapter: 3,
+  },
+  nano_swarm: {
+    baseId: 'nano_swarm',
+    tier: 'NORMAL',
+    name: '나노 군집',
+    maxHp: 30,
+    chapter: 3,
+  },
+  cryo_sentinel: {
+    baseId: 'cryo_sentinel',
+    tier: 'NORMAL',
+    name: '냉동 감시자',
+    maxHp: 50,
+    chapter: 3,
+  },
+  hazmat_worker: {
+    baseId: 'hazmat_worker',
+    tier: 'NORMAL',
+    name: '방호복 작업자',
+    maxHp: 38,
+    chapter: 3,
+  },
+  // 챕터 3 엘리트
+  chief_scientist: {
+    baseId: 'chief_scientist',
+    tier: 'ELITE',
+    name: '수석 과학자',
+    maxHp: 110,
+    chapter: 3,
+  },
+  war_machine: {
+    baseId: 'war_machine',
+    tier: 'ELITE',
+    name: '전쟁 기계',
+    maxHp: 120,
+    chapter: 3,
+  },
+  // 챕터 3 최종 보스
+  director_omega: {
+    baseId: 'director_omega',
+    tier: 'BOSS',
+    name: '최종 지시자 오메가',
+    maxHp: 220,
+    chapter: 3,
+    initialShield: 30,
+  },
 };
 
 /**
@@ -370,6 +438,106 @@ export const determineNextIntent = (baseId: string, rng?: SeededRNG): Intent => 
         return { type: 'ATTACK', amount: 16, damageType: 'SPECIAL', description: '☣️ 부식액 분사 16', applyDebuff: { status: 'WEAK', amount: 1 } };
       } else {
         return { type: 'ATTACK', amount: 10, damageType: 'PHYSICAL', description: '⚔️ 지진 (5x2)', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
+      }
+    }
+
+    // ===== 챕터 3: 거대 기업의 방주 =====
+    case 'security_drone': {
+      // 특수 공격 위주 + 조준
+      if (rand < 0.45) {
+        return { type: 'ATTACK', amount: 7, damageType: 'SPECIAL', description: '☣️ 레이저 조사 7' };
+      } else if (rand < 0.75) {
+        return { type: 'ATTACK', amount: 5, damageType: 'SPECIAL', description: '☣️ 연사 (3x5)' };
+      } else {
+        return { type: 'BUFF', amount: 5, description: '🛡️ 전자 장벽 (방어도 5)' };
+      }
+    }
+    case 'bio_experiment': {
+      // 독 + 화상 복합
+      if (rand < 0.35) {
+        return { type: 'ATTACK', amount: 6, damageType: 'SPECIAL', description: '☣️ 산성 체액 6', applyDebuff: { status: 'BURN', amount: 1 } };
+      } else if (rand < 0.65) {
+        return { type: 'ATTACK', amount: 8, damageType: 'PHYSICAL', description: '⚔️ 변이 팔 휘두르기 8' };
+      } else {
+        return { type: 'BUFF', amount: 8, description: '🛡️ 세포 재생 (방어도 8)' };
+      }
+    }
+    case 'corporate_guard': {
+      // 물리 + 방어 균형
+      if (rand < 0.4) {
+        return { type: 'ATTACK', amount: 9, damageType: 'PHYSICAL', description: '⚔️ 진압 곤봉 9' };
+      } else if (rand < 0.7) {
+        return { type: 'BUFF', amount: 7, description: '🛡️ 방탄 조끼 (방어도 7)' };
+      } else {
+        return { type: 'ATTACK', amount: 6, damageType: 'PHYSICAL', description: '⚔️ 테이저건 6', applyDebuff: { status: 'WEAK', amount: 1 } };
+      }
+    }
+    case 'nano_swarm': {
+      // 다단히트 + 디버프, 체력 낮음
+      if (rand < 0.4) {
+        return { type: 'ATTACK', amount: 2, damageType: 'SPECIAL', description: '☣️ 나노 침식 (4x2)' };
+      } else if (rand < 0.7) {
+        return { type: 'ATTACK', amount: 5, damageType: 'SPECIAL', description: '☣️ 군집 분해 5', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
+      } else {
+        return { type: 'ATTACK', amount: 3, damageType: 'SPECIAL', description: '☣️ 나노 부식 3', applyDebuff: { status: 'WEAK', amount: 1 } };
+      }
+    }
+    case 'cryo_sentinel': {
+      // 특수 + 약화 특화
+      if (rand < 0.4) {
+        return { type: 'ATTACK', amount: 8, damageType: 'SPECIAL', description: '☣️ 냉동 광선 8' };
+      } else if (rand < 0.7) {
+        return { type: 'ATTACK', amount: 6, damageType: 'SPECIAL', description: '☣️ 동결 파편 6', applyDebuff: { status: 'WEAK', amount: 2 } };
+      } else {
+        return { type: 'BUFF', amount: 9, description: '🛡️ 냉기 보호막 (방어도 9)' };
+      }
+    }
+    case 'hazmat_worker': {
+      // 균형형
+      if (rand < 0.35) {
+        return { type: 'ATTACK', amount: 7, damageType: 'PHYSICAL', description: '⚔️ 방호 삽 7' };
+      } else if (rand < 0.65) {
+        return { type: 'ATTACK', amount: 5, damageType: 'SPECIAL', description: '☣️ 화학 스프레이 5', applyDebuff: { status: 'BURN', amount: 1 } };
+      } else {
+        return { type: 'BUFF', amount: 6, description: '🛡️ 방호복 강화 (방어도 6)' };
+      }
+    }
+    case 'chief_scientist': {
+      // 엘리트: 다양한 패턴 + 고데미지
+      if (rand < 0.25) {
+        return { type: 'ATTACK', amount: 16, damageType: 'SPECIAL', description: '☣️ 플라즈마 주입 16' };
+      } else if (rand < 0.5) {
+        return { type: 'ATTACK', amount: 12, damageType: 'PHYSICAL', description: '⚔️ 실험체 돌격 (4x3)' };
+      } else if (rand < 0.75) {
+        return { type: 'BUFF', amount: 14, description: '🛡️ 에너지 실드 (방어도 14)' };
+      } else {
+        return { type: 'ATTACK', amount: 10, damageType: 'SPECIAL', description: '☣️ 생체 무기 10', applyDebuff: { status: 'VULNERABLE', amount: 2 } };
+      }
+    }
+    case 'war_machine': {
+      // 엘리트: 고데미지 물리 + 강력한 방어
+      if (rand < 0.3) {
+        return { type: 'ATTACK', amount: 20, damageType: 'PHYSICAL', description: '⚔️ 중화기 사격 20' };
+      } else if (rand < 0.55) {
+        return { type: 'BUFF', amount: 18, description: '🛡️ 장갑 강화 (방어도 18)' };
+      } else if (rand < 0.8) {
+        return { type: 'ATTACK', amount: 8, damageType: 'PHYSICAL', description: '⚔️ 기관총 난사 (4x2)' };
+      } else {
+        return { type: 'ATTACK', amount: 14, damageType: 'SPECIAL', description: '☣️ 미사일 발사 14', applyDebuff: { status: 'BURN', amount: 2 } };
+      }
+    }
+    case 'director_omega': {
+      // 최종 보스: 5패턴
+      if (rand < 0.2) {
+        return { type: 'BUFF', amount: 20, description: '🛡️ 방주 프로토콜 (방어도 20)' };
+      } else if (rand < 0.4) {
+        return { type: 'ATTACK', amount: 22, damageType: 'PHYSICAL', description: '⚔️ 궤도 타격 22' };
+      } else if (rand < 0.6) {
+        return { type: 'ATTACK', amount: 18, damageType: 'SPECIAL', description: '☣️ 오메가 빔 18', applyDebuff: { status: 'BURN', amount: 2 } };
+      } else if (rand < 0.8) {
+        return { type: 'ATTACK', amount: 12, damageType: 'PHYSICAL', description: '⚔️ 기계 군단 (6x2)', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
+      } else {
+        return { type: 'ATTACK', amount: 15, damageType: 'SPECIAL', description: '☣️ 나노 침식파 15', applyDebuff: { status: 'WEAK', amount: 2 } };
       }
     }
 
