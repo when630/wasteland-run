@@ -18,10 +18,13 @@ interface MapState {
   currentNodeId: string | null;
   currentFloor: number;
   visitedNodeIds: string[];
+  pendingNodeId: string | null; // 클릭했지만 아직 완료되지 않은 노드
 
   // Actions
   generateMap: (chapter?: number) => void;
   moveToNode: (nodeId: string) => void;
+  setPendingNode: (nodeId: string | null) => void;
+  commitPendingNode: () => void;
 }
 
 export const useMapStore = create<MapState>((set) => ({
@@ -29,6 +32,7 @@ export const useMapStore = create<MapState>((set) => ({
   currentNodeId: null,
   currentFloor: 1,
   visitedNodeIds: [],
+  pendingNodeId: null,
 
   generateMap: (chapter: number = 1) => {
     const TOTAL_FLOORS = 15;
@@ -199,6 +203,20 @@ export const useMapStore = create<MapState>((set) => ({
       currentNodeId: nodeId,
       currentFloor: targetNode.floor,
       visitedNodeIds: [...state.visitedNodeIds, nodeId]
+    };
+  }),
+
+  setPendingNode: (nodeId: string | null) => set({ pendingNodeId: nodeId }),
+
+  commitPendingNode: () => set((state) => {
+    if (!state.pendingNodeId) return state;
+    const targetNode = state.nodes.find(n => n.id === state.pendingNodeId);
+    if (!targetNode) return { pendingNodeId: null };
+    return {
+      currentNodeId: state.pendingNodeId,
+      currentFloor: targetNode.floor,
+      visitedNodeIds: [...state.visitedNodeIds, state.pendingNodeId],
+      pendingNodeId: null
     };
   })
 }));

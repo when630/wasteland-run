@@ -142,9 +142,8 @@ export const ShopView: React.FC = () => {
     await useRunStore.getState().saveRunData();
   };
 
-  const handleLeave = async () => {
+  const handleLeave = () => {
     setScene('MAP');
-    await useRunStore.getState().saveRunData();
   };
 
   return (

@@ -159,7 +159,6 @@ export const BattleView: React.FC = () => {
       }
     } else {
       setScene('MAP');
-      await useRunStore.getState().saveRunData();
     }
   };
 

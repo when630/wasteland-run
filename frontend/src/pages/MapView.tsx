@@ -17,7 +17,7 @@ interface MapViewProps {
 
 export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) => {
   const { setScene } = useRunStore();
-  const { nodes, currentNodeId, visitedNodeIds, generateMap, moveToNode } = useMapStore();
+  const { nodes, currentNodeId, visitedNodeIds, generateMap, setPendingNode, commitPendingNode } = useMapStore();
 
   // 첫 마운트 시 맵이 없으면 생성 (현재 챕터 기반)
   const { currentChapter } = useRunStore();
@@ -26,6 +26,15 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
       generateMap(currentChapter);
     }
   }, [nodes, generateMap, currentChapter]);
+
+  // 씬 완료 후 MAP 복귀 시 pending 노드를 커밋하고 저장
+  useEffect(() => {
+    if (!viewOnly && useMapStore.getState().pendingNodeId) {
+      commitPendingNode();
+      useRunStore.getState().saveRunData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 노드 타입별 뱃지 이미지 매핑
   const typeToIcon: Record<NodeType, string> = {
@@ -37,14 +46,9 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
     BOSS: bossBadge
   };
 
-  const handleNodeClick = async (nodeId: string, type: NodeType) => {
-    moveToNode(nodeId);
-
+  const handleNodeClick = (nodeId: string, type: NodeType) => {
+    setPendingNode(nodeId);
     setScene(type);
-
-    // 서버 방향 자동 저장
-    const { useRunStore: getRunStore } = await import('../store/useRunStore');
-    getRunStore.getState().saveRunData();
   };
 
   return (

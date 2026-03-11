@@ -48,7 +48,7 @@ export function getDiscardPilePos() {
 }
 
 export function getHandCenterPos() {
-  return { x: window.innerWidth / 2, y: window.innerHeight - 100 };
+  return { x: window.innerWidth / 2, y: window.innerHeight - 40 };
 }
 
 // 카드 타입 → 색상 매핑
