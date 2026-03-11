@@ -4,6 +4,7 @@ import { MapView } from './pages/MapView';
 import { RestView } from './pages/RestView';
 import { EventView } from './pages/EventView';
 import { ShopView } from './pages/ShopView';
+import { StartingEventView } from './pages/StartingEventView';
 import { useRunStore } from './store/useRunStore';
 import { ToastMessage } from './components/ui/ToastMessage';
 import { useEffect } from 'react';
@@ -28,6 +29,7 @@ function SceneManager() {
       case 'REST':
       case 'EVENT':
       case 'SHOP':
+      case 'STARTING_EVENT':
         audioStore.playBgm('MAP');
         break;
       case 'BATTLE':
@@ -43,7 +45,7 @@ function SceneManager() {
     }
   }, [currentScene]);
 
-  const showHUD = currentScene !== 'MAIN_MENU' && currentScene !== 'MAP' && currentScene !== 'DEBUG_BATTLE';
+  const showHUD = currentScene !== 'MAIN_MENU' && currentScene !== 'DEBUG_BATTLE';
 
   const scene = (() => {
     switch (currentScene) {
@@ -60,6 +62,8 @@ function SceneManager() {
         return <RestView />;
       case 'EVENT':
         return <EventView />;
+      case 'STARTING_EVENT':
+        return <StartingEventView />;
       case 'SHOP':
         return <ShopView />;
       default:

@@ -6,6 +6,54 @@ import { RELICS } from './relics';
 import { ALL_CARDS, STARTING_CARDS, STATUS_CARDS } from './cards';
 import { customShuffle } from '../../utils/rng';
 
+/**
+ * 0층 출발 이벤트 — 게임 시작 시 3가지 축복 중 하나를 선택
+ */
+export const STARTING_EVENTS: RandomEvent[] = [
+  {
+    id: 'evt_starting_wasteland_gate',
+    title: '황무지의 관문',
+    description: '폐허가 된 도시의 경계에 섰습니다. 이곳에서부터 당신의 여정이 시작됩니다. 무너진 검문소 앞에 세 갈래 길이 보입니다. 각각의 길 앞에는 이전 탐험가들이 남긴 흔적이 있습니다.',
+    visualDesc: '녹슨 철조망과 콘크리트 잔해 사이로 세 갈래의 길이 뻗어 있습니다. 저 멀리 황무지의 먼지 폭풍이 일렁입니다...',
+    options: [
+      {
+        label: '[보급품 창고를 뒤진다]',
+        description: '골드 100을 획득합니다.',
+        onSelect: () => {
+          useRunStore.getState().addGold(100);
+          return '검문소 옆 보급품 창고에서 쓸만한 물자를 잔뜩 챙겼습니다. (골드 100 획득)';
+        }
+      },
+      {
+        label: '[의료 텐트에서 체력을 보강한다]',
+        description: '최대 체력이 15 증가하고 체력이 완전히 회복됩니다.',
+        onSelect: () => {
+          const runStore = useRunStore.getState();
+          useRunStore.setState({ playerMaxHp: runStore.playerMaxHp + 15 });
+          runStore.healPlayer(999);
+          return '남겨진 의료 장비로 몸 상태를 최상으로 끌어올렸습니다. (최대 체력 +15, 체력 완전 회복)';
+        }
+      },
+      {
+        label: '[수상한 사물함을 연다]',
+        description: '무작위 [일반] 유물을 1개 획득합니다.',
+        onSelect: () => {
+          const runStore = useRunStore.getState();
+          const commonRelics = RELICS.filter(r => r.tier === 'COMMON' && !runStore.relics.includes(r.id));
+          if (commonRelics.length > 0) {
+            const pick = commonRelics[Math.floor(useRngStore.getState().eventRng.next() * commonRelics.length)];
+            runStore.addRelic(pick.id);
+            return `사물함 안에서 이전 탐험가의 유품을 발견했습니다. [${pick.name}] 유물을 획득했습니다!`;
+          } else {
+            runStore.addGold(50);
+            return '사물함은 이미 털린 뒤였지만, 바닥에 흩어진 동전을 주웠습니다. (골드 50 획득)';
+          }
+        }
+      }
+    ]
+  }
+];
+
 export const RANDOM_EVENTS: RandomEvent[] = [
   {
     id: 'evt_radiation_pool',

@@ -62,11 +62,11 @@ export const MainMenuView: React.FC = () => {
     // 덱 초기화
     useDeckStore.getState().setMasterDeck(createStartingDeck());
 
-    // 맵(층) 초기화
-    useMapStore.setState({ currentFloor: 1, nodes: [], currentNodeId: null, visitedNodeIds: [] });
+    // 맵(층) 초기화 — 0층에서 출발 이벤트 후 1층으로 진입
+    useMapStore.setState({ currentFloor: 0, nodes: [], currentNodeId: null, visitedNodeIds: [] });
 
-    // 바로 다음 틱에 맵 시스템이 1층 노드를 자동 재생성하도록 맵 씬으로 이동
-    setScene('MAP');
+    // 출발 이벤트로 이동 (0층)
+    setScene('STARTING_EVENT');
 
     await useRunStore.getState().saveRunData();
   };
