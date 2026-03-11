@@ -8,6 +8,7 @@ import { CompendiumModal } from './CompendiumModal';
 import { DebugMenu } from './DebugMenu';
 import { RelicBar } from './RelicBar';
 import { MapView } from '../../pages/MapView';
+import { useMapStore } from '../../store/useMapStore';
 import { colors } from '../../styles/theme';
 
 export const HUD: React.FC = () => {
@@ -21,9 +22,11 @@ export const HUD: React.FC = () => {
     2: '무너진 지하철도',
     3: '거대 기업의 방주',
   };
+  const { currentFloor } = useMapStore();
   const { drawPile, hand, discardPile, exhaustPile, setViewingPile } = useDeckStore();
   const { isMobile } = useResponsive();
   const isMap = currentScene === 'MAP';
+  const totalFloor = (currentChapter - 1) * 15 + currentFloor;
 
   const iconStyle: React.CSSProperties = {
     cursor: 'pointer',
@@ -50,6 +53,10 @@ export const HUD: React.FC = () => {
       }}>
         {/* 좌측 정보 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '20px', fontSize: isMobile ? '14px' : '18px', fontWeight: 'bold', textShadow: '2px 2px 2px black' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#8bb8f0' }}>
+            <span style={{ fontSize: isMobile ? '14px' : '16px' }}>🏛️</span>
+            <span style={{ fontSize: isMobile ? '13px' : '16px' }}>{totalFloor}F</span>
+          </div>
           {!isMobile && <div style={{ color: '#aaa', fontSize: '14px' }}>{CHAPTER_NAMES[currentChapter] || `챕터 ${currentChapter}`}</div>}
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: colors.accent.red }}>
             <span>❤️</span><span>{playerHp} / {playerMaxHp}</span>
