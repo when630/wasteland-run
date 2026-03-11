@@ -354,7 +354,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
         onSelect: () => {
           const runStore = useRunStore.getState();
           runStore.addGold(-75);
-          const rareCards = ALL_CARDS.filter(c => c.tier === 'RARE');
+          const rareCards = ALL_CARDS.filter(c => c.tier === 'RARE' && (c.chapter ?? 1) <= useRunStore.getState().currentChapter);
           const pick = rareCards[Math.floor(useRngStore.getState().eventRng.next() * rareCards.length)];
           useDeckStore.getState().addCardToMasterDeck({ ...pick } as any);
           return `상인이 만족스러운 미소와 함께 보따리에서 빛나는 카드를 꺼내줍니다. 골드 75를 지불하고 [${pick.name}] 카드를 획득했습니다!`;
@@ -371,7 +371,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
           const removedCard = masterDeck[removeIdx];
           masterDeck.splice(removeIdx, 1);
 
-          const uncommonCards = ALL_CARDS.filter(c => c.tier === 'UNCOMMON');
+          const uncommonCards = ALL_CARDS.filter(c => c.tier === 'UNCOMMON' && (c.chapter ?? 1) <= useRunStore.getState().currentChapter);
           const pick = uncommonCards[Math.floor(useRngStore.getState().eventRng.next() * uncommonCards.length)];
 
           deckStore.setMasterDeck(masterDeck);
@@ -435,7 +435,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
         label: '[물가의 변이 식물을 채집한다]',
         description: '물을 마시지 않습니다. 무작위 [특수 방어] 카드를 1장 얻습니다.',
         onSelect: () => {
-          const specialDefenses = ALL_CARDS.filter(c => c.type === 'SPECIAL_DEFENSE');
+          const specialDefenses = ALL_CARDS.filter(c => c.type === 'SPECIAL_DEFENSE' && (c.chapter ?? 1) <= useRunStore.getState().currentChapter);
           const pick = specialDefenses[Math.floor(useRngStore.getState().eventRng.next() * specialDefenses.length)];
           useDeckStore.getState().addCardToMasterDeck({ ...pick } as any);
           return `물 대신 주변의 기이한 식물 추출물을 채집했습니다. 독성 방어 재료로 쓸 수 있을 것 같습니다. [${pick.name}] 카드를 얻었습니다!`;
@@ -462,7 +462,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
         description: '골드 35를 획득하고 무작위 [일반] 카드 1장을 얻습니다.',
         onSelect: () => {
           useRunStore.getState().addGold(35);
-          const commonCards = ALL_CARDS.filter(c => c.tier === 'COMMON');
+          const commonCards = ALL_CARDS.filter(c => c.tier === 'COMMON' && (c.chapter ?? 1) <= useRunStore.getState().currentChapter);
           const pick = commonCards[Math.floor(useRngStore.getState().eventRng.next() * commonCards.length)];
           useDeckStore.getState().addCardToMasterDeck({ ...pick } as any);
           return `프로젝터를 능숙하게 분해하여 부품을 챙겼습니다. 골드 35를 얻고 [${pick.name}] 카드를 획득했습니다.`;
@@ -537,7 +537,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
           const rng = useRngStore.getState().eventRng;
           if (rng.next() < 0.4) {
             useRunStore.getState().addGold(50);
-            const rareCards = ALL_CARDS.filter(c => c.tier === 'RARE');
+            const rareCards = ALL_CARDS.filter(c => c.tier === 'RARE' && (c.chapter ?? 1) <= useRunStore.getState().currentChapter);
             const pick = rareCards[Math.floor(rng.next() * rareCards.length)];
             useDeckStore.getState().addCardToMasterDeck({ ...pick } as any);
             return `방공호 깊숙한 곳에서 잘 보존된 보급품을 발견했습니다! 골드 50과 [${pick.name}] 카드를 획득했습니다!`;

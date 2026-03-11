@@ -6,6 +6,7 @@ import { DeckPiles } from '../components/ui/DeckPiles';
 import { VictoryRewardPanel } from '../components/ui/VictoryRewardPanel';
 import { CardViewerModal } from '../components/ui/CardViewerModal';
 import { GameOverModal } from '../components/ui/GameOverModal';
+import { ChapterTransitionModal } from '../components/ui/ChapterTransitionModal';
 import { useDeckStore } from '../store/useDeckStore';
 import { useBattleStore } from '../store/useBattleStore';
 import { createStartingDeck, STATUS_CARDS } from '../assets/data/cards';
@@ -18,7 +19,7 @@ import battleBg from '../assets/images/stage1_battle_backgroung.png';
 export const BattleView: React.FC = () => {
   const { initDeck, drawCards, masterDeck, setMasterDeck } = useDeckStore();
   const { currentTurn, battleResult, startPlayerTurn, spawnEnemies, executeOneEnemyTurn, setActiveEnemyIndex, resetBattle, addAmmo, targetingCardId, targetingPosition } = useBattleStore();
-  const { setScene, currentScene, relics } = useRunStore();
+  const { setScene, currentScene, currentChapter, relics } = useRunStore();
 
   const [showBossClear, setShowBossClear] = useState(false);
 
@@ -33,16 +34,17 @@ export const BattleView: React.FC = () => {
     initDeck();
     drawCards(5);
 
-    // 씬에 따른 몬스터 소환
+    // 씬에 따른 몬스터 소환 (챕터별 필터링)
     const battleRng = useRngStore.getState().battleRng;
+    const chapter = useRunStore.getState().currentChapter;
     if (currentScene === 'BOSS') {
-      const bossIds = getEnemyIdsByTier('BOSS');
+      const bossIds = getEnemyIdsByTier('BOSS', chapter);
       spawnEnemies([createEnemy(bossIds[battleRng.nextInt(bossIds.length)], battleRng)]);
     } else if (currentScene === 'ELITE') {
-      const eliteIds = getEnemyIdsByTier('ELITE');
+      const eliteIds = getEnemyIdsByTier('ELITE', chapter);
       spawnEnemies([createEnemy(eliteIds[battleRng.nextInt(eliteIds.length)], battleRng)]);
     } else {
-      const normalIds = getEnemyIdsByTier('NORMAL');
+      const normalIds = getEnemyIdsByTier('NORMAL', chapter);
       const shuffled = battleRng.shuffle(normalIds);
       spawnEnemies(shuffled.slice(0, 2).map(id => createEnemy(id, battleRng)));
     }
@@ -128,7 +130,14 @@ export const BattleView: React.FC = () => {
 
   const handleVictoryContinue = async () => {
     if (currentScene === 'BOSS') {
-      setShowBossClear(true);
+      const maxChapter = 2; // 현재 최대 챕터
+      if (currentChapter < maxChapter) {
+        // 다음 챕터로 전환
+        setShowBossClear(true);
+      } else {
+        // 최종 챕터 클리어
+        setShowBossClear(true);
+      }
     } else {
       setScene('MAP');
       await useRunStore.getState().saveRunData();
@@ -184,7 +193,8 @@ export const BattleView: React.FC = () => {
       )}
 
       {battleResult === 'DEFEAT' && <GameOverModal result="DEFEAT" />}
-      {showBossClear && <GameOverModal result="VICTORY" />}
+      {showBossClear && currentChapter < 2 && <ChapterTransitionModal />}
+      {showBossClear && currentChapter >= 2 && <GameOverModal result="VICTORY" />}
 
       <CardViewerModal />
     </div>

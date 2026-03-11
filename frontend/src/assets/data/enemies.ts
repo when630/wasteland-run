@@ -1,43 +1,51 @@
 import type { Enemy, Intent, EnemyTier } from '../../types/enemyTypes';
 import { generateUniqueId, type SeededRNG } from '../../utils/rng';
 
-export const BASE_ENEMIES: Record<string, Omit<Enemy, 'id' | 'currentHp' | 'shield' | 'resist' | 'currentIntent'>> = {
-  // 일반 몬스터
+type BaseEnemy = Omit<Enemy, 'id' | 'currentHp' | 'shield' | 'resist' | 'currentIntent'> & { chapter?: number; initialShield?: number };
+
+export const BASE_ENEMIES: Record<string, BaseEnemy> = {
+  // ===== 챕터 1: 오염된 외곽 도시 =====
   scrap_collector: {
     baseId: 'scrap_collector',
     tier: 'NORMAL',
     name: '고철 수집가',
     maxHp: 45,
+    chapter: 1,
   },
   acid_dog: {
     baseId: 'acid_dog',
     tier: 'NORMAL',
     name: '산성 침 들개',
     maxHp: 28,
+    chapter: 1,
   },
   waste_slime: {
     baseId: 'waste_slime',
     tier: 'NORMAL',
     name: '폐기물 슬라임',
     maxHp: 65,
+    chapter: 1,
   },
   radiation_spider: {
     baseId: 'radiation_spider',
     tier: 'NORMAL',
     name: '방사능 거미',
     maxHp: 22,
+    chapter: 1,
   },
   rust_marauder: {
     baseId: 'rust_marauder',
     tier: 'NORMAL',
     name: '녹슨 약탈자',
     maxHp: 38,
+    chapter: 1,
   },
   scrap_turret: {
     baseId: 'scrap_turret',
     tier: 'NORMAL',
     name: '폐 자동포탑',
     maxHp: 30,
+    chapter: 1,
   },
   // 엘리트 몬스터
   mutant_behemoth: {
@@ -45,18 +53,21 @@ export const BASE_ENEMIES: Record<string, Omit<Enemy, 'id' | 'currentHp' | 'shie
     tier: 'ELITE',
     name: '돌연변이 베히모스',
     maxHp: 110,
+    chapter: 1,
   },
   rogue_sentry: {
     baseId: 'rogue_sentry',
     tier: 'ELITE',
     name: '폭주하는 경비 드론',
     maxHp: 85,
+    chapter: 1,
   },
   mutant_sniper: {
     baseId: 'mutant_sniper',
     tier: 'ELITE',
     name: '변이 저격수',
     maxHp: 75,
+    chapter: 1,
   },
   // 보스
   brutus: {
@@ -64,7 +75,83 @@ export const BASE_ENEMIES: Record<string, Omit<Enemy, 'id' | 'currentHp' | 'shie
     tier: 'BOSS',
     name: '고철 기갑수 브루터스',
     maxHp: 140,
-  }
+    chapter: 1,
+  },
+
+  // ===== 챕터 2: 무너진 지하철도 =====
+  subway_rat: {
+    baseId: 'subway_rat',
+    tier: 'NORMAL',
+    name: '지하철 쥐떼',
+    maxHp: 32,
+    chapter: 2,
+  },
+  rail_crawler: {
+    baseId: 'rail_crawler',
+    tier: 'NORMAL',
+    name: '레일 크롤러',
+    maxHp: 50,
+    chapter: 2,
+  },
+  mole_person: {
+    baseId: 'mole_person',
+    tier: 'NORMAL',
+    name: '두더지 인간',
+    maxHp: 35,
+    chapter: 2,
+  },
+  tunnel_spider: {
+    baseId: 'tunnel_spider',
+    tier: 'NORMAL',
+    name: '터널 거미',
+    maxHp: 26,
+    chapter: 2,
+  },
+  electric_slime: {
+    baseId: 'electric_slime',
+    tier: 'NORMAL',
+    name: '전기 슬라임',
+    maxHp: 55,
+    chapter: 2,
+  },
+  rusted_golem: {
+    baseId: 'rusted_golem',
+    tier: 'NORMAL',
+    name: '녹슨 골렘',
+    maxHp: 48,
+    chapter: 2,
+  },
+  // 챕터 2 엘리트
+  derailed_conductor: {
+    baseId: 'derailed_conductor',
+    tier: 'ELITE',
+    name: '탈선한 차장',
+    maxHp: 100,
+    chapter: 2,
+  },
+  shadow_lurker: {
+    baseId: 'shadow_lurker',
+    tier: 'ELITE',
+    name: '그림자 잠복자',
+    maxHp: 90,
+    chapter: 2,
+  },
+  track_guardian: {
+    baseId: 'track_guardian',
+    tier: 'ELITE',
+    name: '궤도 수호자',
+    maxHp: 95,
+    chapter: 2,
+  },
+  // 챕터 2 보스
+  leviathan_worm: {
+    baseId: 'leviathan_worm',
+    tier: 'BOSS',
+    name: '심연의 대지렁이 레비아탄',
+    maxHp: 180,
+    chapter: 2,
+    initialShield: 25,
+  },
 };
 
 /**
@@ -175,6 +262,117 @@ export const determineNextIntent = (baseId: string, rng?: SeededRNG): Intent => 
         return { type: 'ATTACK', amount: 18, damageType: 'PHYSICAL', description: '⚔️ 광란의 후려치기 (6x3)' };
       }
     }
+
+    // ===== 챕터 2: 무너진 지하철도 =====
+    case 'subway_rat': {
+      // 빠른 다수 공격, 체력 낮음
+      if (rand < 0.5) {
+        return { type: 'ATTACK', amount: 3, damageType: 'PHYSICAL', description: '⚔️ 물어뜯기 (2x3)' };
+      } else if (rand < 0.8) {
+        return { type: 'ATTACK', amount: 5, damageType: 'PHYSICAL', description: '⚔️ 돌진 5' };
+      } else {
+        return { type: 'ATTACK', amount: 4, damageType: 'SPECIAL', description: '☣️ 감염된 이빨 4', applyDebuff: { status: 'WEAK', amount: 1 } };
+      }
+    }
+    case 'rail_crawler': {
+      // 무거운 물리 공격 + 방어
+      if (rand < 0.4) {
+        return { type: 'ATTACK', amount: 8, damageType: 'PHYSICAL', description: '⚔️ 레일 분쇄 8' };
+      } else if (rand < 0.7) {
+        return { type: 'BUFF', amount: 8, description: '🛡️ 강철 외피 (방어도 8)' };
+      } else {
+        return { type: 'ATTACK', amount: 10, damageType: 'PHYSICAL', description: '⚔️ 열차 돌진 10' };
+      }
+    }
+    case 'mole_person': {
+      // 기습 + 디버프
+      if (rand < 0.4) {
+        return { type: 'ATTACK', amount: 7, damageType: 'PHYSICAL', description: '⚔️ 곡괭이 찌르기 7' };
+      } else if (rand < 0.7) {
+        return { type: 'ATTACK', amount: 5, damageType: 'PHYSICAL', description: '⚔️ 기습 5', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
+      } else {
+        return { type: 'BUFF', amount: 6, description: '🛡️ 땅굴 숨기 (방어도 6)' };
+      }
+    }
+    case 'tunnel_spider': {
+      // 독 + 빠른 공격
+      if (rand < 0.4) {
+        return { type: 'ATTACK', amount: 5, damageType: 'SPECIAL', description: '☣️ 독거미 송곳니 5' };
+      } else if (rand < 0.7) {
+        return { type: 'ATTACK', amount: 3, damageType: 'SPECIAL', description: '☣️ 맹독 주사 3', applyDebuff: { status: 'WEAK', amount: 1 } };
+      } else {
+        return { type: 'ATTACK', amount: 6, damageType: 'PHYSICAL', description: '⚔️ 거미줄 포박 6', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
+      }
+    }
+    case 'electric_slime': {
+      // 특수 공격 + 자기 방어
+      if (rand < 0.4) {
+        return { type: 'ATTACK', amount: 7, damageType: 'SPECIAL', description: '☣️ 전기 방전 7' };
+      } else if (rand < 0.7) {
+        return { type: 'BUFF', amount: 7, description: '🛡️ 전기 장벽 (방어도 7)' };
+      } else {
+        return { type: 'ATTACK', amount: 5, damageType: 'SPECIAL', description: '☣️ 연쇄 번개 (3x5)' };
+      }
+    }
+    case 'rusted_golem': {
+      // 느린 고데미지 + 방어 특화
+      if (rand < 0.35) {
+        return { type: 'ATTACK', amount: 10, damageType: 'PHYSICAL', description: '⚔️ 철주먹 강타 10' };
+      } else if (rand < 0.65) {
+        return { type: 'BUFF', amount: 10, description: '🛡️ 녹슨 방벽 (방어도 10)' };
+      } else {
+        return { type: 'ATTACK', amount: 7, damageType: 'PHYSICAL', description: '⚔️ 지면 강타 7', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
+      }
+    }
+    case 'derailed_conductor': {
+      // 엘리트: 다양한 패턴 전환
+      if (rand < 0.3) {
+        return { type: 'ATTACK', amount: 14, damageType: 'PHYSICAL', description: '⚔️ 차장의 철퇴 14' };
+      } else if (rand < 0.5) {
+        return { type: 'ATTACK', amount: 10, damageType: 'SPECIAL', description: '☣️ 열차 경적 충격파 10', applyDebuff: { status: 'WEAK', amount: 1 } };
+      } else if (rand < 0.75) {
+        return { type: 'BUFF', amount: 12, description: '🛡️ 열차 잔해 방패 (방어도 12)' };
+      } else {
+        return { type: 'ATTACK', amount: 8, damageType: 'PHYSICAL', description: '⚔️ 난타 (4x2)' };
+      }
+    }
+    case 'shadow_lurker': {
+      // 엘리트: 고데미지 기습 + 은폐
+      if (rand < 0.35) {
+        return { type: 'ATTACK', amount: 18, damageType: 'PHYSICAL', description: '⚔️ 기습 일격 18' };
+      } else if (rand < 0.6) {
+        return { type: 'BUFF', amount: 14, description: '🛡️ 그림자 은신 (방어도 14)' };
+      } else if (rand < 0.85) {
+        return { type: 'ATTACK', amount: 10, damageType: 'SPECIAL', description: '☣️ 암흑 투사 10', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
+      } else {
+        return { type: 'ATTACK', amount: 6, damageType: 'PHYSICAL', description: '⚔️ 연속 자상 (3x2)' };
+      }
+    }
+    case 'track_guardian': {
+      // 엘리트: 방어 + 반격 특화
+      if (rand < 0.3) {
+        return { type: 'BUFF', amount: 16, description: '🛡️ 궤도 방벽 (방어도 16)' };
+      } else if (rand < 0.55) {
+        return { type: 'ATTACK', amount: 12, damageType: 'PHYSICAL', description: '⚔️ 궤도 파쇄기 12' };
+      } else if (rand < 0.8) {
+        return { type: 'ATTACK', amount: 8, damageType: 'SPECIAL', description: '☣️ 전자기 펄스 8', applyDebuff: { status: 'WEAK', amount: 1 } };
+      } else {
+        return { type: 'ATTACK', amount: 15, damageType: 'PHYSICAL', description: '⚔️ 열차 충돌 15', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
+      }
+    }
+    case 'leviathan_worm': {
+      // 보스: 4패턴 순환
+      if (rand < 0.25) {
+        return { type: 'BUFF', amount: 15, description: '🛡️ 갑각 재생 (방어도 15)' };
+      } else if (rand < 0.50) {
+        return { type: 'ATTACK', amount: 20, damageType: 'PHYSICAL', description: '⚔️ 대지렁이 돌진 20' };
+      } else if (rand < 0.75) {
+        return { type: 'ATTACK', amount: 16, damageType: 'SPECIAL', description: '☣️ 부식액 분사 16', applyDebuff: { status: 'WEAK', amount: 1 } };
+      } else {
+        return { type: 'ATTACK', amount: 10, damageType: 'PHYSICAL', description: '⚔️ 지진 (5x2)', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
+      }
+    }
+
     default:
       return { type: 'UNKNOWN', description: '???' };
   }
@@ -191,14 +389,16 @@ export const createEnemy = (baseId: string, rng?: SeededRNG): Enemy => {
     ...baseDef,
     id: generateUniqueId(),
     currentHp: baseDef.maxHp,
-    shield: baseDef.tier === 'BOSS' ? 20 : 0, // 보스 패시브: 전투 시작 시 20 쉴드
+    shield: baseDef.initialShield ?? (baseDef.tier === 'BOSS' ? 20 : 0),
     resist: 0,
     currentIntent: determineNextIntent(baseId, rng) // 초기 랜덤 의도 부여
   };
 };
 
 /**
- * 특정 등급의 적 baseId 목록을 반환
+ * 특정 등급 + 챕터의 적 baseId 목록을 반환
  */
-export const getEnemyIdsByTier = (tier: EnemyTier): string[] =>
-  Object.values(BASE_ENEMIES).filter(e => e.tier === tier).map(e => e.baseId);
+export const getEnemyIdsByTier = (tier: EnemyTier, chapter: number = 1): string[] =>
+  Object.values(BASE_ENEMIES)
+    .filter(e => e.tier === tier && (e.chapter ?? 1) === chapter)
+    .map(e => e.baseId);

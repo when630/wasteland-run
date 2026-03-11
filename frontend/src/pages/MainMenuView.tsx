@@ -42,6 +42,7 @@ export const MainMenuView: React.FC = () => {
       playerMaxHp: 70,
       gold: 0,
       currentMapNode: null,
+      currentChapter: 1,
       relics: [],
       runStartTime: Date.now(),
       runSeed: newSeed,

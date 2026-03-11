@@ -7,6 +7,7 @@ interface RunState {
   gold: number;
   currentMapNode: string | null;
   currentScene: 'MAIN_MENU' | 'MAP' | 'BATTLE' | 'ELITE' | 'REST' | 'EVENT' | 'SHOP' | 'BOSS'; // 🌟 씬 타입 확장
+  currentChapter: number; // 현재 챕터 (1~3)
   relics: string[];
   toastMessage: string | null; // 🌟 전역 알림 메시지 상태
   runStartTime: number;
@@ -25,6 +26,7 @@ interface RunState {
   addGold: (amount: number) => void;
   setMapNode: (nodeId: string | null) => void;
   setScene: (scene: RunState['currentScene']) => void; // 🌟 씬 전환 액션
+  setChapter: (chapter: number) => void; // 챕터 전환
   addRelic: (relicId: string) => void; // 🌟 유물 추가 액션
   removeRelic: (relicId: string) => void; // 🌟 유물 제거 액션 (1회용 소모)
   setToastMessage: (msg: string | null) => void; // 🌟 토스트 메시지 액션
@@ -46,6 +48,7 @@ export const useRunStore = create<RunState>((set) => ({
   gold: 0,
   currentMapNode: null,
   currentScene: 'MAIN_MENU', // 기본 씬은 메인 메뉴로 시작
+  currentChapter: 1,
   relics: [],
   toastMessage: null,
   runStartTime: Date.now(), // 런 시작 시간을 현재로 초기화
@@ -78,6 +81,8 @@ export const useRunStore = create<RunState>((set) => ({
   setScene: (scene) => set({
     currentScene: scene
   }),
+
+  setChapter: (chapter: number) => set({ currentChapter: chapter }),
 
   addRelic: (relicId) => set((state) => ({
     relics: [...state.relics, relicId]
@@ -164,6 +169,7 @@ export const useRunStore = create<RunState>((set) => ({
         currentScene: currentState.currentScene,
         currentMapNode: currentState.currentMapNode || '',
         isActive: currentState.isActive,
+        currentChapter: currentState.currentChapter,
         enemiesKilled: currentState.enemiesKilled,
         cardsPlayed: currentState.cardsPlayed,
         totalDamageDealt: currentState.totalDamageDealt,
@@ -189,6 +195,7 @@ export const useRunStore = create<RunState>((set) => ({
           runSeed: data.runSeed || Math.random().toString(36).substring(2, 10),
           currentScene: 'MAIN_MENU', // 🌟 항상 메인 메뉴에서 시작 → "이어하기" 버튼을 통해 진입
           currentMapNode: data.currentMapNode || null,
+          currentChapter: data.currentChapter || 1,
           isActive: data.isActive,
           enemiesKilled: data.enemiesKilled || 0,
           cardsPlayed: data.cardsPlayed || 0,

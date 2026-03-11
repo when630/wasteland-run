@@ -42,4 +42,5 @@ export interface Card {
   effects: CardEffect[];   // 카드 사용 시 발동할 효과 배열
   isExhaust?: boolean;     // 소멸(Exhaust) 여부
   isUpgraded?: boolean;    // 강화(Upgrade) 여부
+  chapter?: number;        // 등장 챕터 (미지정 시 1)
 }

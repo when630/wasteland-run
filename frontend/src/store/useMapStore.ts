@@ -20,7 +20,7 @@ interface MapState {
   visitedNodeIds: string[];
 
   // Actions
-  generateMap: () => void;
+  generateMap: (chapter?: number) => void;
   moveToNode: (nodeId: string) => void;
 }
 
@@ -30,13 +30,13 @@ export const useMapStore = create<MapState>((set) => ({
   currentFloor: 1,
   visitedNodeIds: [],
 
-  generateMap: () => {
+  generateMap: (chapter: number = 1) => {
     const TOTAL_FLOORS = 15;
     const COLUMNS = 7;
     const NUM_PATHS = 6;
     const mapRng = useRngStore.getState().mapRng;
 
-    // 노드 타입 확률: 전투 45%, 이벤트 22%, 엘리트 16%, 휴식 12%, 상인 5%
+    // 챕터별 노드 타입 확률 조정
     const getRandomType = (floor: number): NodeType => {
       if (floor === 1) return 'BATTLE';
       if (floor === TOTAL_FLOORS) return 'BOSS';
@@ -44,6 +44,15 @@ export const useMapStore = create<MapState>((set) => ({
       if (floor === Math.floor(TOTAL_FLOORS / 2)) return 'ELITE';
 
       const r = mapRng.next();
+      if (chapter >= 2) {
+        // 챕터 2+: 엘리트 21%, 휴식 9%, 전투 40%, 이벤트 22%, 상인 8%
+        if (r < 0.40) return 'BATTLE';
+        if (r < 0.62) return 'EVENT';
+        if (r < 0.83) return 'ELITE';
+        if (r < 0.92) return 'REST';
+        return 'SHOP';
+      }
+      // 챕터 1: 전투 45%, 이벤트 22%, 엘리트 16%, 휴식 12%, 상인 5%
       if (r < 0.45) return 'BATTLE';
       if (r < 0.67) return 'EVENT';
       if (r < 0.83) return 'ELITE';

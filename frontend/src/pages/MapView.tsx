@@ -19,12 +19,13 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
   const { setScene } = useRunStore();
   const { nodes, currentNodeId, visitedNodeIds, generateMap, moveToNode } = useMapStore();
 
-  // 첫 마운트 시 맵이 없으면 생성
+  // 첫 마운트 시 맵이 없으면 생성 (현재 챕터 기반)
+  const { currentChapter } = useRunStore();
   useEffect(() => {
     if (nodes.length === 0) {
-      generateMap();
+      generateMap(currentChapter);
     }
-  }, [nodes, generateMap]);
+  }, [nodes, generateMap, currentChapter]);
 
   // 노드 타입별 뱃지 이미지 매핑
   const typeToIcon: Record<NodeType, string> = {

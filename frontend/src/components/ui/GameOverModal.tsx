@@ -31,7 +31,7 @@ const calculateGrade = (isVictory: boolean, playTimeSeconds: number, enemiesKill
 };
 
 export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
-  const { playerHp, playerMaxHp, gold, relics, enemiesKilled, cardsPlayed, totalDamageDealt, totalDamageTaken, totalGoldEarned, runStartTime, setIsActive, saveRunData, submitRunStats } = useRunStore();
+  const { playerHp, playerMaxHp, gold, relics, currentChapter, enemiesKilled, cardsPlayed, totalDamageDealt, totalDamageTaken, totalGoldEarned, runStartTime, setIsActive, saveRunData, submitRunStats } = useRunStore();
   const { currentFloor } = useMapStore();
   const { masterDeck } = useDeckStore();
 
@@ -72,12 +72,14 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
         textShadow: isVictory ? '0 0 20px rgba(251, 191, 36, 0.5)' : '0 0 20px rgba(239, 68, 68, 0.5)',
         marginBottom: '10px', letterSpacing: isVictory ? '2px' : '5px'
       }}>
-        {isVictory ? '1챕터 클리어!' : 'YOU DIED'}
+        {isVictory ? `${currentChapter}챕터 클리어!` : 'YOU DIED'}
       </h1>
 
       <p style={{ fontSize: '20px', color: '#d1d5db', textAlign: 'center', lineHeight: '1.6', maxWidth: '600px', marginBottom: '20px' }}>
         {isVictory
-          ? '거대한 고철 기갑수 브루터스가 굉음과 함께 쓰러졌습니다.\n당신은 매캐한 연기를 뚫고 황무지의 다음 구역으로 발걸음을 옮깁니다.'
+          ? (currentChapter >= 2
+            ? '심연의 대지렁이 레비아탄이 마지막 비명을 지르며 쓰러졌습니다.\n무너진 지하철도를 지나 황무지의 끝을 향해 발걸음을 옮깁니다.'
+            : '거대한 고철 기갑수 브루터스가 굉음과 함께 쓰러졌습니다.\n당신은 매캐한 연기를 뚫고 황무지의 다음 구역으로 발걸음을 옮깁니다.')
           : '황무지의 가혹한 환경 속에서 당신은 결국 쓰러지고 말았습니다.\n누군가 당신의 장비를 챙겨갈 것입니다...'}
       </p>
 

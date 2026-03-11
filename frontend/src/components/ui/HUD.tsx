@@ -13,7 +13,13 @@ export const HUD: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCompendiumOpen, setIsCompendiumOpen] = useState(false);
   const [isMapOverlayOpen, setIsMapOverlayOpen] = useState(false);
-  const { playerHp, playerMaxHp, gold, currentScene, setIsLeaderboardOpen } = useRunStore();
+  const { playerHp, playerMaxHp, gold, currentScene, currentChapter, setIsLeaderboardOpen } = useRunStore();
+
+  const CHAPTER_NAMES: Record<number, string> = {
+    1: '오염된 외곽 도시',
+    2: '무너진 지하철도',
+    3: '거대 기업의 방주',
+  };
   const { drawPile, hand, discardPile, exhaustPile, setViewingPile } = useDeckStore();
   const isMap = currentScene === 'MAP';
 
@@ -42,7 +48,7 @@ export const HUD: React.FC = () => {
       }}>
         {/* 좌측 정보 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', fontSize: '18px', fontWeight: 'bold', textShadow: '2px 2px 2px black' }}>
-          <div style={{ color: '#aaa', fontSize: '16px' }}>오염된 외곽 도시 (초입)</div>
+          <div style={{ color: '#aaa', fontSize: '16px' }}>{CHAPTER_NAMES[currentChapter] || `챕터 ${currentChapter}`}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: colors.accent.red }}>
             <span>❤️</span><span>{playerHp} / {playerMaxHp}</span>
           </div>

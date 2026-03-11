@@ -38,7 +38,8 @@ export const ShopView: React.FC = () => {
   useEffect(() => {
     // 1. 판매할 카드 6장 무작위 뽑기
     const lootRng = useRngStore.getState().lootRng;
-    const dropPool = ALL_CARDS.filter(c => c.tier !== 'BASIC');
+    const chapter = useRunStore.getState().currentChapter;
+    const dropPool = ALL_CARDS.filter(c => c.tier !== 'BASIC' && (c.chapter ?? 1) <= chapter);
     const shuffledCards = customShuffle(dropPool, lootRng);
     const selectedCards = shuffledCards.slice(0, 6).map((card, idx) => {
       // 50~80 랜덤 골드 책정 (10단위)
