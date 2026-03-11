@@ -4,12 +4,15 @@ import { DEFAULT_PLAYER_STATUS } from './types';
 import { useRunStore } from '../useRunStore';
 import { onBattleReset } from '../../logic/relicEffects';
 
+let damageNumberCounter = 0;
+
 export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlowSlice> = (set, get) => ({
   currentTurn: 'PLAYER',
   battleResult: 'NONE',
   turnCount: 1,
   targetingCardId: null,
   targetingPosition: null,
+  damageNumbers: [],
 
   resetBattle: () => {
     const { maxAp, startingAp } = onBattleReset(useRunStore.getState().relics);
@@ -27,6 +30,7 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
       hasPlayedUtilityThisTurn: false,
       playerHitQueue: [],
       activeEnemyIndex: null,
+      damageNumbers: [],
       powerDefenseAmmo50: false,
       powerPhysicalScalingActive: false,
       powerPhysicalScalingBonus: 0,
@@ -74,4 +78,28 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
   }),
 
   setTargetingPosition: (pos) => set({ targetingPosition: pos }),
+
+  pushDamageNumber: (enemyId, amount, color) => {
+    const now = Date.now();
+    const existing = get().damageNumbers.filter(
+      d => d.enemyId === enemyId && now - d.timestamp < 500
+    );
+    set(state => ({
+      damageNumbers: [...state.damageNumbers, {
+        id: ++damageNumberCounter,
+        enemyId,
+        amount,
+        color,
+        timestamp: now,
+        delay: existing.length * 150,
+      }]
+    }));
+  },
+
+  clearExpiredDamageNumbers: () => {
+    const now = Date.now();
+    set(state => ({
+      damageNumbers: state.damageNumbers.filter(d => now - d.timestamp < d.delay + 1000)
+    }));
+  },
 });

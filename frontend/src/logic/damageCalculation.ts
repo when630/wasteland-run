@@ -1,4 +1,5 @@
 import type { Enemy, DamageType } from '../types/enemyTypes';
+import type { Card } from '../types/gameTypes';
 
 /**
  * 전투 데미지 계산 순수 함수
@@ -142,4 +143,54 @@ export function calculateDamageToPlayer(
     hitQueue,
     specialDefended,
   };
+}
+
+/**
+ * 카드 호버 시 예상 데미지 계산 (순수 함수)
+ */
+export function calculatePreviewDamage(
+  card: Card,
+  targetEnemy: Enemy | null,
+  enemies: Enemy[],
+  physicalScalingBonus: number,
+  currentAmmo: number,
+): number {
+  const damageType: DamageType = card.type === 'SPECIAL_ATTACK' ? 'SPECIAL' : 'PHYSICAL';
+  let total = 0;
+
+  for (const effect of card.effects) {
+    if (effect.type !== 'DAMAGE' || !effect.amount) continue;
+
+    let baseAmount = effect.amount;
+    if (damageType === 'PHYSICAL' && physicalScalingBonus > 0) {
+      baseAmount += physicalScalingBonus;
+    }
+
+    if (effect.condition === 'PER_AMMO_CONSUMED') {
+      baseAmount *= currentAmmo;
+    }
+
+    if (effect.condition?.startsWith('MULTI_HIT_')) {
+      const hits = parseInt(effect.condition.split('_')[2], 10) || 1;
+      if (targetEnemy) {
+        total += calculateDamageToEnemy(targetEnemy, baseAmount, damageType).actualDamage * hits;
+      }
+      continue;
+    }
+
+    if (effect.target === 'ALL_ENEMIES') {
+      enemies.forEach(e => {
+        if (e.currentHp > 0) {
+          total += calculateDamageToEnemy(e, baseAmount, damageType).actualDamage;
+        }
+      });
+      continue;
+    }
+
+    if (targetEnemy) {
+      total += calculateDamageToEnemy(targetEnemy, baseAmount, damageType).actualDamage;
+    }
+  }
+
+  return total;
 }

@@ -42,6 +42,8 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
 
         if (result.actualDamage > 0) {
           useRunStore.getState().addDamageDealt(result.actualDamage);
+          const dmgColor = type === 'PHYSICAL' ? 0xff4444 : 0xaa44ff;
+          get().pushDamageNumber(enemyId, result.actualDamage, dmgColor);
         }
 
         if (result.isKilled && type === 'SPECIAL') {
@@ -119,6 +121,14 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
 
       // 1. 상태이상 데미지 처리
       const statusResult = processStatusDamage(enemy);
+
+      // 상태이상 데미지 넘버
+      const statusDamage = enemy.currentHp - statusResult.newHp;
+      if (statusDamage > 0) {
+        const statusColor = statusResult.vfx?.type === 'POISON_TICK' ? 0x22ff44
+          : statusResult.vfx?.type === 'BURN_TICK' ? 0xff6600 : 0xff6600;
+        get().pushDamageNumber(enemy.id, statusDamage, statusColor);
+      }
 
       if (statusResult.isDead) {
         const newEnemies = [...state.enemies];

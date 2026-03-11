@@ -7,12 +7,13 @@ import { useDeckStore } from '../../store/useDeckStore';
 import { useAudioStore } from '../../store/useAudioStore';
 import { useCardPlay } from '../../hooks/useCardPlay';
 import { AnimatedEnemy } from './AnimatedEnemy';
+import { DamageNumber } from './DamageNumber';
 import playerImg from '../../assets/images/player.png';
 
 export const BattleStage: React.FC = () => {
   // 스토어에서 런 상태 및 전투 상태 가져오기
   const { playerHp, playerMaxHp } = useRunStore();
-  const { currentTurn, enemies, playerStatus, playerDebuffs, powerDefenseAmmo50, powerPhysicalScalingActive, powerPhysicalScalingBonus, targetingCardId, playerHitQueue, consumePlayerHitQueue, activeEnemyIndex } = useBattleStore();
+  const { currentTurn, enemies, playerStatus, playerDebuffs, powerDefenseAmmo50, powerPhysicalScalingActive, powerPhysicalScalingBonus, targetingCardId, playerHitQueue, consumePlayerHitQueue, activeEnemyIndex, damageNumbers, clearExpiredDamageNumbers } = useBattleStore();
   const { hand } = useDeckStore();
   const { playCard } = useCardPlay();
 
@@ -91,8 +92,11 @@ export const BattleStage: React.FC = () => {
   const [playerHitOffsetY, setPlayerHitOffsetY] = useState(0);
   const [playerTint, setPlayerTint] = useState(0xffffff);
   const [playerAlphaFlicker, setPlayerAlphaFlicker] = useState(1);
+  const [shakeX, setShakeX] = useState(0);
+  const [shakeY, setShakeY] = useState(0);
   const isAnimatingRef = React.useRef(false); // 🌟 useRef로 락 관리 (React 배칭 문제 방지)
   const timersRef = React.useRef<ReturnType<typeof setTimeout>[]>([]); // 🌟 클린업용 타이머 추적
+  const shakeIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
 
   // 타이머 등록 헬퍼
   const safeTimeout = React.useCallback((fn: () => void, ms: number) => {
@@ -116,9 +120,24 @@ export const BattleStage: React.FC = () => {
       isAnimatingRef.current = true; // 즉시 락 (useState와 달리 동기적)
 
       if (hitType === 'DAMAGE') {
-        // 🌟 직접 피격: 넉백 + 붉은 번쩍
+        // 🌟 직접 피격: 넉백 + 붉은 번쩍 + 화면 흔들림
         setPlayerTint(0xff2222);
         setPlayerHitOffset(-20);
+        // 화면 흔들림 (300ms 감쇄 진동)
+        let shakeIntensity = 8;
+        if (shakeIntervalRef.current) clearInterval(shakeIntervalRef.current);
+        shakeIntervalRef.current = setInterval(() => {
+          shakeIntensity *= 0.82;
+          if (shakeIntensity < 0.5) {
+            if (shakeIntervalRef.current) clearInterval(shakeIntervalRef.current);
+            shakeIntervalRef.current = null;
+            setShakeX(0);
+            setShakeY(0);
+          } else {
+            setShakeX((Math.random() - 0.5) * shakeIntensity * 2);
+            setShakeY((Math.random() - 0.5) * shakeIntensity * 2);
+          }
+        }, 30);
         safeTimeout(() => setPlayerHitOffset(8), 100);
         safeTimeout(() => setPlayerHitOffset(-4), 180);
         safeTimeout(() => {
@@ -163,11 +182,19 @@ export const BattleStage: React.FC = () => {
     }
   }, [playerHitQueue, consumePlayerHitQueue, safeTimeout, resetVisuals]);
 
+  // 데미지 넘버 정리 타이머
+  useEffect(() => {
+    if (damageNumbers.length === 0) return;
+    const cleanupTimer = setTimeout(() => clearExpiredDamageNumbers(), 1200);
+    return () => clearTimeout(cleanupTimer);
+  }, [damageNumbers, clearExpiredDamageNumbers]);
+
   // 🌟 컴포넌트 언마운트 시 모든 타이머 정리
   useEffect(() => {
     return () => {
       timersRef.current.forEach(clearTimeout);
       timersRef.current = [];
+      if (shakeIntervalRef.current) clearInterval(shakeIntervalRef.current);
     };
   }, []);
 
@@ -179,8 +206,8 @@ export const BattleStage: React.FC = () => {
     >
       <Container
         scale={scale}
-        x={(screenWidth - 1920 * scale) / 2}
-        y={(screenHeight - 1080 * scale) / 2}
+        x={(screenWidth - 1920 * scale) / 2 + shakeX}
+        y={(screenHeight - 1080 * scale) / 2 + shakeY}
       >
         {/* 허공(배경) 클릭 감지용 투명 레이어 */}
         {targetingCardId !== null && (
@@ -338,6 +365,25 @@ export const BattleStage: React.FC = () => {
           anchor={0.5}
           style={turnTextStyle}
         />
+
+        {/* 떠다니는 데미지 넘버 */}
+        {damageNumbers.map((dn) => {
+          const enemyIndex = enemies.findIndex(e => e.id === dn.enemyId);
+          if (enemyIndex === -1) return null;
+          const posX = 1920 * (0.6 + enemyIndex * 0.18);
+          const posY = 1080 * 0.65 - 80;
+          return (
+            <DamageNumber
+              key={dn.id}
+              amount={dn.amount}
+              x={posX}
+              y={posY}
+              color={dn.color}
+              createdAt={dn.timestamp}
+              delay={dn.delay}
+            />
+          );
+        })}
       </Container>
     </Stage>
   );

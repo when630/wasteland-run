@@ -67,18 +67,30 @@ export interface EnemySlice {
   setActiveEnemyIndex: (index: number | null) => void;
 }
 
+export interface DamageNumberEntry {
+  id: number;
+  enemyId: string;
+  amount: number;
+  color: number;
+  timestamp: number;
+  delay: number;
+}
+
 export interface BattleFlowSlice {
   currentTurn: TurnState;
   battleResult: BattleResult;
   turnCount: number;
   targetingCardId: string | null;
   targetingPosition: { x: number; y: number } | null;
+  damageNumbers: DamageNumberEntry[];
 
   startPlayerTurn: () => void;
   endPlayerTurn: () => void;
   resetBattle: () => void;
   setTargetingCard: (cardId: string | null) => void;
   setTargetingPosition: (pos: { x: number; y: number } | null) => void;
+  pushDamageNumber: (enemyId: string, amount: number, color: number) => void;
+  clearExpiredDamageNumbers: () => void;
 }
 
 export type BattleState = PlayerSlice & EnemySlice & BattleFlowSlice;

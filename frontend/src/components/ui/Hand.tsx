@@ -3,10 +3,11 @@ import { useDeckStore } from '../../store/useDeckStore';
 import { useBattleStore } from '../../store/useBattleStore';
 import { useCardPlay } from '../../hooks/useCardPlay';
 import { colors } from '../../styles/theme';
+import { calculatePreviewDamage } from '../../logic/damageCalculation';
 
 export const Hand: React.FC = () => {
   const { hand } = useDeckStore();
-  const { targetingCardId, playerStatus } = useBattleStore();
+  const { targetingCardId, playerStatus, enemies, powerPhysicalScalingBonus, playerAmmo } = useBattleStore();
   const { playCard } = useCardPlay();
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
 
@@ -38,6 +39,12 @@ export const Hand: React.FC = () => {
           e.target !== 'PLAYER'
         );
         const targetLabel = needsEnemyTarget ? '🎯 단일 적' : '👤 전체/나';
+
+        // 카드 호버 예상 데미지
+        const firstAliveEnemy = enemies.find(e => e.currentHp > 0) || null;
+        const previewDamage = isHovered && (card.type === 'PHYSICAL_ATTACK' || card.type === 'SPECIAL_ATTACK')
+          ? calculatePreviewDamage(card, firstAliveEnemy, enemies, powerPhysicalScalingBonus, playerAmmo)
+          : 0;
 
         // 🌟 아치형 부채꼴 배치를 위한 수식
         const totalCards = hand.length;
@@ -153,6 +160,18 @@ export const Hand: React.FC = () => {
                 pointerEvents: 'none'
               }}>
                 🔒
+              </div>
+            )}
+            {/* 호버 시 예상 데미지 */}
+            {previewDamage > 0 && isHovered && (
+              <div style={{
+                position: 'absolute', top: '-28px', left: '50%', transform: 'translateX(-50%)',
+                backgroundColor: card.type === 'SPECIAL_ATTACK' ? '#7c3aed' : '#dc2626',
+                color: '#fff', padding: '2px 10px', borderRadius: '4px',
+                fontSize: '13px', fontWeight: 'bold', whiteSpace: 'nowrap',
+                pointerEvents: 'none', boxShadow: '0 2px 6px rgba(0,0,0,0.5)'
+              }}>
+                ~{previewDamage} 데미지
               </div>
             )}
           </div>

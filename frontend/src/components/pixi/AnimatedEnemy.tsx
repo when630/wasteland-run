@@ -229,23 +229,29 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
           style={defaultTextStyle}
         />
       )}
-      {/* 상태이상 (디버프/버프) 표시 */}
-      {enemy.statuses && Object.keys(enemy.statuses).length > 0 && (
-        <Text
-          text={Object.entries(enemy.statuses)
-            .filter(([, val]) => val > 0)
-            .map(([key, val]) => {
-              if (key === 'BURN') return `🔥${val}`;
-              if (key === 'POISON') return `☣️${val}`;
-              if (key === 'VULNERABLE') return `💔${val}`;
-              if (key === 'WEAK') return `⏬${val}`;
-              return `${key}:${val}`;
-            }).join(' ')}
-          y={statYOffset + 30}
-          anchor={0.5}
-          style={new PIXI.TextStyle({ ...defaultTextStyle, fontSize: 16 })}
-        />
-      )}
+      {/* 상태이상 컬러 뱃지 */}
+      {enemy.statuses && (() => {
+        const activeStatuses = Object.entries(enemy.statuses).filter(([, val]) => val > 0);
+        if (activeStatuses.length === 0) return null;
+        const totalWidth = activeStatuses.length * 42;
+        const startX = -totalWidth / 2 + 21;
+        return activeStatuses.map(([key, val], idx) => {
+          const badgeColor = key === 'BURN' ? 0xff6600 : key === 'POISON' ? 0x22ff44
+            : key === 'VULNERABLE' ? 0xff6699 : key === 'WEAK' ? 0x4488ff : 0xaaaaaa;
+          const icon = key === 'BURN' ? '🔥' : key === 'POISON' ? '☣️'
+            : key === 'VULNERABLE' ? '💔' : key === 'WEAK' ? '⏬' : '?';
+          return (
+            <Container key={key} x={startX + idx * 42} y={statYOffset + 30}>
+              <Sprite texture={texture} width={38} height={24} anchor={0.5} tint={badgeColor} alpha={0.85} />
+              <Text
+                text={`${icon}${val}`}
+                anchor={0.5}
+                style={new PIXI.TextStyle({ fill: 0xffffff, fontSize: 14, fontWeight: 'bold' })}
+              />
+            </Container>
+          );
+        });
+      })()}
     </Container>
   );
 };
