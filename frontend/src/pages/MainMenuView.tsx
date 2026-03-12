@@ -186,7 +186,7 @@ export const MainMenuView: React.FC = () => {
               setScene('DEBUG_BATTLE');
             }}
           >
-            ▶ 카드 테스트 (허수아비)
+            ▶ 디버그 테스트
           </button>
         </div>
 

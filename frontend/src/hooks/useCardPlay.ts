@@ -192,15 +192,21 @@ export const useCardPlay = () => {
           }, hit * 150);
         }
       } else {
-        // 단일 타겟
+        // 단일 타겟 — ammo 소비가 2 이상이면 발사 횟수만큼 시차 VFX
         const targetEnemyIndex = targetEnemy ? enemies.findIndex(e => e.id === targetEnemy.id) : 0;
         const pos = enemyPos(targetEnemyIndex >= 0 ? targetEnemyIndex : 0);
-        dispatchVfx({
-          cardBaseId: card.baseId,
-          sourceX: PLAYER_POS.x,
-          sourceY: PLAYER_POS.y,
-          targetPositions: [pos],
-        });
+        const shotCount = (vfxProfile.category === 'ELECTROMAGNETIC' && card.costAmmo > 1) ? card.costAmmo : 1;
+        for (let shot = 0; shot < shotCount; shot++) {
+          setTimeout(() => {
+            dispatchVfx({
+              cardBaseId: card.baseId,
+              sourceX: PLAYER_POS.x,
+              sourceY: PLAYER_POS.y,
+              targetPositions: [pos],
+              hitIndex: shot,
+            });
+          }, shot * 120);
+        }
       }
     }
 

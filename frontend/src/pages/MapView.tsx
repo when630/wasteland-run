@@ -10,6 +10,7 @@ import restBadge from '../assets/images/map/campfire_badge.png';
 import shopBadge from '../assets/images/map/shop_badge.png';
 import eventBadge from '../assets/images/map/event_badge.png';
 import bossBadge from '../assets/images/map/boss_badge.png';
+import { iconClose } from '../assets/images/GUI';
 
 interface MapViewProps {
   viewOnly?: boolean;
@@ -81,7 +82,7 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
           onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(62, 42, 20, 0.9)'; e.currentTarget.style.borderColor = '#c4a96a'; }}
           onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(62, 42, 20, 0.7)'; e.currentTarget.style.borderColor = '#8b6f47'; }}
         >
-          ×
+          <img src={iconClose} alt="닫기" style={{ width: 22, height: 22, objectFit: 'contain' }} />
         </button>
       )}
       <h1 style={{

@@ -9,7 +9,7 @@ import { RelicBar } from './RelicBar';
 import { MapView } from '../../pages/MapView';
 import { useMapStore } from '../../store/useMapStore';
 import { colors } from '../../styles/theme';
-import { iconHeart, iconGold, iconSettings, iconCardCount } from '../../assets/images/GUI';
+import { iconHeart, iconGold, iconSettings, iconCardCount, iconMap } from '../../assets/images/GUI';
 
 export const HUD: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -73,7 +73,9 @@ export const HUD: React.FC = () => {
         {/* 지도 버튼 */}
         {!isMap && (
           <div onClick={() => { useAudioStore.getState().playClick(); setIsMapOverlayOpen(true); }}
-            style={iconStyle} onMouseEnter={handleIconHover} onMouseLeave={handleIconLeave} title="지도 보기">🗺️</div>
+            style={iconStyle} onMouseEnter={handleIconHover} onMouseLeave={handleIconLeave} title="지도 보기">
+            {iconImg(iconMap)}
+          </div>
         )}
 
         {/* 덱 카운트 */}

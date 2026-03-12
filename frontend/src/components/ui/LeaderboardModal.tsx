@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { authApi } from '../../api/auth';
+import { iconClose } from '../../assets/images/GUI';
 
 interface LeaderboardItem {
   username: string;
@@ -64,7 +65,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({ onClose }) =
               background: 'none', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer'
             }}
           >
-            ✕
+            <img src={iconClose} alt="닫기" style={{ width: 18, height: 18, objectFit: 'contain' }} />
           </button>
         </div>
 

@@ -5,7 +5,9 @@ import type { Enemy } from '../../types/enemyTypes';
 import {
   iconPhysicalDefense, iconSpecialDefense,
   iconIntentPhysical, iconIntentSpecial,
-  iconBurn, iconVulnerable, iconWeaken,
+  iconBurn, iconVulnerable, iconWeaken, iconPoison,
+  iconBuffFreePhysical, iconBuffNoPhysical, iconBuffRetain, iconBuffReflect,
+  iconBuffApOnDefend, iconBuffAmmoOnDefend, iconBuffMarkOfFate, iconBuffDefenseAmmo, iconBuffPhysicalScaling,
 } from '../../assets/images/GUI';
 
 // Pixi 월드 좌표 → 화면 좌표 변환
@@ -29,7 +31,7 @@ function useScreenLayout() {
 // 상태이상 뱃지 색상/아이콘 매핑
 const STATUS_CONFIG: Record<string, { color: string; border: string; icon?: string; label?: string; desc: string }> = {
   BURN:       { color: 'rgba(255,100,0,0.85)',  border: '#ff8833', icon: iconBurn, desc: '화상: 턴 시작 시 스택만큼 피해, 이후 1 감소' },
-  POISON:     { color: 'rgba(34,200,68,0.85)',   border: '#44ff66', label: 'P', desc: '맹독: 턴 시작 시 스택만큼 방어 무시 피해, 이후 1 감소' },
+  POISON:     { color: 'rgba(34,200,68,0.85)',   border: '#44ff66', icon: iconPoison, desc: '맹독: 턴 시작 시 스택만큼 방어 무시 피해, 이후 1 감소' },
   VULNERABLE: { color: 'rgba(255,100,150,0.85)', border: '#ff88aa', icon: iconVulnerable, desc: '취약: 받는 피해 50% 증가 (남은 턴)' },
   WEAK:       { color: 'rgba(68,130,255,0.85)',  border: '#6699ff', icon: iconWeaken, desc: '약화: 가하는 물리 피해 25% 감소 (남은 턴)' },
 };
@@ -358,15 +360,15 @@ const PlayerOverlay: React.FC<{
   interface Entry { value: string | number; icon?: string; label?: string; color: string; desc: string }
   const entries: Entry[] = [];
 
-  if (playerStatus.nextPhysicalFree) entries.push({ label: '무료', value: '', color: '#ffdd88', desc: PLAYER_BUFF_DESC['무료'] });
-  if (playerStatus.cannotPlayPhysicalAttack) entries.push({ label: '물X', value: '', color: '#ff8888', desc: PLAYER_BUFF_DESC['물리X'] });
-  if (playerStatus.retainCardCount > 0) entries.push({ label: '유지', value: playerStatus.retainCardCount, color: '#ffdd88', desc: PLAYER_BUFF_DESC['유지'] });
-  if (playerStatus.reflectPhysical > 0) entries.push({ label: '반사', value: playerStatus.reflectPhysical, color: '#88ccff', desc: PLAYER_BUFF_DESC['반사'] });
-  if (playerStatus.apOnSpecialDefend > 0) entries.push({ label: 'AP', value: playerStatus.apOnSpecialDefend, color: '#88ff88', desc: PLAYER_BUFF_DESC['AP+'] });
-  if (playerStatus.ammoOnSpecialDefend > 0) entries.push({ label: '탄', value: playerStatus.ammoOnSpecialDefend, color: '#ccaa44', desc: PLAYER_BUFF_DESC['탄+'] });
-  if (playerStatus.markOfFate) entries.push({ label: '낙인', value: '', color: '#ff6666', desc: PLAYER_BUFF_DESC['낙인'] });
-  if (powerDefenseAmmo50) entries.push({ label: '탄약', value: '', color: '#ccaa44', desc: PLAYER_BUFF_DESC['탄약'] });
-  if (powerPhysicalScalingActive) entries.push({ label: '강화', value: `+${powerPhysicalScalingBonus}`, color: '#ffaa44', desc: PLAYER_BUFF_DESC['스케일'] });
+  if (playerStatus.nextPhysicalFree) entries.push({ icon: iconBuffFreePhysical, value: '', color: '#ffdd88', desc: PLAYER_BUFF_DESC['무료'] });
+  if (playerStatus.cannotPlayPhysicalAttack) entries.push({ icon: iconBuffNoPhysical, value: '', color: '#ff8888', desc: PLAYER_BUFF_DESC['물리X'] });
+  if (playerStatus.retainCardCount > 0) entries.push({ icon: iconBuffRetain, value: playerStatus.retainCardCount, color: '#ffdd88', desc: PLAYER_BUFF_DESC['유지'] });
+  if (playerStatus.reflectPhysical > 0) entries.push({ icon: iconBuffReflect, value: playerStatus.reflectPhysical, color: '#88ccff', desc: PLAYER_BUFF_DESC['반사'] });
+  if (playerStatus.apOnSpecialDefend > 0) entries.push({ icon: iconBuffApOnDefend, value: playerStatus.apOnSpecialDefend, color: '#88ff88', desc: PLAYER_BUFF_DESC['AP+'] });
+  if (playerStatus.ammoOnSpecialDefend > 0) entries.push({ icon: iconBuffAmmoOnDefend, value: playerStatus.ammoOnSpecialDefend, color: '#ccaa44', desc: PLAYER_BUFF_DESC['탄+'] });
+  if (playerStatus.markOfFate) entries.push({ icon: iconBuffMarkOfFate, value: '', color: '#ff6666', desc: PLAYER_BUFF_DESC['낙인'] });
+  if (powerDefenseAmmo50) entries.push({ icon: iconBuffDefenseAmmo, value: '', color: '#ccaa44', desc: PLAYER_BUFF_DESC['탄약'] });
+  if (powerPhysicalScalingActive) entries.push({ icon: iconBuffPhysicalScaling, value: `+${powerPhysicalScalingBonus}`, color: '#ffaa44', desc: PLAYER_BUFF_DESC['스케일'] });
 
   // 디버프 (아이콘 있는 것)
   if (playerDebuffs.VULNERABLE > 0) entries.push({ icon: iconVulnerable, value: playerDebuffs.VULNERABLE, color: '#ff88aa', desc: STATUS_CONFIG.VULNERABLE.desc });

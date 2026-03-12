@@ -7,6 +7,8 @@ export interface CardAnim {
   type: CardAnimType;
   cardName: string;
   cardColor: string;
+  cardType: string;   // CardType (PHYSICAL_ATTACK 등)
+  cardCostAp: number;
   fromX: number;
   fromY: number;
   toX: number;

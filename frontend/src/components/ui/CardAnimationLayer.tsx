@@ -4,6 +4,45 @@
 import React, { useEffect, useRef } from 'react';
 import { subscribe, consumeAnims, type CardAnim } from './cardAnimations';
 
+// CardFrame과 동일한 테마 매핑 (축소 카드용)
+const ANIM_THEMES: Record<string, { accent: string; accentLight: string; artBg: string; costBorder: string }> = {
+  PHYSICAL_ATTACK: {
+    accent: '#c0392b', accentLight: '#ff6b6b',
+    artBg: 'linear-gradient(160deg, #1a0505 0%, #2d0808 50%, #0a0202 100%)',
+    costBorder: 'rgba(192,57,43,0.6)',
+  },
+  SPECIAL_ATTACK: {
+    accent: '#8e44ad', accentLight: '#c39bd3',
+    artBg: 'linear-gradient(160deg, #0d0515 0%, #1a0a2e 50%, #070310 100%)',
+    costBorder: 'rgba(142,68,173,0.6)',
+  },
+  PHYSICAL_DEFENSE: {
+    accent: '#2980b9', accentLight: '#7fb3d3',
+    artBg: 'linear-gradient(160deg, #010d1a 0%, #052038 50%, #010810 100%)',
+    costBorder: 'rgba(41,128,185,0.6)',
+  },
+  SPECIAL_DEFENSE: {
+    accent: '#16a085', accentLight: '#76d7c4',
+    artBg: 'linear-gradient(160deg, #010f0c 0%, #052a22 50%, #010d08 100%)',
+    costBorder: 'rgba(22,160,133,0.6)',
+  },
+  UTILITY: {
+    accent: '#d4ac0d', accentLight: '#f9e79f',
+    artBg: 'linear-gradient(160deg, #131000 0%, #2a2100 50%, #100d00 100%)',
+    costBorder: 'rgba(212,172,13,0.6)',
+  },
+};
+const STATUS_ANIM_THEME = {
+  accent: '#6b2233', accentLight: '#aa3355',
+  artBg: 'linear-gradient(160deg, #1a0810 0%, #2d0515 50%, #0a0205 100%)',
+  costBorder: 'rgba(107,34,51,0.6)',
+};
+
+function getAnimTheme(type: string) {
+  if (type.startsWith('STATUS_')) return STATUS_ANIM_THEME;
+  return ANIM_THEMES[type] || ANIM_THEMES.UTILITY;
+}
+
 interface ActiveAnim extends CardAnim {
   phase: 'waiting' | 'moving' | 'done';
   moveStart: number;
@@ -77,21 +116,103 @@ export const CardAnimationLayer: React.FC = () => {
           transform-style:preserve-3d;
         `;
 
-        // 앞면 (카드 정보)
+        // 앞면 — CardFrame CSS 구조 충실 재현 (80×100 축소판)
+        const theme = getAnimTheme(a.cardType);
         const front = document.createElement('div');
         front.style.cssText = `
           position:absolute;top:0;left:0;width:100%;height:100%;
           backface-visibility:hidden;
-          background:${a.cardColor};
-          border:2px solid rgba(255,255,255,0.5);
-          border-radius:6px;
-          display:flex;justify-content:center;align-items:center;
-          padding:4px;
-          box-shadow:0 4px 12px rgba(0,0,0,0.5);
-          font:bold 10px/1.2 monospace;color:#fff;text-align:center;
-          text-shadow:0 1px 2px rgba(0,0,0,0.8);
+          background:#12121a;
+          border:1px solid #2a2a3a;
+          border-radius:5px;
+          overflow:hidden;
+          box-shadow:
+            0 0 0 1px rgba(255,255,255,0.03),
+            0 8px 24px rgba(0,0,0,0.8),
+            0 0 16px rgba(0,0,0,0.5),
+            0 0 20px ${theme.accent}1a inset;
+          font-family:'Rajdhani',sans-serif;
         `;
-        front.textContent = a.cardName;
+
+        // cf-accent-top (4px → 2px)
+        const accentTop = document.createElement('div');
+        accentTop.style.cssText = `position:absolute;top:0;left:0;right:0;height:2px;z-index:5;background:linear-gradient(90deg,${theme.accent},${theme.accentLight},${theme.accent});`;
+
+        // cf-accent-bottom (2px → 1px)
+        const accentBottom = document.createElement('div');
+        accentBottom.style.cssText = `position:absolute;bottom:0;left:0;right:0;height:1px;z-index:5;opacity:0.5;background:${theme.accent};`;
+
+        // cf-corner-glow
+        const cornerGlow = document.createElement('div');
+        cornerGlow.style.cssText = `position:absolute;top:0;left:0;width:30px;height:30px;z-index:4;border-radius:0 0 100% 0;opacity:0.12;background:${theme.accent};`;
+
+        // cf-corner ornaments (4개)
+        const mkCorner = (css: string) => { const d = document.createElement('div'); d.style.cssText = `position:absolute;width:5px;height:5px;z-index:6;${css}`; return d; };
+        const cTL = mkCorner(`top:3px;left:3px;border-top:1px solid ${theme.accent};border-left:1px solid ${theme.accent};`);
+        const cTR = mkCorner(`top:3px;right:3px;border-top:1px solid ${theme.accent};border-right:1px solid ${theme.accent};`);
+        const cBL = mkCorner(`bottom:3px;left:3px;border-bottom:1px solid ${theme.accent};border-left:1px solid ${theme.accent};opacity:0.5;`);
+        const cBR = mkCorner(`bottom:3px;right:3px;border-bottom:1px solid ${theme.accent};border-right:1px solid ${theme.accent};opacity:0.5;`);
+
+        // cf-header (이름 + 코스트)
+        const header = document.createElement('div');
+        header.style.cssText = `position:absolute;top:3px;left:4px;right:4px;z-index:6;display:flex;align-items:center;justify-content:space-between;gap:2px;`;
+
+        const nameEl = document.createElement('div');
+        nameEl.style.cssText = `font-family:'Cinzel',serif;font-size:7px;font-weight:700;color:#e8e0cc;letter-spacing:0.02em;line-height:1.15;text-shadow:0 1px 4px rgba(0,0,0,0.9);flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;`;
+        nameEl.textContent = a.cardName;
+
+        const costPill = document.createElement('div');
+        costPill.style.cssText = `display:flex;align-items:center;gap:1px;background:rgba(0,0,0,0.72);border:1px solid ${theme.costBorder};border-radius:10px;padding:1px 4px 1px 3px;flex-shrink:0;backdrop-filter:blur(4px);`;
+        const costVal = document.createElement('span');
+        costVal.style.cssText = `font-family:'Cinzel',serif;font-size:8px;font-weight:900;color:#e8e0cc;line-height:1;`;
+        costVal.textContent = `${a.cardCostAp}`;
+        const costLbl = document.createElement('span');
+        costLbl.style.cssText = `font-size:4px;letter-spacing:0.06em;text-transform:uppercase;opacity:0.75;line-height:1;color:${theme.accentLight};margin-top:1px;`;
+        costLbl.textContent = 'AP';
+        costPill.appendChild(costVal);
+        costPill.appendChild(costLbl);
+        header.appendChild(nameEl);
+        header.appendChild(costPill);
+
+        // cf-header-divider
+        const headerDiv = document.createElement('div');
+        headerDiv.style.cssText = `position:absolute;top:16px;left:4px;right:4px;height:1px;z-index:6;opacity:0.3;background:linear-gradient(90deg,transparent,${theme.accent},transparent);`;
+
+        // cf-art-area (top:17px, height:~55px)
+        const artArea = document.createElement('div');
+        artArea.style.cssText = `position:absolute;top:17px;left:0;right:0;height:55px;overflow:hidden;`;
+        const artBg = document.createElement('div');
+        artBg.style.cssText = `width:100%;height:100%;background:${theme.artBg};`;
+        artArea.appendChild(artBg);
+        // diagonal cut
+        const artCut = document.createElement('div');
+        artCut.style.cssText = `position:absolute;bottom:-1px;left:0;right:0;height:11px;background:#12121a;clip-path:polygon(0 100%,100% 0,100% 100%);`;
+        artArea.appendChild(artCut);
+
+        // cf-divider (mid)
+        const midDiv = document.createElement('div');
+        midDiv.style.cssText = `position:absolute;top:74px;left:5px;right:5px;height:1px;z-index:3;opacity:0.4;background:linear-gradient(90deg,transparent,${theme.accent},transparent);`;
+
+        // cf-type-badge (bottom)
+        const typeBadge = document.createElement('div');
+        typeBadge.style.cssText = `position:absolute;bottom:4px;left:50%;transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:2px;background:rgba(0,0,0,0.65);border:1px solid ${theme.accent};border-radius:10px;padding:1px 5px;white-space:nowrap;`;
+        const typeLabel = document.createElement('span');
+        typeLabel.style.cssText = `font-family:'Cinzel',serif;font-size:4px;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;color:${theme.accentLight};`;
+        typeLabel.textContent = (ANIM_THEMES[a.cardType] ? a.cardType : 'STATUS').replace(/_/g, ' ');
+        typeBadge.appendChild(typeLabel);
+
+        front.appendChild(accentTop);
+        front.appendChild(accentBottom);
+        front.appendChild(cornerGlow);
+        front.appendChild(cTL);
+        front.appendChild(cTR);
+        front.appendChild(cBL);
+        front.appendChild(cBR);
+        front.appendChild(header);
+        front.appendChild(headerDiv);
+        front.appendChild(artArea);
+        front.appendChild(midDiv);
+        front.appendChild(typeBadge);
 
         // 뒷면 (카드 뒤판)
         const back = document.createElement('div');

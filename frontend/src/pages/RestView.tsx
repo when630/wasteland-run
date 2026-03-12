@@ -3,7 +3,7 @@ import { useRunStore } from '../store/useRunStore';
 import { UpgradeCardModal } from '../components/ui/UpgradeCardModal';
 import { onRestOrEventEnter } from '../logic/relicEffects';
 import restBg from '../assets/images/backgrounds/campfire_map_background.png';
-import { iconRest, iconCardUpgrade, iconHeart } from '../assets/images/GUI';
+import { iconCampfire, iconCardUpgrade, iconHeart, iconBurn } from '../assets/images/GUI';
 import { useResponsive } from '../hooks/useResponsive';
 
 export const RestView: React.FC = () => {
@@ -53,7 +53,7 @@ export const RestView: React.FC = () => {
         textShadow: '2px 3px 6px rgba(0,0,0,0.8), 0 0 20px rgba(232, 164, 68, 0.3)',
         animation: 'fadeIn 0.6s ease-out',
       }}>
-        <img src={iconRest} alt="" style={{ width: isMobile ? 32 : 44, height: isMobile ? 32 : 44, objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(232, 164, 68, 0.6))' }} />
+        <img src={iconBurn} alt="" style={{ width: isMobile ? 32 : 44, height: isMobile ? 32 : 44, objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(232, 164, 68, 0.6))' }} />
         타오르는 모닥불
       </h1>
       <p style={{
@@ -96,7 +96,7 @@ export const RestView: React.FC = () => {
                 e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              <img src={iconRest} alt="" style={{ width: 56, height: 56, objectFit: 'contain', marginBottom: '16px', filter: 'drop-shadow(0 0 8px rgba(232, 164, 68, 0.5))' }} />
+              <img src={iconCampfire} alt="" style={{ width: 56, height: 56, objectFit: 'contain', marginBottom: '16px', filter: 'drop-shadow(0 0 8px rgba(232, 164, 68, 0.5))' }} />
               <h2 style={{ margin: '0 0 8px 0', color: '#88dd88', fontSize: '20px', textShadow: '1px 1px 3px rgba(0,0,0,0.6)' }}>휴식</h2>
               <p style={{ margin: 0, color: '#8a9a8a', padding: '0 16px', textAlign: 'center', fontSize: '14px', lineHeight: '1.4' }}>
                 최대 체력의 30%({Math.ceil(playerMaxHp * 0.3)})를 회복합니다.

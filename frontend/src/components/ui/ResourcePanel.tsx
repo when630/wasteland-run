@@ -55,15 +55,66 @@ const ShellEjectionLayer: React.FC<{ particles: ShellParticle[] }> = ({ particle
   </>
 );
 
+// ── AP 이펙트 파티클 ──
+interface ApParticle {
+  id: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  opacity: number;
+  startTime: number;
+  color: string;
+}
+
+let apParticleIdCounter = 0;
+
+const ApEffectLayer: React.FC<{ particles: ApParticle[] }> = ({ particles }) => (
+  <>
+    {particles.map((p) => {
+      const elapsed = (Date.now() - p.startTime) / 1000;
+      const px = p.x + p.vx * elapsed;
+      const py = p.y + p.vy * elapsed;
+      const opacity = Math.max(0, p.opacity - elapsed * 2.0);
+      const size = p.size * (1 - elapsed * 0.5);
+
+      if (opacity <= 0 || size <= 0) return null;
+      return (
+        <div
+          key={p.id}
+          style={{
+            position: 'fixed',
+            left: px - size / 2,
+            top: py - size / 2,
+            width: size,
+            height: size,
+            borderRadius: '50%',
+            background: p.color,
+            boxShadow: `0 0 ${size}px ${p.color}`,
+            opacity,
+            pointerEvents: 'none',
+            zIndex: 9999,
+          }}
+        />
+      );
+    })}
+  </>
+);
+
 export const ResourcePanel: React.FC = () => {
   const { playerActionPoints, playerMaxAp, playerAmmo, endPlayerTurn, currentTurn } = useBattleStore();
   const { discardHand } = useDeckStore();
   const { isMobile } = useResponsive();
 
-  // 이전 ammo 값 추적 (탄피 이젝션용)
+  // 이전 값 추적
   const prevAmmoRef = useRef(playerAmmo);
+  const prevApRef = useRef(playerActionPoints);
   const [shellParticles, setShellParticles] = useState<ShellParticle[]>([]);
+  const [apParticles, setApParticles] = useState<ApParticle[]>([]);
+  const [apEffect, setApEffect] = useState<'none' | 'consume' | 'charge'>('none');
   const ammoContainerRef = useRef<HTMLDivElement>(null);
+  const apContainerRef = useRef<HTMLDivElement>(null);
   const animFrameRef = useRef<number>(0);
 
   // 탄피 이젝션 파티클 생성
@@ -71,7 +122,6 @@ export const ResourcePanel: React.FC = () => {
     const container = ammoContainerRef.current;
     if (!container) return;
     const rect = container.getBoundingClientRect();
-    // 컨테이너 우측 상단에서 발사
     const baseX = rect.right - 10;
     const baseY = rect.top + rect.height * 0.3;
 
@@ -86,36 +136,117 @@ export const ResourcePanel: React.FC = () => {
         rotation: Math.random() * 360,
         vr: 300 + Math.random() * 400,
         opacity: 1,
-        startTime: Date.now() + i * 60, // 약간씩 딜레이
+        startTime: Date.now() + i * 60,
       });
     }
     setShellParticles(prev => [...prev, ...newParticles]);
   }, []);
 
-  // ammo 감소 감지 → 탄피 이젝션
+  // AP 소모 파티클 — 에너지가 흩어지는 느낌
+  const spawnApConsumeParticles = useCallback(() => {
+    const container = apContainerRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+
+    const newParticles: ApParticle[] = [];
+    for (let i = 0; i < 8; i++) {
+      const angle = (Math.PI * 2 * i) / 8 + (Math.random() - 0.5) * 0.4;
+      const speed = 40 + Math.random() * 60;
+      newParticles.push({
+        id: apParticleIdCounter++,
+        x: cx + (Math.random() - 0.5) * 10,
+        y: cy + (Math.random() - 0.5) * 10,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        size: 4 + Math.random() * 4,
+        opacity: 0.9,
+        startTime: Date.now(),
+        color: 'rgba(255, 180, 0, 0.8)',
+      });
+    }
+    setApParticles(prev => [...prev, ...newParticles]);
+  }, []);
+
+  // AP 충전 파티클 — 에너지가 모여드는 느낌
+  const spawnApChargeParticles = useCallback(() => {
+    const container = apContainerRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+
+    const newParticles: ApParticle[] = [];
+    for (let i = 0; i < 12; i++) {
+      const angle = (Math.PI * 2 * i) / 12 + (Math.random() - 0.5) * 0.3;
+      const dist = 50 + Math.random() * 40;
+      const startX = cx + Math.cos(angle) * dist;
+      const startY = cy + Math.sin(angle) * dist;
+      const speed = dist * 1.8;
+      newParticles.push({
+        id: apParticleIdCounter++,
+        x: startX,
+        y: startY,
+        vx: -Math.cos(angle) * speed,
+        vy: -Math.sin(angle) * speed,
+        size: 3 + Math.random() * 3,
+        opacity: 0.85,
+        startTime: Date.now() + i * 30,
+        color: 'rgba(100, 220, 255, 0.9)',
+      });
+    }
+    setApParticles(prev => [...prev, ...newParticles]);
+  }, []);
+
+  // ammo 감소 감지 → 탄피 이젝션 (여러 발이면 시차 발사)
   useEffect(() => {
     const diff = prevAmmoRef.current - playerAmmo;
     if (diff > 0) {
-      spawnShells(diff);
+      for (let i = 0; i < diff; i++) {
+        setTimeout(() => spawnShells(1), i * 120);
+      }
     }
     prevAmmoRef.current = playerAmmo;
   }, [playerAmmo, spawnShells]);
 
+  // AP 변화 감지 → 소모/충전 이펙트
+  useEffect(() => {
+    const diff = prevApRef.current - playerActionPoints;
+    if (diff > 0) {
+      // AP 소모
+      setApEffect('consume');
+      spawnApConsumeParticles();
+      setTimeout(() => setApEffect('none'), 300);
+    } else if (diff < 0) {
+      // AP 충전
+      setApEffect('charge');
+      spawnApChargeParticles();
+      setTimeout(() => setApEffect('none'), 400);
+    }
+    prevApRef.current = playerActionPoints;
+  }, [playerActionPoints, spawnApConsumeParticles, spawnApChargeParticles]);
+
   // 파티클 애니메이션 루프
   useEffect(() => {
-    if (shellParticles.length === 0) return;
+    const hasParticles = shellParticles.length > 0 || apParticles.length > 0;
+    if (!hasParticles) return;
 
     const tick = () => {
+      const now = Date.now();
       setShellParticles(prev => {
-        const now = Date.now();
         const alive = prev.filter(p => (now - p.startTime) / 1000 < 0.8);
+        return alive;
+      });
+      setApParticles(prev => {
+        const alive = prev.filter(p => (now - p.startTime) / 1000 < 0.6);
         return alive;
       });
       animFrameRef.current = requestAnimationFrame(tick);
     };
     animFrameRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animFrameRef.current);
-  }, [shellParticles.length > 0]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [shellParticles.length > 0 || apParticles.length > 0]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleTurnEnd = () => {
     useAudioStore.getState().playClick();
@@ -129,6 +260,39 @@ export const ResourcePanel: React.FC = () => {
   };
 
   const ammoSize = isMobile ? 22 : 28;
+  const apIconSize = isMobile ? 44 : 56;
+
+  // AP 이펙트 CSS
+  const apIconStyle: React.CSSProperties = {
+    width: apIconSize,
+    height: apIconSize,
+    objectFit: 'contain',
+    filter: playerActionPoints > 0
+      ? 'drop-shadow(0 0 6px rgba(255,180,0,0.6))'
+      : 'brightness(0.5)',
+    transition: 'filter 0.3s, transform 0.15s',
+    transform: apEffect === 'consume'
+      ? 'scale(0.85)'
+      : apEffect === 'charge'
+        ? 'scale(1.15)'
+        : 'scale(1)',
+  };
+
+  const apGlowStyle: React.CSSProperties = apEffect === 'charge' ? {
+    position: 'absolute',
+    inset: -8,
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, rgba(100,220,255,0.4) 0%, transparent 70%)',
+    animation: 'apChargeGlow 0.4s ease-out forwards',
+    pointerEvents: 'none',
+  } : apEffect === 'consume' ? {
+    position: 'absolute',
+    inset: -4,
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, rgba(255,180,0,0.3) 0%, transparent 70%)',
+    animation: 'apConsumeFlash 0.3s ease-out forwards',
+    pointerEvents: 'none',
+  } : { display: 'none' };
 
   return (
     <>
@@ -145,19 +309,15 @@ export const ResourcePanel: React.FC = () => {
         pointerEvents: 'none',
       }}>
         {/* AP 아이콘 + 숫자 */}
-        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div
+          ref={apContainerRef}
+          style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <div style={apGlowStyle} />
           <img
             src={playerActionPoints > 0 ? iconAp : iconEmptyAp}
             alt=""
-            style={{
-              width: isMobile ? 44 : 56,
-              height: isMobile ? 44 : 56,
-              objectFit: 'contain',
-              filter: playerActionPoints > 0
-                ? 'drop-shadow(0 0 6px rgba(255,180,0,0.6))'
-                : 'brightness(0.5)',
-              transition: 'filter 0.3s',
-            }}
+            style={apIconStyle}
           />
           <span style={{
             position: 'absolute',
@@ -178,20 +338,33 @@ export const ResourcePanel: React.FC = () => {
           style={{ display: 'flex', alignItems: 'center', minHeight: ammoSize }}
         >
           {playerAmmo > 0 ? (
-            Array.from({ length: playerAmmo }).map((_, i) => (
-              <img
-                key={`ammo-${i}`}
-                src={iconAmmo}
-                alt=""
-                style={{
-                  width: ammoSize,
-                  height: ammoSize,
-                  objectFit: 'contain',
-                  filter: 'drop-shadow(0 0 3px rgba(200,150,50,0.5))',
-                  marginLeft: i > 0 ? (isMobile ? -6 : -8) : 0,
-                }}
-              />
-            ))
+            <>
+              {Array.from({ length: Math.min(playerAmmo, 5) }).map((_, i) => (
+                <img
+                  key={`ammo-${i}`}
+                  src={iconAmmo}
+                  alt=""
+                  style={{
+                    width: ammoSize,
+                    height: ammoSize,
+                    objectFit: 'contain',
+                    filter: 'drop-shadow(0 0 3px rgba(200,150,50,0.5))',
+                    marginLeft: i > 0 ? (isMobile ? -6 : -8) : 0,
+                  }}
+                />
+              ))}
+              {playerAmmo > 5 && (
+                <span style={{
+                  fontSize: isMobile ? 12 : 14,
+                  fontWeight: 'bold',
+                  color: '#d4a854',
+                  marginLeft: 4,
+                  textShadow: '1px 1px 3px rgba(0,0,0,0.9)',
+                }}>
+                  x{playerAmmo}
+                </span>
+              )}
+            </>
           ) : (
             <span style={{
               fontSize: isMobile ? 10 : 12,
@@ -248,6 +421,8 @@ export const ResourcePanel: React.FC = () => {
 
       {/* 탄피 이젝션 파티클 레이어 */}
       <ShellEjectionLayer particles={shellParticles} />
+      {/* AP 이펙트 파티클 레이어 */}
+      <ApEffectLayer particles={apParticles} />
     </>
   );
 };

@@ -3,6 +3,7 @@ import { useRunStore } from '../../store/useRunStore';
 import { RELICS } from '../../assets/data/relics';
 import { useAudioStore } from '../../store/useAudioStore';
 import { colors } from '../../styles/theme';
+import { iconClose } from '../../assets/images/GUI';
 
 export const RelicBar: React.FC = () => {
   const relicsList = useRunStore(state => state.relics);
@@ -119,7 +120,7 @@ export const RelicBar: React.FC = () => {
                 fontSize: '24px', cursor: 'pointer', fontWeight: 'bold'
               }}
             >
-              ×
+              <img src={iconClose} alt="닫기" style={{ width: 18, height: 18, objectFit: 'contain' }} />
             </button>
             <div style={{ width: '100px', height: '100px', marginBottom: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               {selectedRelic.image ? <img src={selectedRelic.image} alt={selectedRelic.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <span style={{ fontSize: '80px' }}>{selectedRelic.icon}</span>}

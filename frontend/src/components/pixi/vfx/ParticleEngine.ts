@@ -187,9 +187,6 @@ export class ParticleEngine {
       p.height = p.size;
     }
 
-    // 1프레임 화면 플래시
-    triggerFlash(profile.color);
-
     const sp = profile.shakeProfile;
     triggerShake(sp.intensity, sp.axis, sp.durationMs, sp.decayRate);
     triggerHitStop(profile.hitStopMs);

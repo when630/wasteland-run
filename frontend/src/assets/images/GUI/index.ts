@@ -19,7 +19,7 @@ export { default as iconCardUpgrade } from './card_upgrade.png';
 export { default as iconCardRemove } from './card_remove.png';
 export { default as iconBossClear } from './boss_clear.png';
 export { default as iconEvent } from './event.png';
-export { default as iconRest } from './rest.png';
+export { default as iconCampfire } from './campfire.png';
 export { default as iconSettings } from './settings.png';
 export { default as iconToast } from './toast.png';
 export { default as iconLeaderboard } from './leaderboard.png';
@@ -27,3 +27,29 @@ export { default as iconAp } from './ap.png';
 export { default as iconEmptyAp } from './empty_ap.png';
 export { default as iconAmmo } from './ammo.png';
 export { default as iconEmptyAmmo } from './empty_ammo.png';
+// 상태이상
+export { default as iconPoison } from './poison.png';
+// 플레이어 버프
+export { default as iconBuffFreePhysical } from './buff_free_physical.png';
+export { default as iconBuffNoPhysical } from './buff_no_physical.png';
+export { default as iconBuffRetain } from './buff_retain.png';
+export { default as iconBuffReflect } from './buff_reflect.png';
+export { default as iconBuffApOnDefend } from './buff_ap_on_defend.png';
+export { default as iconBuffAmmoOnDefend } from './buff_ammo_on_defend.png';
+export { default as iconBuffMarkOfFate } from './buff_mark_of_fate.png';
+export { default as iconBuffDefenseAmmo } from './buff_defense_ammo.png';
+export { default as iconBuffPhysicalScaling } from './buff_physical_scaling.png';
+// 카드 타입
+export { default as iconCardTypePhysicalAttack } from './card_type_physical_attack.png';
+export { default as iconCardTypeSpecialAttack } from './card_type_special_attack.png';
+export { default as iconCardTypePhysicalDefense } from './card_type_physical_defense.png';
+export { default as iconCardTypeSpecialDefense } from './card_type_special_defense.png';
+export { default as iconCardTypeUtility } from './card_type_utility.png';
+export { default as iconCardTypeStatusBurn } from './card_type_status_burn.png';
+export { default as iconCardTypeStatusRadiation } from './card_type_status_radiation.png';
+// UI
+export { default as iconMap } from './map.png';
+export { default as iconClose } from './close.png';
+export { default as iconLock } from './lock.png';
+export { default as iconExhaust } from './exhaust.png';
+export { default as iconSoundTest } from './sound_test.png';

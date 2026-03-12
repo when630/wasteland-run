@@ -47,6 +47,17 @@ body {
   50%      { border-color: rgba(255, 180, 60, 0.8); }
 }
 
+@keyframes apChargeGlow {
+  0%   { opacity: 0; transform: scale(0.5); }
+  50%  { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+
+@keyframes apConsumeFlash {
+  0%   { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.8); }
+}
+
 /* 타겟팅 모드: 시스템 커서 숨김 (TargetingLine SVG 조준점 사용) */
 .targeting-mode,
 .targeting-mode * {

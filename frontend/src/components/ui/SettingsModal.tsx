@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAudioStore } from '../../store/useAudioStore';
 import { useRunStore } from '../../store/useRunStore';
-import { iconSettings } from '../../assets/images/GUI';
+import { iconSettings, iconSoundTest, iconClose } from '../../assets/images/GUI';
 import { useResponsive } from '../../hooks/useResponsive';
 
 interface SettingsModalProps {
@@ -154,7 +154,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showQuitB
               borderRadius: '4px', cursor: 'pointer'
             }}
           >
-            🔊 타격음 테스트
+            <img src={iconSoundTest} alt="" style={{ width: 16, height: 16, objectFit: 'contain', verticalAlign: 'middle', marginRight: '4px' }} /> 타격음 테스트
           </button>
         </div>
 
@@ -179,7 +179,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showQuitB
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#4b5563'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#374151'}
           >
-            ❌ 닫기
+            <img src={iconClose} alt="" style={{ width: 16, height: 16, objectFit: 'contain', verticalAlign: 'middle', marginRight: '4px' }} /> 닫기
           </button>
         </div>
 

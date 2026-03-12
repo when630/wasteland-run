@@ -5,6 +5,7 @@ import { BASE_ENEMIES } from '../../assets/data/enemies';
 import { CardCompendiumItem } from './compendium/CardCompendiumItem';
 import { RelicCompendiumItem } from './compendium/RelicCompendiumItem';
 import { EnemyCompendiumItem } from './compendium/EnemyCompendiumItem';
+import { iconClose } from '../../assets/images/GUI';
 
 interface CompendiumModalProps {
   onClose: () => void;
@@ -65,7 +66,7 @@ export const CompendiumModal: React.FC<CompendiumModalProps> = ({ onClose }) => 
             borderRadius: '6px', cursor: 'pointer',
             display: isMobile ? undefined : 'none',
           }} onClick={onClose}>
-            ✕
+            <img src={iconClose} alt="닫기" style={{ width: 16, height: 16, objectFit: 'contain' }} />
           </button>
         </div>
 
@@ -87,7 +88,7 @@ export const CompendiumModal: React.FC<CompendiumModalProps> = ({ onClose }) => 
             backgroundColor: '#ef4444', color: '#fff', border: 'none',
             borderRadius: '6px', cursor: 'pointer'
           }} onClick={onClose}>
-            ❌ 닫기
+            <img src={iconClose} alt="" style={{ width: 16, height: 16, objectFit: 'contain', verticalAlign: 'middle', marginRight: '4px' }} /> 닫기
           </button>
         )}
       </div>

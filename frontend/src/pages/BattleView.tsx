@@ -10,9 +10,10 @@ import { TargetingLine } from '../components/ui/TargetingLine';
 import { GameOverModal } from '../components/ui/GameOverModal';
 import { ChapterTransitionModal } from '../components/ui/ChapterTransitionModal';
 import { StatusOverlay } from '../components/ui/StatusOverlay';
+import { DebugTestPanel } from '../components/ui/DebugTestPanel';
 import { useDeckStore } from '../store/useDeckStore';
 import { useBattleStore } from '../store/useBattleStore';
-import { createStartingDeck, createAllCardsDeck, STATUS_CARDS } from '../assets/data/cards';
+import { createStartingDeck, STATUS_CARDS } from '../assets/data/cards';
 import { createEnemy, getEnemyIdsByTier } from '../assets/data/enemies';
 import { useRunStore } from '../store/useRunStore';
 import { onBattleStart } from '../logic/relicEffects';
@@ -34,10 +35,10 @@ export const BattleView: React.FC = () => {
     resetBattle();
 
     if (currentScene === 'DEBUG_BATTLE') {
-      // 디버그 모드: 모든 카드 + 훈련용 허수아비
-      setMasterDeck(createAllCardsDeck());
+      // 디버그 모드: 기본 덱 + 훈련용 허수아비
+      setMasterDeck(createStartingDeck());
       initDeck();
-      drawCards(10);
+      drawCards(5);
       spawnEnemies([createEnemy('training_dummy')]);
       // 무제한 자원
       useBattleStore.setState({ playerMaxAp: 99, playerActionPoints: 99, playerAmmo: 99 });
@@ -213,40 +214,19 @@ export const BattleView: React.FC = () => {
       {showBossClear && currentChapter < 3 && <ChapterTransitionModal />}
       {showBossClear && currentChapter >= 3 && <GameOverModal result="VICTORY" />}
 
-      {/* 디버그 전투 컨트롤 */}
+      {/* 디버그 테스트 패널 */}
       {currentScene === 'DEBUG_BATTLE' && (
-        <div style={{
-          position: 'absolute', top: 10, right: 10, zIndex: 100,
-          display: 'flex', gap: '8px',
-        }}>
-          <button
-            onClick={() => {
-              resetBattle();
-              setMasterDeck(createAllCardsDeck());
-              initDeck();
-              drawCards(10);
-              spawnEnemies([createEnemy('training_dummy')]);
-              useBattleStore.setState({ playerMaxAp: 99, playerActionPoints: 99, playerAmmo: 99 });
-            }}
-            style={{
-              padding: '8px 16px', fontSize: '13px', fontWeight: 'bold',
-              background: '#2a4a2a', color: '#8f8', border: '1px solid #4a8a4a',
-              borderRadius: '4px', cursor: 'pointer', fontFamily: 'monospace',
-            }}
-          >
-            Reset
-          </button>
-          <button
-            onClick={() => setScene('MAIN_MENU')}
-            style={{
-              padding: '8px 16px', fontSize: '13px', fontWeight: 'bold',
-              background: '#4a2a2a', color: '#f88', border: '1px solid #8a4a4a',
-              borderRadius: '4px', cursor: 'pointer', fontFamily: 'monospace',
-            }}
-          >
-            Exit
-          </button>
-        </div>
+        <DebugTestPanel
+          onReset={() => {
+            resetBattle();
+            setMasterDeck(createStartingDeck());
+            initDeck();
+            drawCards(5);
+            spawnEnemies([createEnemy('training_dummy')]);
+            useBattleStore.setState({ playerMaxAp: 99, playerActionPoints: 99, playerAmmo: 99 });
+          }}
+          onExit={() => setScene('MAIN_MENU')}
+        />
       )}
 
       <CardViewerModal />
