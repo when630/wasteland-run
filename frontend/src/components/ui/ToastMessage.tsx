@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRunStore } from '../../store/useRunStore';
+import { iconToast } from '../../assets/images/GUI';
 
 export const ToastMessage: React.FC = () => {
   const { toastMessage, setToastMessage } = useRunStore();
@@ -35,20 +36,16 @@ export const ToastMessage: React.FC = () => {
 
   let bgColor: string;
   let borderColor: string;
-  let icon: string;
 
   if (isWarning) {
     bgColor = 'rgba(220, 50, 50, 0.95)';
     borderColor = '#ff8888';
-    icon = '⚠️';
   } else if (isSuccess) {
     bgColor = 'rgba(34, 130, 68, 0.95)';
     borderColor = '#66cc88';
-    icon = '✅';
   } else {
     bgColor = 'rgba(180, 140, 40, 0.95)';
     borderColor = '#ddb844';
-    icon = 'ℹ️';
   }
 
   return (
@@ -73,7 +70,8 @@ export const ToastMessage: React.FC = () => {
         marginTop: isVisible ? '0' : '-10px',
       }}
     >
-      {icon} {displayMsg}
+      <img src={iconToast} alt="" style={{ width: 20, height: 20, objectFit: 'contain', verticalAlign: 'middle', marginRight: '6px' }} />
+      {displayMsg}
     </div>
   );
 };

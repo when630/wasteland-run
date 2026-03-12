@@ -3,7 +3,6 @@ import { Container, Sprite, Text, useTick } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import type { Enemy } from '../../types/enemyTypes';
 import type { Card } from '../../types/gameTypes';
-import { useRunStore } from '../../store/useRunStore';
 import { calculatePreviewDamage } from '../../logic/damageCalculation';
 import { HpBar } from './HpBar';
 
@@ -16,7 +15,6 @@ interface AnimatedEnemyProps {
   canBeTargeted?: boolean;
   onPointerDown: () => void;
   defaultTextStyle: PIXI.TextStyle;
-  intentTextStyle: PIXI.TextStyle;
   texture: PIXI.Texture;
   isActive?: boolean;
   targetingCard?: Card;
@@ -32,7 +30,6 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
   isTargeting,
   onPointerDown,
   defaultTextStyle,
-  intentTextStyle,
   texture,
   isActive = false,
   canBeTargeted = false,
@@ -187,19 +184,8 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
   const isBoss = enemy.tier === 'BOSS';
   const width = isBoss ? 350 : 150;
   const height = isBoss ? 450 : 200;
-  const intentYOffset = isBoss ? -290 : -170;
   const nameYOffset = isBoss ? -250 : -130;
   const hpYOffset = isBoss ? 260 : 140;
-  const statYOffset = isBoss ? 290 : 170;
-
-  // 예상 데미지 텍스트 스타일
-  const previewTextStyle = useMemo(() => new PIXI.TextStyle({
-    fill: 0xffffff,
-    fontSize: 16,
-    fontWeight: 'bold',
-    stroke: 0x000000,
-    strokeThickness: 3,
-  }), []);
 
   return (
     <Container
@@ -211,22 +197,7 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
       pointerover={() => setIsHovered(true)}
       pointerout={() => setIsHovered(false)}
     >
-      {/* 적 의도(Intent) */}
-      {enemy.currentIntent && (() => {
-        let intentDisplay = enemy.currentIntent.description;
-        // 🌟 유물: [적안의 감시 모듈] 데미지 수치 마스킹
-        if (useRunStore.getState().relics.includes('red_eye_surveillance_module')) {
-          intentDisplay = intentDisplay.replace(/\d+/g, '?');
-        }
-        return (
-          <Text
-            text={`의도: ${intentDisplay}`}
-            y={intentYOffset}
-            anchor={0.5}
-            style={intentTextStyle}
-          />
-        );
-      })()}
+      {/* 적 의도/방어/상태이상 → StatusOverlay(React HTML)로 이전됨 */}
       {/* 적 이름 */}
       <Text
         text={enemy.name}
@@ -252,48 +223,8 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
         fillColor={0xff4444}
         previewDamage={previewDamage}
         fontSize={isBoss ? 14 : 11}
+        dynamicColor={false}
       />
-      {/* 호버 시 예상 데미지 표시 */}
-      {previewDamage > 0 && isHovered && (
-        <Text
-          text={`-${previewDamage}`}
-          y={hpYOffset - 28}
-          anchor={0.5}
-          style={previewTextStyle}
-        />
-      )}
-      {/* 적 방어력 */}
-      {(enemy.shield > 0 || enemy.resist > 0) && (
-        <Text
-          text={`🛡️ ${enemy.shield}  |  💠 ${enemy.resist}`}
-          y={statYOffset}
-          anchor={0.5}
-          style={defaultTextStyle}
-        />
-      )}
-      {/* 상태이상 컬러 뱃지 */}
-      {enemy.statuses && (() => {
-        const activeStatuses = Object.entries(enemy.statuses).filter(([, val]) => val > 0);
-        if (activeStatuses.length === 0) return null;
-        const totalWidth = activeStatuses.length * 42;
-        const startX = -totalWidth / 2 + 21;
-        return activeStatuses.map(([key, val], idx) => {
-          const badgeColor = key === 'BURN' ? 0xff6600 : key === 'POISON' ? 0x22ff44
-            : key === 'VULNERABLE' ? 0xff6699 : key === 'WEAK' ? 0x4488ff : 0xaaaaaa;
-          const icon = key === 'BURN' ? '🔥' : key === 'POISON' ? '☣️'
-            : key === 'VULNERABLE' ? '💔' : key === 'WEAK' ? '⏬' : '?';
-          return (
-            <Container key={key} x={startX + idx * 42} y={statYOffset + 30}>
-              <Sprite texture={texture} width={38} height={24} anchor={0.5} tint={badgeColor} alpha={0.85} />
-              <Text
-                text={`${icon}${val}`}
-                anchor={0.5}
-                style={new PIXI.TextStyle({ fill: 0xffffff, fontSize: 14, fontWeight: 'bold' })}
-              />
-            </Container>
-          );
-        });
-      })()}
     </Container>
   );
 };

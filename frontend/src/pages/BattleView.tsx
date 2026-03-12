@@ -9,6 +9,7 @@ import { CardAnimationLayer } from '../components/ui/CardAnimationLayer';
 import { TargetingLine } from '../components/ui/TargetingLine';
 import { GameOverModal } from '../components/ui/GameOverModal';
 import { ChapterTransitionModal } from '../components/ui/ChapterTransitionModal';
+import { StatusOverlay } from '../components/ui/StatusOverlay';
 import { useDeckStore } from '../store/useDeckStore';
 import { useBattleStore } from '../store/useBattleStore';
 import { createStartingDeck, createAllCardsDeck, STATUS_CARDS } from '../assets/data/cards';
@@ -175,6 +176,11 @@ export const BattleView: React.FC = () => {
       {/* Pixi.js Canvas */}
       <div style={{ position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
         <BattleStage />
+      </div>
+
+      {/* 상태 오버레이 (Pixi 위, UI 아래) */}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 15 }}>
+        <StatusOverlay />
       </div>
 
       {/* React UI 레이어 */}

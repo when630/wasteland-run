@@ -10,6 +10,7 @@ import { useRngStore } from '../store/useRngStore';
 import { RemoveCardModal } from '../components/ui/RemoveCardModal';
 import shopBg from '../assets/images/shop_map_background.png';
 import npcImg from '../assets/images/merchant.png';
+import { iconGoldReward, iconCardRemove } from '../assets/images/GUI';
 
 // 상점 판매용 카드 타입 확장 (가격, 품절 속성)
 interface ShopCard extends Card {
@@ -169,8 +170,8 @@ export const ShopView: React.FC = () => {
       }}>
         {/* 상단 타이틀 및 골드 정보 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', padding: window.innerWidth < 768 ? '8px 12px' : '10px 20px', borderRadius: '12px', flexWrap: 'wrap', gap: '4px' }}>
-          <h1 style={{ fontSize: window.innerWidth < 768 ? '20px' : '32px', color: '#fbbf24', margin: 0 }}>
-            💰 고철 암시장
+          <h1 style={{ fontSize: window.innerWidth < 768 ? '20px' : '32px', color: '#fbbf24', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <img src={iconGoldReward} alt="" style={{ width: window.innerWidth < 768 ? 24 : 32, height: window.innerWidth < 768 ? 24 : 32, objectFit: 'contain' }} /> 고철 암시장
           </h1>
           <div style={{ fontSize: window.innerWidth < 768 ? '16px' : '20px', color: '#fbbf24', fontWeight: 'bold' }}>
             {gold} G
@@ -290,7 +291,7 @@ export const ShopView: React.FC = () => {
               onMouseLeave={e => { if (removeServiceAvailable) e.currentTarget.style.filter = 'brightness(1)'; }}
             >
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                <span style={{ fontSize: '18px', fontWeight: 'bold' }}>🗑️ 덱 압축</span>
+                <span style={{ fontSize: '18px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}><img src={iconCardRemove} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} /> 덱 압축</span>
                 <span style={{ fontSize: '12px', marginTop: '4px' }}>카드 1장 버리기</span>
               </div>
               {removeServiceAvailable && (
@@ -346,7 +347,7 @@ export const ShopView: React.FC = () => {
           onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#52525b'; e.currentTarget.style.transform = 'scale(1.05)'; }}
           onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#3f3f46'; e.currentTarget.style.transform = 'scale(1)'; }}
         >
-          은신처 떠나기 🏃
+          은신처 떠나기
         </button>
       </div>
 

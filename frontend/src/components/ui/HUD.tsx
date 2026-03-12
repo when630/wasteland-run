@@ -10,6 +10,7 @@ import { RelicBar } from './RelicBar';
 import { MapView } from '../../pages/MapView';
 import { useMapStore } from '../../store/useMapStore';
 import { colors } from '../../styles/theme';
+import { iconHeart, iconGold, iconSettings, iconLeaderboard, iconCardCount } from '../../assets/images/GUI';
 
 export const HUD: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -28,6 +29,7 @@ export const HUD: React.FC = () => {
   const isMap = currentScene === 'MAP';
   const totalFloor = (currentChapter - 1) * 15 + currentFloor;
 
+  const iconSize = isMobile ? 20 : 26;
   const iconStyle: React.CSSProperties = {
     cursor: 'pointer',
     userSelect: 'none',
@@ -36,6 +38,9 @@ export const HUD: React.FC = () => {
     textShadow: '2px 2px 2px black',
     transition: 'transform 0.2s'
   };
+  const iconImg = (src: string, size = iconSize) => (
+    <img src={src} alt="" style={{ width: size, height: size, objectFit: 'contain', verticalAlign: 'middle', filter: 'drop-shadow(1px 1px 1px black)' }} />
+  );
 
   const handleIconHover = (e: React.MouseEvent<HTMLDivElement>) => e.currentTarget.style.transform = 'scale(1.2)';
   const handleIconLeave = (e: React.MouseEvent<HTMLDivElement>) => e.currentTarget.style.transform = 'scale(1)';
@@ -54,15 +59,14 @@ export const HUD: React.FC = () => {
         {/* 좌측 정보 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '20px', fontSize: isMobile ? '14px' : '18px', fontWeight: 'bold', textShadow: '2px 2px 2px black' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#8bb8f0' }}>
-            <span style={{ fontSize: isMobile ? '14px' : '16px' }}>🏛️</span>
             <span style={{ fontSize: isMobile ? '13px' : '16px' }}>{totalFloor}F</span>
           </div>
           {!isMobile && <div style={{ color: '#aaa', fontSize: '14px' }}>{CHAPTER_NAMES[currentChapter] || `챕터 ${currentChapter}`}</div>}
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: colors.accent.red }}>
-            <span>❤️</span><span>{playerHp} / {playerMaxHp}</span>
+            {iconImg(iconHeart)}<span>{playerHp} / {playerMaxHp}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: colors.accent.gold }}>
-            <span>🪙</span><span>{gold}</span>
+            {iconImg(iconGold)}<span>{gold}</span>
           </div>
         </div>
 
@@ -76,7 +80,9 @@ export const HUD: React.FC = () => {
 
         {/* 명예의 전당 */}
         <div onClick={() => { useAudioStore.getState().playClick(); setIsLeaderboardOpen(true); }}
-          style={iconStyle} onMouseEnter={handleIconHover} onMouseLeave={handleIconLeave} title="명예의 전당">🏆</div>
+          style={iconStyle} onMouseEnter={handleIconHover} onMouseLeave={handleIconLeave} title="명예의 전당">
+          {iconImg(iconLeaderboard)}
+        </div>
 
         {/* 도감 */}
         <div onClick={() => { useAudioStore.getState().playClick(); setIsCompendiumOpen(true); }}
@@ -84,7 +90,9 @@ export const HUD: React.FC = () => {
 
         {/* 환경 설정 */}
         <div onClick={() => { useAudioStore.getState().playClick(); setIsSettingsOpen(true); }}
-          style={iconStyle} onMouseEnter={handleIconHover} onMouseLeave={handleIconLeave} title="환경 설정">⚙️</div>
+          style={iconStyle} onMouseEnter={handleIconHover} onMouseLeave={handleIconLeave} title="환경 설정">
+          {iconImg(iconSettings)}
+        </div>
 
         {/* 디버그 메뉴 */}
         <DebugMenu />
@@ -102,7 +110,7 @@ export const HUD: React.FC = () => {
           onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
           title="전체 덱 보기"
         >
-          🃏 <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{drawPile.length + hand.length + discardPile.length + exhaustPile.length}</span>
+          {iconImg(iconCardCount)} <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{drawPile.length + hand.length + discardPile.length + exhaustPile.length}</span>
         </div>
       </div>
 

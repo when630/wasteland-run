@@ -4,6 +4,7 @@ import { RelicRewardModal } from './RelicRewardModal';
 import { useRunStore } from '../../store/useRunStore';
 import { useResponsive } from '../../hooks/useResponsive';
 import { colors } from '../../styles/theme';
+import { iconLoot, iconGoldReward, iconCardCount, iconRelicReward } from '../../assets/images/GUI';
 
 interface VictoryRewardPanelProps {
   onContinue: () => void;
@@ -49,7 +50,9 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
         backgroundColor: '#2a1f1a', borderRadius: '12px', border: '2px solid #aa7700',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px'
       }}>
-        <h3 style={{ margin: '0 0 5px 0', color: colors.accent.gold, fontSize: '24px' }}>🎁 전리품 발견</h3>
+        <h3 style={{ margin: '0 0 5px 0', color: colors.accent.gold, fontSize: '24px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+          <img src={iconLoot} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} /> 전리품 발견
+        </h3>
 
         {!goldClaimed && (
           <button
@@ -62,7 +65,7 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#5a4a20'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4a3a10'}
           >
-            💰 {currentScene === 'BOSS' ? 100 : currentScene === 'ELITE' ? 50 : 20} 골드 획득
+            <img src={iconGoldReward} alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} /> {currentScene === 'BOSS' ? 100 : currentScene === 'ELITE' ? 50 : 20} 골드 획득
           </button>
         )}
 
@@ -73,7 +76,7 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3a4a60'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2a3a50'}
           >
-            🃏 새 카드 1장 선택 (3택 1)
+            <img src={iconCardCount} alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} /> 새 카드 1장 선택 (3택 1)
           </button>
         )}
 
@@ -84,7 +87,7 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#603a3a'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#502a2a'}
           >
-            📦 {currentScene === 'BOSS' ? '보스 유물' : '일반 유물'} 획득
+            <img src={iconRelicReward} alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} /> {currentScene === 'BOSS' ? '보스 유물' : '일반 유물'} 획득
           </button>
         )}
 

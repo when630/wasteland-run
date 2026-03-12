@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAudioStore } from '../../store/useAudioStore';
 import { useRunStore } from '../../store/useRunStore';
+import { iconSettings } from '../../assets/images/GUI';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -103,7 +104,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showQuitB
   return (
     <div style={overlayStyle}>
       <div style={modalStyle}>
-        <h2 style={titleStyle}>⚙️ 환경 설정</h2>
+        <h2 style={{ ...titleStyle, display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+          <img src={iconSettings} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} /> 환경 설정
+        </h2>
 
         {isActive && runSeed && (
           <div style={{ textAlign: 'center', color: '#ffaaaa', fontSize: '14px', marginBottom: '-10px' }}>

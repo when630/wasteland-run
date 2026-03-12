@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useDeckStore } from '../../store/useDeckStore';
 import type { Card } from '../../types/gameTypes';
+import { iconCardRemove } from '../../assets/images/GUI';
+import { CardFrame } from './CardFrame';
 
 interface RemoveCardModalProps {
   onClose: () => void;
@@ -12,8 +14,8 @@ interface RemoveCardModalProps {
 export const RemoveCardModal: React.FC<RemoveCardModalProps> = ({
   onClose,
   onRemoveComplete,
-  title = '🗑️ 덱 압축: 카드 제거',
-  description = '방해되는 카드를 한 장 선택하여 덱에서 영구히 제거하세요.'
+  title = '덱 압축: 카드 제거',
+  description = '방해되는 카드를 한 장 선택하여 덱에서 영구히 제거하세요.',
 }) => {
   const { masterDeck, setMasterDeck } = useDeckStore();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
@@ -24,80 +26,50 @@ export const RemoveCardModal: React.FC<RemoveCardModalProps> = ({
 
   const handleConfirm = () => {
     if (!selectedCardId) return;
-
-    // 선택된 카드를 제외한 새로운 마스터 덱 생성
     const newMasterDeck = masterDeck.filter(card => card.id !== selectedCardId);
     setMasterDeck(newMasterDeck);
-
     onRemoveComplete();
   };
+
+  const cardW = 160;
 
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
       backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 10000,
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
     }}>
-      <h2 style={{ fontSize: '36px', color: '#ffaaaa', marginBottom: '20px' }}>
-        {title}
+      <h2 style={{ fontSize: '36px', color: '#ffaaaa', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
+        <img src={iconCardRemove} alt="" style={{ width: 36, height: 36, objectFit: 'contain' }} /> {title}
       </h2>
       <p style={{ fontSize: '18px', color: '#ccc', marginBottom: '40px' }}>
         {description}
       </p>
 
-      {/* 카드 스크롤 영역 */}
       <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '20px',
-        justifyContent: 'center',
-        padding: '20px',
-        maxWidth: '80%',
-        maxHeight: '50vh',
-        overflowY: 'auto',
-        backgroundColor: 'rgba(30, 20, 20, 0.8)',
-        borderRadius: '12px',
-        border: '1px solid #555'
+        display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center',
+        padding: '20px', maxWidth: '80%', maxHeight: '50vh', overflowY: 'auto',
+        backgroundColor: 'rgba(30, 20, 20, 0.8)', borderRadius: '12px', border: '1px solid #555',
       }}>
         {masterDeck.length === 0 ? (
           <p style={{ color: '#888' }}>덱에 카드가 없습니다.</p>
         ) : (
           masterDeck.map((card) => {
             const isSelected = selectedCardId === card.id;
-            let cardBg = '#2a2a4a';
-            if (card.type.includes('ATTACK')) cardBg = '#4a2a2a';
-            else if (card.type.includes('DEFENSE')) cardBg = '#2a4a3a';
-
             return (
               <div
                 key={card.id}
                 onClick={() => handleSelect(card)}
                 style={{
-                  width: '180px', height: '260px',
-                  backgroundColor: cardBg,
-                  border: `3px solid ${isSelected ? '#ffaaaa' : '#777'}`,
-                  borderRadius: '10px', padding: '15px', cursor: 'pointer',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center',
-                  transition: 'transform 0.1s',
+                  cursor: 'pointer',
+                  transition: 'transform 0.1s, box-shadow 0.2s',
                   transform: isSelected ? 'scale(1.05)' : 'scale(1)',
-                  opacity: selectedCardId && !isSelected ? 0.6 : 1
+                  borderRadius: `${12 * (cardW / 220)}px`,
+                  boxShadow: isSelected ? '0 0 20px rgba(255,170,170,0.6)' : 'none',
+                  opacity: selectedCardId && !isSelected ? 0.6 : 1,
                 }}
               >
-                <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#fff', textAlign: 'center' }}>
-                  {card.name}
-                </h3>
-                <div style={{
-                  backgroundColor: 'rgba(0,0,0,0.5)', padding: '4px 8px',
-                  borderRadius: '20px', color: '#00ffff', marginBottom: '15px', fontSize: '13px'
-                }}>
-                  AP: {card.costAp} {card.costAmmo > 0 && `| 탄약: ${card.costAmmo}`}
-                </div>
-                <p style={{ color: '#ddd', fontSize: '14px', textAlign: 'center', lineHeight: '1.4' }}>
-                  {card.description}
-                </p>
-                <div style={{ marginTop: 'auto', color: '#ffaaaa', fontSize: '14px', fontWeight: 'bold' }}>
-                  {card.isUpgraded ? '[강화 완료]' : ''}
-                </div>
+                <CardFrame card={card} width={cardW} />
               </div>
             );
           })
@@ -110,7 +82,7 @@ export const RemoveCardModal: React.FC<RemoveCardModalProps> = ({
           style={{
             padding: '12px 30px', fontSize: '18px',
             backgroundColor: '#444', color: '#fff', border: '1px solid #666',
-            borderRadius: '8px', cursor: 'pointer'
+            borderRadius: '8px', cursor: 'pointer',
           }}
         >
           취소 (선택 해제)
@@ -124,7 +96,7 @@ export const RemoveCardModal: React.FC<RemoveCardModalProps> = ({
             color: selectedCardId ? '#fff' : '#888',
             border: `2px solid ${selectedCardId ? '#ffaaaa' : '#444'}`,
             borderRadius: '8px', cursor: selectedCardId ? 'pointer' : 'not-allowed',
-            transition: 'background-color 0.2s'
+            transition: 'background-color 0.2s',
           }}
         >
           제거 실행

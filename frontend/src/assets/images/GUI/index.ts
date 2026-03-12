@@ -1,0 +1,25 @@
+// GUI Icon Assets — barrel export
+export { default as iconHeart } from './heart.png';
+export { default as iconGold } from './gold.png';
+export { default as iconCardCount } from './card_count.png';
+export { default as iconPhysicalDefense } from './physical_defense.png';
+export { default as iconSpecialDefense } from './special_defense.png';
+export { default as iconDrawPile } from './draw_pile.png';
+export { default as iconDiscardPile } from './discard_pile.png';
+export { default as iconExhaustPile } from './exhaust_pile.png';
+export { default as iconWeaken } from './weaken.png';
+export { default as iconVulnerable } from './vulnerable.png';
+export { default as iconBurn } from './burn.png';
+export { default as iconIntentPhysical } from './intent_physical.png';
+export { default as iconIntentSpecial } from './intent_special.png';
+export { default as iconGoldReward } from './gold_reward.png';
+export { default as iconRelicReward } from './relic_reward.png';
+export { default as iconLoot } from './loot.png';
+export { default as iconCardUpgrade } from './card_upgrade.png';
+export { default as iconCardRemove } from './card_remove.png';
+export { default as iconBossClear } from './boss_clear.png';
+export { default as iconEvent } from './event.png';
+export { default as iconRest } from './rest.png';
+export { default as iconSettings } from './settings.png';
+export { default as iconToast } from './toast.png';
+export { default as iconLeaderboard } from './leaderboard.png';

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BASE_ENEMIES, determineNextIntent } from '../../../assets/data/enemies';
 import type { EnemyTier } from '../../../types/enemyTypes';
+import { iconHeart, iconPhysicalDefense } from '../../../assets/images/GUI';
 
 interface Props {
   baseId: string;
@@ -51,11 +52,11 @@ export const EnemyCompendiumItem: React.FC<Props> = ({ baseId }) => {
 
       <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
         <div style={{ backgroundColor: '#2d3748', padding: '4px 10px', borderRadius: '4px', fontSize: '14px' }}>
-          ❤️ HP: {enemy.maxHp}
+          <img src={iconHeart} alt="" style={{ width: 16, height: 16, objectFit: 'contain', verticalAlign: 'middle' }} /> HP: {enemy.maxHp}
         </div>
         {enemy.tier === 'BOSS' && (
           <div style={{ backgroundColor: '#2d3748', padding: '4px 10px', borderRadius: '4px', fontSize: '14px' }}>
-            🛡️ 초기 방어: 20
+            <img src={iconPhysicalDefense} alt="" style={{ width: 16, height: 16, objectFit: 'contain', verticalAlign: 'middle' }} /> 초기 방어: 20
           </div>
         )}
       </div>

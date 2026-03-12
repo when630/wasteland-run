@@ -3,6 +3,7 @@ import { useRunStore } from '../../store/useRunStore';
 import { useRngStore } from '../../store/useRngStore';
 import { RELICS } from '../../assets/data/relics';
 import type { Relic, RelicTier } from '../../types/relicTypes';
+import { iconRelicReward } from '../../assets/images/GUI';
 
 interface RelicRewardModalProps {
   onClose: () => void;
@@ -46,8 +47,8 @@ export const RelicRewardModal: React.FC<RelicRewardModalProps> = ({ onClose, onR
       backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
     }}>
-      <h2 style={{ fontSize: '36px', color: '#ffaaaa', marginBottom: '30px' }}>
-        📦 전리품: 숨겨진 유물 발견
+      <h2 style={{ fontSize: '36px', color: '#ffaaaa', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <img src={iconRelicReward} alt="" style={{ width: 36, height: 36, objectFit: 'contain' }} /> 전리품: 숨겨진 유물 발견
       </h2>
 
       {rewardRelic ? (

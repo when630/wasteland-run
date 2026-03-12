@@ -1,79 +1,85 @@
 import React from 'react';
 import { useDeckStore } from '../../store/useDeckStore';
 import { useResponsive } from '../../hooks/useResponsive';
-import { colors } from '../../styles/theme';
+import { iconDrawPile, iconDiscardPile, iconExhaustPile } from '../../assets/images/GUI';
+
+const PileButton: React.FC<{
+  icon: string;
+  alt: string;
+  count: number;
+  badgeColor: string;
+  onClick: () => void;
+  size: number;
+}> = ({ icon, alt, count, badgeColor, onClick, size }) => (
+  <div
+    style={{ position: 'relative', cursor: 'pointer', userSelect: 'none' }}
+    onClick={onClick}
+  >
+    <img
+      src={icon}
+      alt={alt}
+      style={{
+        width: size, height: size, objectFit: 'contain',
+        filter: 'drop-shadow(0 0 3px rgba(0,0,0,0.7))',
+      }}
+    />
+    <div style={{
+      position: 'absolute',
+      top: -4, right: -6,
+      minWidth: 20, height: 20,
+      borderRadius: '50%',
+      background: badgeColor,
+      border: '2px solid rgba(0,0,0,0.6)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '0 4px',
+      boxShadow: '0 1px 4px rgba(0,0,0,0.5)',
+    }}>
+      <span style={{
+        fontSize: 12, fontWeight: 'bold', color: '#fff',
+        textShadow: '1px 1px 1px rgba(0,0,0,0.8)',
+        lineHeight: 1,
+      }}>
+        {count}
+      </span>
+    </div>
+  </div>
+);
 
 export const DeckPiles: React.FC = () => {
   const { drawPile, discardPile, exhaustPile, setViewingPile } = useDeckStore();
   const { isMobile } = useResponsive();
-
-  const buttonStyle = {
-    backgroundColor: colors.bg.medium,
-    border: `1px solid ${colors.border.subtle}`,
-    borderRadius: '8px',
-    padding: isMobile ? '5px 10px' : '8px 16px',
-    color: '#ddd',
-    cursor: 'pointer',
-    userSelect: 'none' as const,
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    minWidth: isMobile ? '50px' : '70px',
-    transition: 'background-color 0.2s',
-  };
+  const size = isMobile ? 40 : 52;
 
   return (
     <>
-      {/* 🌟 슬레이 더 스파이어 스타일: 뽑을 덱은 좌측 하단 */}
+      {/* 뽑을 덱: 좌측 하단 */}
       <div style={{
-        position: 'absolute',
-        bottom: '30px',
-        left: '30px',
-        zIndex: 10,
-        pointerEvents: 'auto'
+        position: 'absolute', bottom: 24, left: 24,
+        zIndex: 10, pointerEvents: 'auto',
       }}>
-        <div
-          style={buttonStyle}
-          onClick={() => setViewingPile('DRAW')}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#444'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.bg.medium}
-        >
-          <span style={{ fontSize: '12px', color: '#aaa', marginBottom: '4px' }}>뽑을 덱</span>
-          <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#fff' }}>{drawPile.length}</span>
-        </div>
+        <PileButton
+          icon={iconDrawPile} alt="뽑을 덱"
+          count={drawPile.length} badgeColor="#4488cc"
+          onClick={() => setViewingPile('DRAW')} size={size}
+        />
       </div>
 
-      {/* 🌟 슬레이 더 스파이어 스타일: 버린 덱과 소멸 덱은 우측 하단 */}
+      {/* 버린 덱 + 소멸 덱: 우측 하단 */}
       <div style={{
-        position: 'absolute',
-        bottom: '30px',
-        right: '30px',
-        display: 'flex',
-        gap: '15px',
-        zIndex: 10,
-        pointerEvents: 'auto'
+        position: 'absolute', bottom: 24, right: 24,
+        display: 'flex', gap: 14,
+        zIndex: 10, pointerEvents: 'auto',
       }}>
-        {/* 버린 덱 버튼 */}
-        <div
-          style={buttonStyle}
-          onClick={() => setViewingPile('DISCARD')}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#444'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.bg.medium}
-        >
-          <span style={{ fontSize: '12px', color: '#aaa', marginBottom: '4px' }}>버린 덱</span>
-          <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffaaaa' }}>{discardPile.length}</span>
-        </div>
-
-        {/* 소멸 덱 버튼 */}
-        <div
-          style={buttonStyle}
-          onClick={() => setViewingPile('EXHAUST')}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#444'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.bg.medium}
-        >
-          <span style={{ fontSize: '12px', color: '#aaa', marginBottom: '4px' }}>소멸 덱</span>
-          <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#aaaaaa' }}>{exhaustPile.length}</span>
-        </div>
+        <PileButton
+          icon={iconDiscardPile} alt="버린 덱"
+          count={discardPile.length} badgeColor="#cc4444"
+          onClick={() => setViewingPile('DISCARD')} size={size}
+        />
+        <PileButton
+          icon={iconExhaustPile} alt="소멸 덱"
+          count={exhaustPile.length} badgeColor="#666666"
+          onClick={() => setViewingPile('EXHAUST')} size={size}
+        />
       </div>
     </>
   );

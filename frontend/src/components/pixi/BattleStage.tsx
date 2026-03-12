@@ -17,7 +17,7 @@ import playerImg from '../../assets/images/player.png';
 export const BattleStage: React.FC = () => {
   // 스토어에서 런 상태 및 전투 상태 가져오기
   const { playerHp, playerMaxHp } = useRunStore();
-  const { currentTurn, enemies, playerStatus, playerDebuffs, powerDefenseAmmo50, powerPhysicalScalingActive, powerPhysicalScalingBonus, targetingCardId, playerAmmo, playerHitQueue, consumePlayerHitQueue, activeEnemyIndex, damageNumbers, clearExpiredDamageNumbers } = useBattleStore();
+  const { currentTurn, enemies, targetingCardId, playerAmmo, playerHitQueue, consumePlayerHitQueue, activeEnemyIndex, damageNumbers, clearExpiredDamageNumbers, powerPhysicalScalingBonus } = useBattleStore();
   const { hand } = useDeckStore();
   const { playCard } = useCardPlay();
 
@@ -27,13 +27,6 @@ export const BattleStage: React.FC = () => {
 
   const defaultTextStyle = useMemo(() => new PIXI.TextStyle({
     fill: 0xffffff,
-    fontSize: 18,
-  }), []);
-
-  // (HP 바로 대체됨 — hpTextStyle, enemyHpTextStyle 제거)
-
-  const intentTextStyle = useMemo(() => new PIXI.TextStyle({
-    fill: 0x4499ff,
     fontSize: 18,
   }), []);
 
@@ -271,12 +264,6 @@ export const BattleStage: React.FC = () => {
             x={playerHitOffset} // 🌟 넉백/흔들림 연출
             tint={playerTint} // 🌟 타입별 색상 연출
           />
-          <Text
-            text="Player"
-            y={-150}
-            anchor={0.5}
-            style={defaultTextStyle}
-          />
           {/* 플레이어 체력 바 */}
           <HpBar
             currentHp={playerHp}
@@ -287,52 +274,7 @@ export const BattleStage: React.FC = () => {
             y={155}
             fillColor={0x44ff44}
           />
-          {/* 플레이어 방어 버프 */}
-          {(playerStatus.shield > 0 || playerStatus.resist > 0) && (
-            <Text
-              text={`🛡️ ${playerStatus.shield}  |  💠 ${playerStatus.resist}`}
-              y={190}
-              anchor={0.5}
-              style={defaultTextStyle}
-            />
-          )}
-          {/* 플레이어 버프/디버프 상태 표시 */}
-          {(() => {
-            const icons: string[] = [];
-            // 턴 한정 버프
-            if (playerStatus.nextPhysicalFree) icons.push('⚡무료');
-            if (playerStatus.cannotPlayPhysicalAttack) icons.push('🚫물리');
-            if (playerStatus.retainCardCount > 0) icons.push(`🤚${playerStatus.retainCardCount}`);
-            if (playerStatus.reflectPhysical > 0) icons.push(`🔄${playerStatus.reflectPhysical}`);
-            if (playerStatus.apOnSpecialDefend > 0) icons.push(`🔋+${playerStatus.apOnSpecialDefend}`);
-            if (playerStatus.ammoOnSpecialDefend > 0) icons.push(`🔫+${playerStatus.ammoOnSpecialDefend}`);
-            if (playerStatus.markOfFate) icons.push('💀낙인');
-            // 영구 파워
-            if (powerDefenseAmmo50) icons.push('🎰탄약');
-            if (powerPhysicalScalingActive) icons.push(`💪+${powerPhysicalScalingBonus}`);
-            // 플레이어 디버프
-            if (playerDebuffs.VULNERABLE > 0) icons.push(`💔${playerDebuffs.VULNERABLE}`);
-            if (playerDebuffs.WEAK > 0) icons.push(`⏬${playerDebuffs.WEAK}`);
-            Object.entries(playerDebuffs).forEach(([key, val]) => {
-              if (key !== 'VULNERABLE' && key !== 'WEAK' && val > 0) icons.push(`❌${key}:${val}`);
-            });
-
-            if (icons.length === 0) return null;
-
-            // 한 줄에 너무 길면 2줄로 분할
-            const line1 = icons.slice(0, 5).join(' ');
-            const line2 = icons.length > 5 ? icons.slice(5).join(' ') : '';
-            const displayText = line2 ? `${line1}\n${line2}` : line1;
-
-            return (
-              <Text
-                text={displayText}
-                y={220}
-                anchor={0.5}
-                style={new PIXI.TextStyle({ fill: 0xffdd88, fontSize: 15, fontWeight: 'bold', align: 'center' })}
-              />
-            );
-          })()}
+          {/* 플레이어 방어/버프/디버프 → StatusOverlay(React HTML)로 이전됨 */}
         </Container>
 
         {/* 적 다중 렌더링 배열 */}
@@ -364,7 +306,6 @@ export const BattleStage: React.FC = () => {
                 }
               }}
               defaultTextStyle={defaultTextStyle}
-              intentTextStyle={intentTextStyle}
               texture={placeholderTexture}
               isActive={activeEnemyIndex === index}
               targetingCard={targetingCard || undefined}

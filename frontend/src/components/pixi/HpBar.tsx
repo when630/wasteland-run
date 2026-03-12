@@ -17,6 +17,7 @@ interface HpBarProps {
   previewDamage?: number;
   showText?: boolean;
   fontSize?: number;
+  dynamicColor?: boolean;
 }
 
 const hpTextStyleCache = new Map<string, PIXI.TextStyle>();
@@ -47,16 +48,15 @@ export const HpBar: React.FC<HpBarProps> = ({
   previewDamage = 0,
   showText = true,
   fontSize = 13,
+  dynamicColor = true,
 }) => {
   const hpRatio = Math.max(0, Math.min(1, currentHp / maxHp));
   const previewRatio = Math.max(0, Math.min(hpRatio, (currentHp - previewDamage) / maxHp));
 
   // HP 비율에 따른 색상 (녹색 → 노랑 → 빨강)
-  const dynamicFillColor = hpRatio > 0.5
-    ? fillColor
-    : hpRatio > 0.25
-      ? 0xffaa00
-      : 0xff3333;
+  const dynamicFillColor = dynamicColor
+    ? (hpRatio > 0.5 ? fillColor : hpRatio > 0.25 ? 0xffaa00 : 0xff3333)
+    : fillColor;
 
   const draw = useCallback((g: PIXI.Graphics) => {
     g.clear();
@@ -79,11 +79,11 @@ export const HpBar: React.FC<HpBarProps> = ({
         g.endFill();
       }
 
-      // 데미지 영역 빨간색 오버레이
+      // 데미지 영역 노란색 오버레이
       const dmgStart = Math.max(0, previewRatio);
       const dmgEnd = hpRatio;
       if (dmgEnd > dmgStart) {
-        g.beginFill(0xff2222, 0.7);
+        g.beginFill(0xffcc00, 0.8);
         g.drawRoundedRect(
           1 + (barWidth - 2) * dmgStart,
           1,

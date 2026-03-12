@@ -3,6 +3,7 @@ import { useRunStore } from '../../store/useRunStore';
 import { useBattleStore } from '../../store/useBattleStore';
 import { RELICS } from '../../assets/data/relics';
 import { useAudioStore } from '../../store/useAudioStore';
+import { iconRelicReward, iconBurn } from '../../assets/images/GUI';
 
 export const DebugMenu: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -80,7 +81,7 @@ export const DebugMenu: React.FC = () => {
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#114488'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2266aa'}
           >
-            💎 모든 유물 획득
+            <img src={iconRelicReward} alt="" style={{ width: 18, height: 18, objectFit: 'contain', verticalAlign: 'middle', marginRight: 4 }} /> 모든 유물 획득
           </div>
 
           <div
@@ -101,7 +102,7 @@ export const DebugMenu: React.FC = () => {
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#cc3333'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ff4444'}
           >
-            🔥 적 전원 처치
+            <img src={iconBurn} alt="" style={{ width: 18, height: 18, objectFit: 'contain', verticalAlign: 'middle', marginRight: 4 }} /> 적 전원 처치
           </div>
         </div>
       )}

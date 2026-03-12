@@ -5,6 +5,7 @@ import { STARTING_EVENTS } from '../assets/data/events';
 import type { RandomEvent, EventOption } from '../types/eventTypes';
 import { useRngStore } from '../store/useRngStore';
 import eventBg from '../assets/images/event_map_background.png';
+import { iconEvent } from '../assets/images/GUI';
 
 export const StartingEventView: React.FC = () => {
   const { setScene } = useRunStore();
@@ -42,8 +43,8 @@ export const StartingEventView: React.FC = () => {
       color: '#fff',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
     }}>
-      <h1 style={{ fontSize: window.innerWidth < 768 ? '24px' : '48px', color: '#fbbf24', marginBottom: '10px', textAlign: 'center', padding: '0 16px' }}>
-        🚪 {currentEvent.title}
+      <h1 style={{ fontSize: window.innerWidth < 768 ? '24px' : '48px', color: '#fbbf24', marginBottom: '10px', textAlign: 'center', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+        <img src={iconEvent} alt="" style={{ width: window.innerWidth < 768 ? 28 : 48, height: window.innerWidth < 768 ? 28 : 48, objectFit: 'contain' }} /> {currentEvent.title}
       </h1>
 
       <div style={{

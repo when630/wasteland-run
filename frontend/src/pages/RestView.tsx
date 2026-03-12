@@ -3,6 +3,7 @@ import { useRunStore } from '../store/useRunStore';
 import { UpgradeCardModal } from '../components/ui/UpgradeCardModal';
 import { onRestOrEventEnter } from '../logic/relicEffects';
 import restBg from '../assets/images/campfire_map_background.png';
+import { iconRest, iconCardUpgrade, iconHeart } from '../assets/images/GUI';
 
 export const RestView: React.FC = () => {
   const { playerHp, playerMaxHp, healPlayer, setScene, relics } = useRunStore();
@@ -44,8 +45,8 @@ export const RestView: React.FC = () => {
       color: '#fff',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
     }}>
-      <h1 style={{ fontSize: window.innerWidth < 768 ? '28px' : '48px', color: '#ffaa66', marginBottom: '10px', textAlign: 'center', padding: '0 16px' }}>
-        🔥 타오르는 모닥불
+      <h1 style={{ fontSize: window.innerWidth < 768 ? '28px' : '48px', color: '#ffaa66', marginBottom: '10px', textAlign: 'center', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+        <img src={iconRest} alt="" style={{ width: window.innerWidth < 768 ? 32 : 48, height: window.innerWidth < 768 ? 32 : 48, objectFit: 'contain' }} /> 타오르는 모닥불
       </h1>
       <p style={{ fontSize: window.innerWidth < 768 ? '14px' : '20px', color: '#ccc', marginBottom: window.innerWidth < 768 ? '24px' : '50px', textAlign: 'center', padding: '0 16px' }}>
         잠시 몸을 녹이고 정비할 시간입니다. 현재 HP: {playerHp}/{playerMaxHp}
@@ -66,7 +67,7 @@ export const RestView: React.FC = () => {
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3a2f2a'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2a1f1a'}
             >
-              <span style={{ fontSize: '64px', marginBottom: '20px' }}>🛌</span>
+              <img src={iconRest} alt="휴식" style={{ width: 64, height: 64, objectFit: 'contain', marginBottom: '20px' }} />
               <h2 style={{ margin: '0 0 10px 0', color: '#88ff88' }}>휴식</h2>
               <p style={{ margin: 0, color: '#aaa', padding: '0 20px', textAlign: 'center' }}>
                 최대 체력의 30%({Math.ceil(playerMaxHp * 0.3)})를 회복합니다.
@@ -86,7 +87,7 @@ export const RestView: React.FC = () => {
               onMouseEnter={(e) => { if (canUpgrade) e.currentTarget.style.backgroundColor = '#3a2f2a'; }}
               onMouseLeave={(e) => { if (canUpgrade) e.currentTarget.style.backgroundColor = '#2a1f1a'; }}
             >
-              <span style={{ fontSize: '64px', marginBottom: '20px' }}>🔨</span>
+              <img src={iconCardUpgrade} alt="강화" style={{ width: 64, height: 64, objectFit: 'contain', marginBottom: '20px' }} />
               <h2 style={{ margin: '0 0 10px 0', color: canUpgrade ? '#ff88ff' : '#666' }}>강화</h2>
               <p style={{ margin: 0, color: '#aaa', padding: '0 20px', textAlign: 'center' }}>
                 {canUpgrade ? '덱의 카드 한 장을 선택하여 업그레이드 합니다.' : '균열된 태양석 반응로에 의해 강화할 수 없습니다.'}
@@ -100,7 +101,7 @@ export const RestView: React.FC = () => {
             backgroundColor: 'rgba(0, 80, 40, 0.6)', padding: window.innerWidth < 768 ? '24px' : '50px 80px', borderRadius: '16px',
             border: '2px solid #22c55e', animation: 'fadeIn 0.5s ease-out'
           }}>
-            <span style={{ fontSize: '72px' }}>💚</span>
+            <img src={iconHeart} alt="회복" style={{ width: 72, height: 72, objectFit: 'contain' }} />
             <h2 style={{ fontSize: '36px', color: '#4ade80', margin: 0 }}>회복 완료!</h2>
             <p style={{ fontSize: '28px', color: '#bbf7d0', margin: 0 }}>
               +{healResult} HP 회복 (현재 {useRunStore.getState().playerHp}/{playerMaxHp})
@@ -115,7 +116,7 @@ export const RestView: React.FC = () => {
               onMouseEnter={e => e.currentTarget.style.backgroundColor = '#15803d'}
               onMouseLeave={e => e.currentTarget.style.backgroundColor = '#166534'}
             >
-              길을 떠난다 🗺️
+              길을 떠난다
             </button>
           </div>
         )}

@@ -4,8 +4,8 @@ import { useDeckStore } from '../../store/useDeckStore';
 import { useBattleStore } from '../../store/useBattleStore';
 import { useCardPlay } from '../../hooks/useCardPlay';
 import { useResponsive } from '../../hooks/useResponsive';
-import { colors } from '../../styles/theme';
 import { TargetingLine } from './TargetingLine';
+import { CardFrame } from './CardFrame';
 
 const DRAG_MIN_DIST = 10;
 const PLAY_ZONE_RATIO = 0.78;
@@ -118,15 +118,12 @@ export const Hand: React.FC = () => {
         const card = handRef.current.find(c => c.id === ds.cardId);
         if (card) {
           if (cardNeedsEnemyTarget(card)) {
-            // 공격 카드: 적 위에서 놓았으면 공격, 아니면 취소
             const enemyId = findNearestEnemyId(e.clientX, e.clientY);
             if (enemyId) {
               useBattleStore.getState().setTargetingPosition({ x: e.clientX, y: e.clientY });
               playCardRef.current(ds.cardId, enemyId);
             }
-            // 적이 아닌 곳에서 놓으면 그냥 드래그 취소 (카드 복귀)
           } else {
-            // 비타겟 카드: 즉시 사용
             useBattleStore.getState().setTargetingCard(null);
             useBattleStore.getState().setTargetingPosition({ x: e.clientX, y: e.clientY });
             playCardRef.current(ds.cardId, 'PLAYER');
@@ -154,7 +151,7 @@ export const Hand: React.FC = () => {
 
   // 레이아웃 계산
   const cardWidth = isMobile ? 78 : isTablet ? 95 : 110;
-  const cardHeight = isMobile ? 110 : isTablet ? 130 : 150;
+  const cardHeight = cardWidth * (320 / 220);
   const baseOverlap = isMobile ? -28 : isTablet ? -35 : -42;
   const overlapExtra = hand.length > 6 ? (hand.length - 6) * (isMobile ? -4 : -5) : 0;
   const cardOverlap = baseOverlap + overlapExtra;
@@ -175,17 +172,15 @@ export const Hand: React.FC = () => {
       height: `${containerHeight}px`
     }}>
       {hand.map((card, index) => {
-        const isStatusCard = card.type.startsWith('STATUS_');
         const isPhysicalAttack = card.type === 'PHYSICAL_ATTACK';
         const isLocked = isPhysicalAttack && playerStatus.cannotPlayPhysicalAttack;
         const displayApCost = (isPhysicalAttack && playerStatus.nextPhysicalFree) ? 0 : card.costAp;
         const isSelected = targetingCardId === card.id;
         const isHovered = hoveredCardId === card.id;
         const isBeingDragged = isActiveDrag && dragState?.cardId === card.id;
-        // 공격 카드 드래그 타겟팅 중 = 카드가 올라온 상태
         const isDragLifted = isDragTargeting && dragState?.cardId === card.id;
 
-        // 🌟 아치형 부채꼴 배치를 위한 수식
+        // 아치형 부채꼴 배치
         const totalCards = hand.length;
         const offset = index - (totalCards - 1) / 2;
         const maxOffset = (totalCards - 1) / 2 || 1;
@@ -198,7 +193,7 @@ export const Hand: React.FC = () => {
         const baseYTranslate = normalizedOffset * normalizedOffset * maxYDrop;
 
         const finalRotation = (isHovered || isSelected || isDragLifted) ? 0 : baseRotation;
-        const finalTranslateY = (isSelected || isDragLifted) ? -55 : isHovered ? -30 : baseYTranslate;
+        const finalTranslateY = (isSelected || isDragLifted) ? -55 : isHovered ? -45 : baseYTranslate;
         const finalScale = (isSelected || isDragLifted) ? 1.15 : isHovered ? 1.15 : 1.0;
 
         return (
@@ -225,19 +220,6 @@ export const Hand: React.FC = () => {
               position: 'relative',
               width: `${cardWidth}px`,
               height: `${cardHeight}px`,
-              backgroundColor: isStatusCard ? '#3a1520' : isLocked ? colors.bg.dark : colors.bg.medium,
-              border: `2px solid ${
-                isLocked ? '#aa2222'
-                : (isSelected || isDragLifted) ? colors.accent.orange
-                : isStatusCard ? '#aa3344'
-                : isHovered ? '#aaa'
-                : colors.border.subtle
-              }`,
-              borderRadius: '6px',
-              padding: isMobile ? '4px 5px' : '6px 8px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
               cursor: isLocked ? 'not-allowed' : 'pointer',
               opacity: (isBeingDragged && !isDragLifted) ? 0.3 : isLocked ? 0.5 : 1,
               pointerEvents: 'auto',
@@ -245,65 +227,22 @@ export const Hand: React.FC = () => {
               transform: `translateY(${finalTranslateY}px) rotate(${finalRotation}deg) scale(${finalScale})`,
               transformOrigin: 'bottom center',
               zIndex: (isSelected || isDragLifted) ? 200 : isHovered ? 100 : index + 10,
+              borderRadius: `${12 * (cardWidth / 220)}px`,
               boxShadow: (isSelected || isDragLifted)
                 ? '0 0 25px rgba(255, 170, 0, 0.9)'
-                : isStatusCard
-                  ? '0 0 12px rgba(170, 50, 70, 0.6)'
-                  : isHovered
-                    ? '0 10px 20px rgba(255, 255, 255, 0.4)'
-                    : '0 4px 10px rgba(0,0,0,0.5)',
+                : isHovered
+                  ? '0 10px 20px rgba(255, 255, 255, 0.3)'
+                  : '0 4px 10px rgba(0,0,0,0.5)',
               transition: (isBeingDragged && !isDragLifted)
                 ? 'opacity 0.15s'
-                : 'transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.2s, box-shadow 0.2s, z-index 0s, opacity 0.15s',
+                : 'transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s, z-index 0s, opacity 0.15s',
               userSelect: 'none',
               touchAction: 'none',
             }}
             onMouseEnter={() => { if (!dragState) setHoveredCardId(card.id); }}
             onMouseLeave={() => setHoveredCardId(prev => prev === card.id ? null : prev)}
           >
-            {/* 상단: 이름 + 코스트 뱃지 (한 줄) */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '2px' }}>
-              <span style={{ fontWeight: 'bold', fontSize: isMobile ? '9px' : '11px', color: '#fff', wordBreak: 'keep-all', lineHeight: 1.2, flex: 1, overflow: 'hidden' }}>
-                {card.name}
-              </span>
-              <div style={{ display: 'flex', gap: '2px', flexShrink: 0 }}>
-                <span style={{
-                  backgroundColor: displayApCost === 0 && card.costAp > 0 ? '#44ff44' : '#ffcc00',
-                  color: '#000', borderRadius: '50%',
-                  width: isMobile ? '16px' : '20px', height: isMobile ? '16px' : '20px', display: 'flex', justifyContent: 'center',
-                  alignItems: 'center', fontSize: isMobile ? '9px' : '11px', fontWeight: 'bold'
-                }}>
-                  {displayApCost}
-                </span>
-                {card.costAmmo > 0 && (
-                  <span style={{
-                    backgroundColor: '#cc9944', color: '#000', borderRadius: '50%',
-                    width: isMobile ? '16px' : '20px', height: isMobile ? '16px' : '20px', display: 'flex', justifyContent: 'center',
-                    alignItems: 'center', fontSize: isMobile ? '9px' : '11px', fontWeight: 'bold'
-                  }}>
-                    {card.costAmmo}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* 효과 텍스트 */}
-            <div style={{ fontSize: isMobile ? '8px' : '10px', color: '#ccc', textAlign: 'center', lineHeight: 1.3 }}>
-              {card.description}
-            </div>
-
-            {/* 잠금 오버레이 */}
-            {isLocked && (
-              <div style={{
-                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-                display: 'flex', justifyContent: 'center', alignItems: 'center',
-                borderRadius: '6px',
-                fontSize: '28px',
-                pointerEvents: 'none'
-              }}>
-                🔒
-              </div>
-            )}
+            <CardFrame card={card} width={cardWidth} displayApCost={displayApCost} isLocked={isLocked} />
           </div>
         );
       })}
@@ -341,53 +280,18 @@ export const Hand: React.FC = () => {
               position: 'fixed',
               left: dragState.x - cardWidth / 2,
               top: dragState.y - cardHeight / 2,
-              width: `${cardWidth}px`,
-              height: `${cardHeight}px`,
-              backgroundColor: draggingCard.type.startsWith('STATUS_') ? '#3a1520' : colors.bg.medium,
-              border: `2px solid ${inPlayZone ? colors.accent.orange : colors.border.subtle}`,
-              borderRadius: '6px',
-              padding: isMobile ? '4px 5px' : '6px 8px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
               pointerEvents: 'none',
               zIndex: 9999,
               transform: `scale(1.1) rotate(${inPlayZone ? 0 : -3}deg)`,
               boxShadow: inPlayZone
                 ? '0 0 30px rgba(255, 170, 0, 0.8), 0 0 60px rgba(255, 170, 0, 0.3)'
                 : '0 10px 30px rgba(0, 0, 0, 0.7)',
-              transition: 'border-color 0.15s, box-shadow 0.15s, transform 0.15s',
+              borderRadius: `${12 * (cardWidth / 220)}px`,
+              transition: 'box-shadow 0.15s, transform 0.15s',
               opacity: 0.95,
               userSelect: 'none',
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '2px' }}>
-                <span style={{ fontWeight: 'bold', fontSize: isMobile ? '9px' : '11px', color: '#fff', wordBreak: 'keep-all', lineHeight: 1.2, flex: 1, overflow: 'hidden' }}>
-                  {draggingCard.name}
-                </span>
-                <div style={{ display: 'flex', gap: '2px', flexShrink: 0 }}>
-                  <span style={{
-                    backgroundColor: '#ffcc00', color: '#000', borderRadius: '50%',
-                    width: isMobile ? '16px' : '20px', height: isMobile ? '16px' : '20px',
-                    display: 'flex', justifyContent: 'center', alignItems: 'center',
-                    fontSize: isMobile ? '9px' : '11px', fontWeight: 'bold'
-                  }}>
-                    {draggingCard.costAp}
-                  </span>
-                  {draggingCard.costAmmo > 0 && (
-                    <span style={{
-                      backgroundColor: '#cc9944', color: '#000', borderRadius: '50%',
-                      width: isMobile ? '16px' : '20px', height: isMobile ? '16px' : '20px',
-                      display: 'flex', justifyContent: 'center', alignItems: 'center',
-                      fontSize: isMobile ? '9px' : '11px', fontWeight: 'bold'
-                    }}>
-                      {draggingCard.costAmmo}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div style={{ fontSize: isMobile ? '8px' : '10px', color: '#ccc', textAlign: 'center', lineHeight: 1.3 }}>
-                {draggingCard.description}
-              </div>
+              <CardFrame card={draggingCard} width={cardWidth} />
             </div>
           )}
         </>,
