@@ -110,6 +110,7 @@ export const ResourcePanel: React.FC = () => {
   // 이전 값 추적
   const prevAmmoRef = useRef(playerAmmo);
   const prevApRef = useRef(playerActionPoints);
+  const mountedRef = useRef(false); // 최초 마운트 시 이펙트 스킵
   const [shellParticles, setShellParticles] = useState<ShellParticle[]>([]);
   const [apParticles, setApParticles] = useState<ApParticle[]>([]);
   const [apEffect, setApEffect] = useState<'none' | 'consume' | 'charge'>('none');
@@ -199,8 +200,17 @@ export const ResourcePanel: React.FC = () => {
     setApParticles(prev => [...prev, ...newParticles]);
   }, []);
 
+  // 최초 마운트 시 ref 동기화만 하고 이펙트 스킵
+  useEffect(() => {
+    prevAmmoRef.current = playerAmmo;
+    prevApRef.current = playerActionPoints;
+    mountedRef.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ammo 감소 감지 → 탄피 이젝션 (여러 발이면 시차 발사)
   useEffect(() => {
+    if (!mountedRef.current) return;
     const diff = prevAmmoRef.current - playerAmmo;
     if (diff > 0) {
       for (let i = 0; i < diff; i++) {
@@ -212,6 +222,7 @@ export const ResourcePanel: React.FC = () => {
 
   // AP 변화 감지 → 소모/충전 이펙트
   useEffect(() => {
+    if (!mountedRef.current) return;
     const diff = prevApRef.current - playerActionPoints;
     if (diff > 0) {
       // AP 소모

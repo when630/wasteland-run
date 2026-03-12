@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { authApi } from '../../api/auth';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useRunStore } from '../../store/useRunStore';
+import { useResponsive } from '../../hooks/useResponsive';
 
 export const AuthModal: React.FC = () => {
   const { login } = useAuthStore();
   const { setToastMessage } = useRunStore();
+  const { isMobile, height } = useResponsive();
+  const isShortScreen = height < 500;
 
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [username, setUsername] = useState('');
@@ -22,18 +25,15 @@ export const AuthModal: React.FC = () => {
     setIsLoading(true);
     try {
       if (isLoginMode) {
-        // 로그인
         const res = await authApi.post('/auth/login', { username, password });
         login(res.data.token, res.data.username);
         setToastMessage(`${res.data.username}, 다시 돌아오셨군요.`);
       } else {
-        // 회원가입
         const res = await authApi.post('/auth/register', { username, password });
         login(res.data.token, res.data.username);
         setToastMessage(`${res.data.username}, 황무지에 오신 것을 환영합니다.`);
       }
 
-      // 로그인(또는 회원가입 직후 로그인)이 성공하면 런 데이터를 서버에서 불러옴
       const { useRunStore: getRunStore } = await import('../../store/useRunStore');
       await getRunStore.getState().loadRunData();
     } catch (error: any) {
@@ -49,46 +49,50 @@ export const AuthModal: React.FC = () => {
 
   return (
     <div style={{
-      position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
       backgroundColor: 'rgba(0, 0, 0, 0.9)', zIndex: 9999,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
     }}>
       <div style={{
-        width: 'min(400px, 90vw)', padding: window.innerWidth < 768 ? '24px' : '40px', backgroundColor: '#2a1f1a',
-        borderRadius: '16px', border: '2px solid #aa7700',
-        display: 'flex', flexDirection: 'column', gap: '20px',
+        width: 'min(400px, 90vw)',
+        padding: isShortScreen ? '16px' : isMobile ? '24px' : '40px',
+        backgroundColor: '#2a1f1a',
+        borderRadius: isShortScreen ? '12px' : '16px',
+        border: '2px solid #aa7700',
+        display: 'flex', flexDirection: 'column',
+        gap: isShortScreen ? '12px' : '20px',
         boxShadow: '0 0 30px rgba(170, 119, 0, 0.3)',
         boxSizing: 'border-box',
       }}>
-        <h2 style={{ color: '#ffd700', fontSize: window.innerWidth < 768 ? '24px' : '32px', textAlign: 'center', margin: 0 }}>
+        <h2 style={{ color: '#ffd700', fontSize: isShortScreen ? '18px' : isMobile ? '24px' : '32px', textAlign: 'center', margin: 0 }}>
           {isLoginMode ? '웨이스트랜드 접속' : '새로운 생존자 등록'}
         </h2>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: isShortScreen ? '10px' : '15px' }}>
           <div>
-            <label style={{ display: 'block', color: '#ccc', marginBottom: '5px' }}>요원명 (ID)</label>
+            <label style={{ display: 'block', color: '#ccc', marginBottom: '4px', fontSize: isShortScreen ? '12px' : '14px' }}>요원명 (ID)</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               style={{
-                width: '100%', padding: '12px', boxSizing: 'border-box',
+                width: '100%', padding: isShortScreen ? '8px' : '12px', boxSizing: 'border-box',
                 backgroundColor: '#1a120f', color: '#fff', border: '1px solid #554422',
-                borderRadius: '8px', fontSize: '16px'
+                borderRadius: '8px', fontSize: isShortScreen ? '14px' : '16px'
               }}
               placeholder="멋진 이름을 입력하세요"
             />
           </div>
           <div>
-            <label style={{ display: 'block', color: '#ccc', marginBottom: '5px' }}>비밀번호</label>
+            <label style={{ display: 'block', color: '#ccc', marginBottom: '4px', fontSize: isShortScreen ? '12px' : '14px' }}>비밀번호</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               style={{
-                width: '100%', padding: '12px', boxSizing: 'border-box',
+                width: '100%', padding: isShortScreen ? '8px' : '12px', boxSizing: 'border-box',
                 backgroundColor: '#1a120f', color: '#fff', border: '1px solid #554422',
-                borderRadius: '8px', fontSize: '16px'
+                borderRadius: '8px', fontSize: isShortScreen ? '14px' : '16px'
               }}
               placeholder="비밀번호"
             />
@@ -98,7 +102,9 @@ export const AuthModal: React.FC = () => {
             type="submit"
             disabled={isLoading}
             style={{
-              padding: '16px', marginTop: '10px', fontSize: '18px', fontWeight: 'bold',
+              padding: isShortScreen ? '10px' : '16px',
+              marginTop: isShortScreen ? '4px' : '10px',
+              fontSize: isShortScreen ? '15px' : '18px', fontWeight: 'bold',
               backgroundColor: isLoading ? '#555' : '#4a3a10',
               color: isLoading ? '#999' : '#ffd700',
               border: isLoading ? '2px solid #555' : '2px solid #cca500',
@@ -112,12 +118,12 @@ export const AuthModal: React.FC = () => {
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '10px' }}>
+        <div style={{ textAlign: 'center', marginTop: isShortScreen ? '2px' : '10px' }}>
           <button
             onClick={() => setIsLoginMode(!isLoginMode)}
             style={{
               background: 'none', border: 'none', color: '#888',
-              textDecoration: 'underline', cursor: 'pointer', fontSize: '14px'
+              textDecoration: 'underline', cursor: 'pointer', fontSize: isShortScreen ? '12px' : '14px'
             }}
           >
             {isLoginMode ? '아직 황무지 ID가 없으신가요? 회원가입' : '이미 계정이 있으신가요? 로그인'}

@@ -20,13 +20,13 @@ const CHAPTER_DATA: Record<number, { title: string; subtitle: string; descriptio
 
 export const ChapterTransitionModal: React.FC = () => {
   const { currentChapter, setChapter, setScene, saveRunData } = useRunStore();
-  const { isMobile } = useResponsive();
+  const { isMobile, height } = useResponsive();
+  const isShortScreen = height < 500;
   const nextChapter = currentChapter + 1;
   const data = CHAPTER_DATA[nextChapter] || { title: `챕터 ${nextChapter}`, subtitle: '???', description: '미지의 영역으로...', color: '#aaa' };
 
   const handleProceed = async () => {
     setChapter(nextChapter);
-    // 새 챕터를 위한 맵 재생성
     useMapStore.setState({ currentFloor: 1, nodes: [], currentNodeId: null, visitedNodeIds: [] });
     setScene('MAP');
     await saveRunData();
@@ -34,45 +34,48 @@ export const ChapterTransitionModal: React.FC = () => {
 
   return (
     <div style={{
-      position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
       backgroundColor: 'rgba(0, 0, 0, 0.95)', zIndex: 999,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       animation: 'fadeIn 1.5s ease-in-out', color: '#fff'
     }}>
-      {/* 챕터 클리어 축하 */}
       <div style={{
-        fontSize: isMobile ? '24px' : '36px', color: '#fbbf24', fontWeight: 'bold', marginBottom: '10px',
+        fontSize: isShortScreen ? '18px' : isMobile ? '24px' : '36px', color: '#fbbf24', fontWeight: 'bold',
+        marginBottom: isShortScreen ? '4px' : '10px',
         textShadow: '0 0 20px rgba(251, 191, 36, 0.5)'
       }}>
         챕터 {currentChapter} 클리어!
       </div>
 
-      {/* 구분선 */}
-      <div style={{ width: isMobile ? '200px' : '300px', height: '2px', background: 'linear-gradient(to right, transparent, #555, transparent)', margin: '20px 0' }} />
+      <div style={{ width: isShortScreen ? '150px' : isMobile ? '200px' : '300px', height: '2px', background: 'linear-gradient(to right, transparent, #555, transparent)', margin: isShortScreen ? '10px 0' : '20px 0' }} />
 
-      {/* 다음 챕터 소개 */}
       <div style={{
-        fontSize: isMobile ? '16px' : '20px', color: '#9ca3af', letterSpacing: isMobile ? '3px' : '5px', marginBottom: '8px'
+        fontSize: isShortScreen ? '13px' : isMobile ? '16px' : '20px', color: '#9ca3af',
+        letterSpacing: isShortScreen ? '2px' : isMobile ? '3px' : '5px', marginBottom: isShortScreen ? '4px' : '8px'
       }}>
         {data.title}
       </div>
       <div style={{
-        fontSize: isMobile ? '28px' : '48px', color: data.color, fontWeight: 'bold', marginBottom: '20px',
+        fontSize: isShortScreen ? '22px' : isMobile ? '28px' : '48px', color: data.color, fontWeight: 'bold',
+        marginBottom: isShortScreen ? '10px' : '20px',
         textShadow: `0 0 25px ${data.color}50`, letterSpacing: '3px'
       }}>
         {data.subtitle}
       </div>
-      <p style={{
-        fontSize: isMobile ? '14px' : '18px', color: '#d1d5db', textAlign: 'center', lineHeight: '1.8',
-        maxWidth: isMobile ? '90%' : '500px', marginBottom: isMobile ? '25px' : '40px', whiteSpace: 'pre-line'
-      }}>
-        {data.description}
-      </p>
+      {!isShortScreen && (
+        <p style={{
+          fontSize: isMobile ? '14px' : '18px', color: '#d1d5db', textAlign: 'center', lineHeight: '1.8',
+          maxWidth: isMobile ? '90%' : '500px', marginBottom: isMobile ? '25px' : '40px', whiteSpace: 'pre-line'
+        }}>
+          {data.description}
+        </p>
+      )}
 
       <button
         onClick={handleProceed}
         style={{
-          padding: isMobile ? '12px 40px' : '18px 60px', fontSize: isMobile ? '16px' : '22px', fontWeight: 'bold',
+          padding: isShortScreen ? '8px 24px' : isMobile ? '12px 40px' : '18px 60px',
+          fontSize: isShortScreen ? '14px' : isMobile ? '16px' : '22px', fontWeight: 'bold',
           backgroundColor: '#1e40af', color: '#fff',
           border: `2px solid ${data.color}`, borderRadius: '12px', cursor: 'pointer',
           boxShadow: `0 0 15px ${data.color}40`,

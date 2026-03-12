@@ -32,11 +32,11 @@ export const CardViewerModal: React.FC = () => {
       break;
   }
 
-  const cardW = isMobile ? 100 : 140;
+  const cardW = isMobile ? 100 : 180;
 
   return (
     <div style={{
-      position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
       backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 100,
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       padding: isMobile ? '16px 8px' : '40px',
@@ -47,15 +47,15 @@ export const CardViewerModal: React.FC = () => {
         onClick={() => setViewingPile('NONE')}
       />
 
-      <div style={{ position: 'relative', zIndex: 101, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '900px' }}>
-        <h1 style={{ color: '#fff', margin: '0 0 15px 0', fontSize: isMobile ? '20px' : '32px' }}>
+      <div style={{ position: 'relative', zIndex: 101, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '900px', height: '100%' }}>
+        <h1 style={{ color: '#fff', margin: '0 0 15px 0', fontSize: isMobile ? '20px' : '32px', flexShrink: 0 }}>
           {title} ({cardsToShow.length}장)
         </h1>
 
         <div style={{
           display: 'flex', flexWrap: 'wrap', gap: isMobile ? '10px' : '16px',
           justifyContent: 'center',
-          maxHeight: '70vh', overflowY: 'auto',
+          flex: 1, overflowY: 'auto',
           padding: isMobile ? '8px' : '20px',
           width: '100%', boxSizing: 'border-box',
         }}>
@@ -74,9 +74,9 @@ export const CardViewerModal: React.FC = () => {
         <button
           onClick={() => setViewingPile('NONE')}
           style={{
-            marginTop: '30px', padding: '10px 40px', fontSize: '18px', fontWeight: 'bold',
+            marginTop: isMobile ? '16px' : '30px', padding: '10px 40px', fontSize: '18px', fontWeight: 'bold',
             backgroundColor: '#444', color: 'white', border: '2px solid #666',
-            borderRadius: '8px', cursor: 'pointer',
+            borderRadius: '8px', cursor: 'pointer', flexShrink: 0,
           }}
         >
           돌아가기

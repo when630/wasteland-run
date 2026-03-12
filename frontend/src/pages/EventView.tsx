@@ -11,7 +11,8 @@ import { iconEvent } from '../assets/images/GUI';
 import { useResponsive } from '../hooks/useResponsive';
 
 export const EventView: React.FC = () => {
-  const { isMobile } = useResponsive();
+  const { isMobile, height } = useResponsive();
+  const isShortScreen = height < 500;
   const { setScene, relics, playerMaxHp, healPlayer } = useRunStore();
   const [currentEvent, setCurrentEvent] = useState<RandomEvent | null>(null);
   const [resultText, setResultText] = useState<string | null>(null);
@@ -88,7 +89,7 @@ export const EventView: React.FC = () => {
 
   return (
     <div style={{
-      width: '100vw', height: '100vh',
+      width: '100vw', minHeight: '100vh',
       backgroundImage: `url(${eventBg})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
@@ -96,10 +97,11 @@ export const EventView: React.FC = () => {
       backgroundColor: 'rgba(17, 14, 10, 0.75)',
       color: '#e8dcc8',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      overflowY: 'auto', padding: isMobile ? '24px 0' : '0',
     }}>
       {/* 타이틀 */}
       <h1 style={{
-        fontSize: isMobile ? '24px' : '44px', color: '#d4a854', marginBottom: '8px',
+        fontSize: isShortScreen ? '20px' : isMobile ? '24px' : '44px', color: '#d4a854', marginBottom: isShortScreen ? '4px' : '8px',
         textAlign: 'center', padding: '0 16px',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
         textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
@@ -112,26 +114,28 @@ export const EventView: React.FC = () => {
       {/* 설명 패널 */}
       <div style={{
         backgroundColor: 'rgba(20, 16, 12, 0.85)',
-        padding: isMobile ? '20px' : '35px',
+        padding: isShortScreen ? '12px 16px' : isMobile ? '20px' : '35px',
         borderRadius: '8px',
         maxWidth: '750px', width: isMobile ? '90vw' : undefined,
-        textAlign: 'center', marginBottom: isMobile ? '20px' : '35px',
+        textAlign: 'center', marginBottom: isShortScreen ? '10px' : isMobile ? '20px' : '35px',
         border: '1px solid rgba(160, 120, 60, 0.3)',
         boxShadow: '0 0 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03)',
         animation: 'slideUp 0.5s ease-out',
       }}>
-        <p style={{ fontSize: isMobile ? '14px' : '18px', color: '#ccc0a8', lineHeight: '1.7', marginBottom: '16px' }}>
+        <p style={{ fontSize: isShortScreen ? '12px' : isMobile ? '14px' : '18px', color: '#ccc0a8', lineHeight: isShortScreen ? '1.3' : '1.7', marginBottom: isShortScreen ? '4px' : '16px' }}>
           {currentEvent.description}
         </p>
-        <p style={{ fontSize: '14px', color: '#8a7e6a', fontStyle: 'italic' }}>
-          {currentEvent.visualDesc}
-        </p>
+        {!isShortScreen && (
+          <p style={{ fontSize: '14px', color: '#8a7e6a', fontStyle: 'italic' }}>
+            {currentEvent.visualDesc}
+          </p>
+        )}
       </div>
 
       {/* 선택지 */}
       {!resultText ? (
         <div style={{
-          display: 'flex', gap: '12px', flexDirection: 'column',
+          display: 'flex', gap: isShortScreen ? '6px' : '12px', flexDirection: 'column',
           width: isMobile ? '90vw' : '600px',
           animation: 'slideUp 0.6s ease-out',
         }}>
@@ -144,13 +148,13 @@ export const EventView: React.FC = () => {
                 disabled={isDisabled}
                 onClick={() => handleOptionSelect(option)}
                 style={{
-                  padding: '18px 20px',
+                  padding: isShortScreen ? '6px 12px' : isMobile ? '10px 16px' : '18px 20px',
                   backgroundColor: isDisabled ? 'rgba(30, 25, 20, 0.6)' : 'rgba(40, 32, 22, 0.85)',
                   border: `1px solid ${isDisabled ? 'rgba(80, 60, 40, 0.3)' : 'rgba(160, 120, 60, 0.4)'}`,
                   borderLeft: `3px solid ${isDisabled ? 'rgba(80, 60, 40, 0.3)' : '#b8892e'}`,
                   borderRadius: '6px',
                   cursor: isDisabled ? 'not-allowed' : 'pointer',
-                  fontSize: '16px', color: isDisabled ? '#6b6050' : '#e0d4bc', textAlign: 'left',
+                  fontSize: isShortScreen ? '12px' : '16px', color: isDisabled ? '#6b6050' : '#e0d4bc', textAlign: 'left',
                   transition: 'all 0.2s',
                   opacity: isDisabled ? 0.5 : 1,
                 }}
@@ -169,11 +173,11 @@ export const EventView: React.FC = () => {
                   }
                 }}
               >
-                <div style={{ color: isDisabled ? '#6b6050' : '#d4a854', fontWeight: 'bold', marginBottom: '6px', fontSize: '17px' }}>
+                <div style={{ color: isDisabled ? '#6b6050' : '#d4a854', fontWeight: 'bold', marginBottom: isShortScreen ? '2px' : '6px', fontSize: isShortScreen ? '13px' : '17px' }}>
                   {option.label}
                   {isDisabled && ' (조건 미충족)'}
                 </div>
-                <div style={{ fontSize: '14px', color: isDisabled ? '#5a5040' : '#a09880', lineHeight: '1.4' }}>{option.description}</div>
+                <div style={{ fontSize: isShortScreen ? '11px' : '14px', color: isDisabled ? '#5a5040' : '#a09880', lineHeight: '1.4' }}>{option.description}</div>
               </button>
             );
           })}
@@ -181,21 +185,24 @@ export const EventView: React.FC = () => {
       ) : (
         <div style={{
           backgroundColor: 'rgba(15, 40, 25, 0.9)',
-          padding: isMobile ? '20px' : '30px', borderRadius: '8px',
+          padding: isShortScreen ? '10px 14px' : isMobile ? '14px 18px' : '30px',
+          borderRadius: '8px',
           border: '1px solid rgba(60, 180, 100, 0.4)',
           borderLeft: '3px solid #44aa66',
-          maxWidth: '600px', width: isMobile ? '90vw' : undefined, textAlign: 'center', boxSizing: 'border-box',
+          maxWidth: isShortScreen ? '420px' : '600px',
+          width: isMobile ? '90vw' : undefined, textAlign: 'center', boxSizing: 'border-box',
           boxShadow: '0 0 25px rgba(60, 180, 100, 0.15)',
           animation: 'slideUp 0.4s ease-out',
         }}>
-          <h3 style={{ color: '#66cc88', fontSize: '22px', marginBottom: '16px', textShadow: '1px 1px 3px rgba(0,0,0,0.6)' }}>선택 결과</h3>
-          <p style={{ fontSize: '16px', color: '#c8e8d4', lineHeight: '1.6', marginBottom: '25px' }}>
+          <h3 style={{ color: '#66cc88', fontSize: isShortScreen ? '15px' : isMobile ? '18px' : '22px', marginBottom: isShortScreen ? '6px' : '16px', textShadow: '1px 1px 3px rgba(0,0,0,0.6)', margin: isShortScreen ? '0 0 6px 0' : undefined }}>선택 결과</h3>
+          <p style={{ fontSize: isShortScreen ? '12px' : isMobile ? '14px' : '16px', color: '#c8e8d4', lineHeight: isShortScreen ? '1.4' : '1.6', marginBottom: isShortScreen ? '10px' : '25px' }}>
             {resultText}
           </p>
           <button
             onClick={() => setScene('MAP')}
             style={{
-              padding: '12px 40px', fontSize: '18px', fontWeight: 'bold',
+              padding: isShortScreen ? '6px 20px' : isMobile ? '10px 30px' : '12px 40px',
+              fontSize: isShortScreen ? '13px' : isMobile ? '15px' : '18px', fontWeight: 'bold',
               backgroundColor: 'rgba(30, 70, 45, 0.9)', color: '#c8e8d4',
               border: '1px solid rgba(60, 180, 100, 0.4)',
               borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',

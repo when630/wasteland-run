@@ -271,13 +271,13 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
       <HpBar
         currentHp={enemy.currentHp}
         maxHp={enemy.maxHp}
-        width={isBoss ? 200 : 120}
-        height={isBoss ? 16 : 12}
-        x={isBoss ? -100 : -60}
+        width={isBoss ? 240 : 160}
+        height={isBoss ? 20 : 18}
+        x={isBoss ? -120 : -80}
         y={hpYOffset - 6}
         fillColor={0xff4444}
         previewDamage={previewDamage}
-        fontSize={isBoss ? 14 : 11}
+        fontSize={isBoss ? 15 : 13}
         dynamicColor={false}
       />
     </Container>

@@ -12,15 +12,16 @@ import { StatisticsModal } from '../components/ui/StatisticsModal';
 
 export const MainMenuView: React.FC = () => {
   const { isActive, setScene } = useRunStore();
-  const { isMobile } = useResponsive();
+  const { isMobile, height } = useResponsive();
+  const isShortScreen = height < 500;
   const [isHovered, setIsHovered] = useState<string | null>(null);
   const [isCompendiumOpen, setIsCompendiumOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isStatisticsOpen, setIsStatisticsOpen] = useState(false);
 
   const buttonStyle = (id: string, disabled: boolean = false) => ({
-    padding: isMobile ? '10px 20px' : '15px 40px',
-    fontSize: isMobile ? '18px' : '24px',
+    padding: isShortScreen ? '6px 16px' : isMobile ? '10px 20px' : '15px 40px',
+    fontSize: isShortScreen ? '16px' : isMobile ? '18px' : '24px',
     fontWeight: 'bold',
     color: disabled ? '#555' : isHovered === id ? '#fff' : '#aaa',
     backgroundColor: 'transparent',
@@ -40,8 +41,8 @@ export const MainMenuView: React.FC = () => {
     // 런 정보 완전 초기화
     const newSeed = Math.random().toString(36).substring(2, 10);
     useRunStore.setState({
-      playerHp: 50,
-      playerMaxHp: 70,
+      playerHp: 84,
+      playerMaxHp: 84,
       gold: 0,
       currentMapNode: null,
       currentChapter: 1,
@@ -73,13 +74,15 @@ export const MainMenuView: React.FC = () => {
 
   const handleContinue = () => {
     useAudioStore.getState().playClick();
-    setScene('MAP'); // 지난 번 씬 정보를 저장할 수도 있으나, 안전장치로 맵에서 시작
+    useMapStore.getState().setPendingNode(null); // 잔여 pendingNodeId 클리어
+    setScene('MAP');
   };
 
   return (
     <div style={{
       width: '100vw',
-      height: '100vh',
+      minHeight: '100vh',
+      overflowY: 'auto',
       backgroundColor: '#0a0a0a',
       color: '#fff',
       display: 'flex',
@@ -91,9 +94,9 @@ export const MainMenuView: React.FC = () => {
     }}>
 
       {/* 타이틀 로고/텍스트 영역 */}
-      <div style={{ marginBottom: isMobile ? '40px' : '80px', pointerEvents: 'none', textAlign: isMobile ? 'center' : undefined }}>
+      <div style={{ marginBottom: isShortScreen ? '16px' : isMobile ? '40px' : '80px', pointerEvents: 'none', textAlign: isMobile ? 'center' : undefined }}>
         <h1 style={{
-          fontSize: isMobile ? '48px' : '96px',
+          fontSize: isShortScreen ? '36px' : isMobile ? '48px' : '96px',
           margin: 0,
           color: '#ff4444',
           textShadow: '4px 4px 0px #440000, 0 0 20px rgba(255,60,60,0.5)',
@@ -115,7 +118,7 @@ export const MainMenuView: React.FC = () => {
       </div>
 
       {/* 메뉴 버튼 영역 */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: isShortScreen ? '8px' : '20px' }}>
 
         {isActive && (
           <button

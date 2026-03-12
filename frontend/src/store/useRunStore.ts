@@ -218,7 +218,7 @@ export const useRunStore = create<RunState>((set) => ({
           useDeckStore.getState().setMasterDeck(JSON.parse(data.deckJson));
         }
 
-        useMapStore.setState({ currentFloor: data.currentLayer });
+        useMapStore.setState({ currentFloor: data.currentLayer, pendingNodeId: null });
 
         // 맵 상태 복원
         if (data.mapJson) {
@@ -227,7 +227,8 @@ export const useRunStore = create<RunState>((set) => ({
             useMapStore.setState({
               nodes: mapData.nodes || [],
               currentNodeId: mapData.currentNodeId || null,
-              visitedNodeIds: mapData.visitedNodeIds || []
+              visitedNodeIds: mapData.visitedNodeIds || [],
+              pendingNodeId: null
             });
           } catch (e) {
             console.warn('맵 데이터 파싱 실패, 맵을 새로 생성합니다.', e);

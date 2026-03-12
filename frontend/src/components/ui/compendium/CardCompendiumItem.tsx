@@ -1,13 +1,16 @@
 import React from 'react';
 import type { Card } from '../../../types/gameTypes';
 import { CardFrame } from '../CardFrame';
+import { useResponsive } from '../../../hooks/useResponsive';
 
 interface Props {
   card: Partial<Card>;
 }
 
 export const CardCompendiumItem: React.FC<Props> = ({ card }) => {
-  // CardFrame은 full Card를 요구하므로 기본값 보충
+  const { isMobile, height } = useResponsive();
+  const isShortScreen = height < 500;
+
   const fullCard: Card = {
     id: card.id ?? '',
     baseId: card.baseId ?? '',
@@ -23,23 +26,25 @@ export const CardCompendiumItem: React.FC<Props> = ({ card }) => {
     chapter: card.chapter,
   };
 
-  // 티어별 border glow
   let glowColor = 'transparent';
   if (card.tier === 'UNCOMMON') glowColor = 'rgba(74,144,226,0.3)';
   if (card.tier === 'RARE') glowColor = 'rgba(255,215,0,0.3)';
+
+  const cardWidth = isShortScreen ? 90 : isMobile ? 130 : 180;
 
   return (
     <div
       style={{
         transition: 'transform 0.2s',
         cursor: 'default',
-        borderRadius: '12px',
+        borderRadius: `${12 * (cardWidth / 220)}px`,
         boxShadow: glowColor !== 'transparent' ? `0 0 16px ${glowColor}` : undefined,
+        justifySelf: 'center',
       }}
       onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
       onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
     >
-      <CardFrame card={fullCard} width={180} />
+      <CardFrame card={fullCard} width={cardWidth} />
     </div>
   );
 };

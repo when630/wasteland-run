@@ -11,7 +11,7 @@ import { DamageNumber } from './DamageNumber';
 import { HpBar } from './HpBar';
 import { VfxLayer } from './vfx/VfxLayer';
 import { dispatchVfx } from './vfx/vfxDispatcher';
-import { PLAYER_POS } from './vfx/battleLayout';
+import { PLAYER_POS, BATTLE_Y_RATIO, enemyPos } from './vfx/battleLayout';
 import playerImg from '../../assets/images/characters/player.png';
 import playerPhysicalAttackImg from '../../assets/images/characters/player_physical_attack.png';
 import playerSpecialAttackImg from '../../assets/images/characters/player_special_attack.png';
@@ -266,7 +266,7 @@ export const BattleStage: React.FC = () => {
         {/* 플레이어 (좌측) 구역을 Container로 묶어 클릭(타겟팅) 상호작용 추가 */}
         <Container
           x={1920 * 0.25}
-          y={1080 * 0.65 + playerHitOffsetY}
+          y={1080 * BATTLE_Y_RATIO + playerHitOffsetY}
           alpha={playerAlphaFlicker}
           interactive={targetingCardId !== null}
           pointerdown={() => {
@@ -288,10 +288,11 @@ export const BattleStage: React.FC = () => {
           <HpBar
             currentHp={playerHp}
             maxHp={playerMaxHp}
-            width={120}
-            height={14}
-            x={-60}
+            width={160}
+            height={20}
+            x={-80}
             y={155}
+            fontSize={15}
             fillColor={0x44ff44}
           />
           {/* 플레이어 방어/버프/디버프 → StatusOverlay(React HTML)로 이전됨 */}
@@ -299,9 +300,10 @@ export const BattleStage: React.FC = () => {
 
         {/* 적 다중 렌더링 배열 */}
         {enemies.map((enemyObj, index) => {
-          // 다중 배치를 위한 위치 지정 (화면 우측에 좌우로 배열)
-          const baseY = 1080 * 0.65;
-          const baseX = 1920 * (0.6 + index * 0.18);
+          // 다중 배치를 위한 위치 지정 (적 수에 따라 반응형 배치)
+          const ePos = enemyPos(index, enemies.length);
+          const baseX = ePos.x;
+          const baseY = ePos.y;
           const isTargeting = targetingCardId !== null;
 
           // 단일 공격 카드 선택 시 살아있는 적에게 타겟 가능 이펙트 표시
@@ -351,8 +353,9 @@ export const BattleStage: React.FC = () => {
         {damageNumbers.map((dn) => {
           const enemyIndex = enemies.findIndex(e => e.id === dn.enemyId);
           if (enemyIndex === -1) return null;
-          const posX = 1920 * (0.6 + enemyIndex * 0.18);
-          const posY = 1080 * 0.65 - 80;
+          const dnPos = enemyPos(enemyIndex, enemies.length);
+          const posX = dnPos.x;
+          const posY = dnPos.y - 80;
           return (
             <DamageNumber
               key={dn.id}

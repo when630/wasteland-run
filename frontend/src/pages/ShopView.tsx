@@ -8,6 +8,7 @@ import type { Relic } from '../types/relicTypes';
 import { customShuffle } from '../utils/rng';
 import { useRngStore } from '../store/useRngStore';
 import { RemoveCardModal } from '../components/ui/RemoveCardModal';
+import { CardFrame } from '../components/ui/CardFrame';
 import shopBg from '../assets/images/backgrounds/shop_map_background.png';
 import npcImg from '../assets/images/characters/merchant.png';
 import { iconGoldReward, iconCardRemove } from '../assets/images/GUI';
@@ -27,6 +28,10 @@ export const ShopView: React.FC = () => {
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const REMOVE_PRICE = 50;
 
+  // 프리뷰 상태
+  const [previewCardIdx, setPreviewCardIdx] = useState<number | null>(null);
+  const [previewRelicIdx, setPreviewRelicIdx] = useState<number | null>(null);
+
   useEffect(() => {
     const lootRng = useRngStore.getState().lootRng;
     const chapter = useRunStore.getState().currentChapter;
@@ -40,7 +45,7 @@ export const ShopView: React.FC = () => {
 
     const availableRelics = RELICS.filter(r => r.tier !== 'BOSS' && !ownedRelics.includes(r.id));
     const shuffledRelics = customShuffle(availableRelics, lootRng);
-    const selectedRelics = shuffledRelics.slice(0, Math.min(2, shuffledRelics.length)).map(relic => {
+    const selectedRelics = shuffledRelics.slice(0, Math.min(3, shuffledRelics.length)).map(relic => {
       let price = 80;
       if (relic.tier === 'UNCOMMON') price = 120;
       else if (relic.tier === 'RARE') price = 200;
@@ -61,6 +66,7 @@ export const ShopView: React.FC = () => {
     addCardToMasterDeck(cardBlueprint as Omit<Card, 'id'>);
     setToastMessage(`${item.name} 획득!`);
     const newArr = [...shopCards]; newArr[idx].isSoldOut = true; setShopCards(newArr);
+    setPreviewCardIdx(null);
     await useRunStore.getState().saveRunData();
   };
 
@@ -72,6 +78,7 @@ export const ShopView: React.FC = () => {
     addRelic(item.id);
     setToastMessage(`${item.name} 획득!`);
     const newArr = [...shopRelics]; newArr[idx].isSoldOut = true; setShopRelics(newArr);
+    setPreviewRelicIdx(null);
     await useRunStore.getState().saveRunData();
   };
 
@@ -89,9 +96,14 @@ export const ShopView: React.FC = () => {
     await useRunStore.getState().saveRunData();
   };
 
-  // 공용 스타일
-  const panelBg = 'rgba(18, 15, 10, 0.88)';
-  const panelBorder = '1px solid rgba(120, 90, 40, 0.25)';
+  const { height } = useResponsive();
+  const isShortScreen = height < 500;
+  const cardW = isShortScreen ? 80 : isMobile ? 100 : 140;
+  const previewCardW = isShortScreen ? 150 : isMobile ? 200 : 280;
+  const relicSize = isShortScreen ? 44 : isMobile ? 52 : 64;
+
+  const previewCard = previewCardIdx !== null ? shopCards[previewCardIdx] : null;
+  const previewRelic = previewRelicIdx !== null ? shopRelics[previewRelicIdx] : null;
 
   return (
     <div style={{
@@ -101,206 +113,323 @@ export const ShopView: React.FC = () => {
       backgroundBlendMode: 'overlay',
       backgroundColor: 'rgba(18, 14, 10, 0.7)',
       color: '#e8dcc8',
-      display: 'flex', flexDirection: isMobile ? 'column' : 'row',
-      overflow: isMobile ? 'auto' : 'hidden',
+      display: 'flex', flexDirection: 'row',
+      overflow: 'hidden', position: 'relative',
     }}>
+      {/* 상인 NPC */}
+      <img
+        src={npcImg} alt="고철 상인"
+        style={{
+          position: 'absolute',
+          right: 0, bottom: 0,
+          height: isShortScreen ? '85%' : '80%',
+          objectFit: 'contain', objectPosition: 'bottom right',
+          filter: 'drop-shadow(5px 10px 20px rgba(0,0,0,0.8))',
+          pointerEvents: 'none', opacity: isShortScreen ? 0.4 : 0.5,
+          zIndex: 0,
+        }}
+      />
 
-      {/* 좌측: 상점 진열대 */}
+      {/* 메인 컨텐츠 */}
       <div style={{
-        flex: isMobile ? undefined : 6,
-        padding: isMobile ? '12px' : '20px',
-        display: 'flex', flexDirection: 'column', gap: '12px',
-        overflowY: isMobile ? 'auto' : 'hidden',
+        flex: 1, display: 'flex', flexDirection: 'column',
+        overflow: 'hidden', zIndex: 1, position: 'relative',
       }}>
-        {/* 헤더 */}
+        {/* 골드 표시 */}
         <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          backgroundColor: panelBg, padding: isMobile ? '10px 14px' : '12px 22px',
-          borderRadius: '8px', border: panelBorder, flexWrap: 'wrap', gap: '4px',
-          boxShadow: '0 2px 15px rgba(0,0,0,0.3)',
+          display: 'flex', alignItems: 'center', gap: '6px',
+          padding: isShortScreen ? '4px 16px' : '8px 24px',
+          alignSelf: 'flex-end', flexShrink: 0,
         }}>
-          <h1 style={{
-            fontSize: isMobile ? '20px' : '28px', color: '#d4a854', margin: 0,
-            display: 'flex', alignItems: 'center', gap: '8px',
-            textShadow: '1px 2px 3px rgba(0,0,0,0.7)',
+          <img src={iconGoldReward} alt="" style={{ width: isShortScreen ? 16 : 22, height: isShortScreen ? 16 : 22, objectFit: 'contain' }} />
+          <span style={{ fontSize: isShortScreen ? '14px' : '20px', color: '#d4a854', fontWeight: 'bold' }}>{gold} G</span>
+        </div>
+
+        {/* 카드 + 유물 진열 영역 */}
+        <div style={{
+          flex: 1, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          gap: isShortScreen ? '10px' : '20px',
+          padding: isShortScreen ? '0 12px' : '0 20px',
+          overflow: 'hidden',
+        }}>
+          {/* 카드 진열 */}
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', gap: isShortScreen ? '8px' : '14px',
+            justifyContent: 'center', alignItems: 'flex-end',
+            background: 'radial-gradient(ellipse at center, rgba(80, 60, 30, 0.12) 0%, transparent 70%)',
+            padding: isShortScreen ? '4px' : '10px',
           }}>
-            <img src={iconGoldReward} alt="" style={{ width: isMobile ? 24 : 30, height: isMobile ? 24 : 30, objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(212,168,84,0.5))' }} />
-            고철 암시장
-          </h1>
-          <div style={{ fontSize: isMobile ? '16px' : '20px', color: '#d4a854', fontWeight: 'bold', textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
-            {gold} G
-          </div>
-        </div>
-
-        {/* 카드 판매 */}
-        <div style={{ backgroundColor: panelBg, padding: '15px', borderRadius: '8px', border: panelBorder }}>
-          <h2 style={{ color: '#b8a078', margin: '0 0 10px 0', borderBottom: '1px solid rgba(120, 90, 40, 0.2)', paddingBottom: '8px', fontSize: '18px' }}>장비 구입</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 130px)', gap: '10px', justifyContent: 'center' }}>
-            {shopCards.map((item, idx) => {
-              let cardBorder = 'rgba(100, 80, 50, 0.4)';
-              if (item.type.includes('ATTACK')) cardBorder = 'rgba(180, 80, 60, 0.4)';
-              else if (item.type.includes('DEFENSE')) cardBorder = 'rgba(60, 140, 100, 0.4)';
-
-              return (
-                <div key={idx} style={{ position: 'relative' }}>
-                  <div
-                    onClick={() => handleBuyCard(idx)}
-                    style={{
-                      width: isMobile ? '100%' : '130px', height: isMobile ? '140px' : '170px',
-                      backgroundColor: 'rgba(25, 20, 15, 0.9)',
-                      border: `1px solid ${cardBorder}`, borderRadius: '8px',
-                      padding: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center',
-                      opacity: item.isSoldOut ? 0.25 : 1,
-                      cursor: item.isSoldOut ? 'not-allowed' : 'pointer',
-                      transition: 'all 0.2s',
-                    }}
-                    onMouseEnter={e => { if (!item.isSoldOut) { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 0 15px rgba(180, 140, 50, 0.15)'; } }}
-                    onMouseLeave={e => { if (!item.isSoldOut) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; } }}
-                  >
-                    <h3 style={{ margin: '0 0 6px 0', fontSize: '13px', color: '#e0d4bc', textAlign: 'center' }}>{item.name}</h3>
-                    <div style={{
-                      backgroundColor: 'rgba(0,0,0,0.4)', padding: '2px 8px',
-                      borderRadius: '4px', color: '#88bbcc', marginBottom: '6px', fontSize: '10px',
-                      border: '1px solid rgba(80, 130, 180, 0.2)',
-                    }}>
-                      AP: {item.costAp} {item.costAmmo > 0 && `| 탄: ${item.costAmmo}`}
-                    </div>
-                    <p style={{ color: '#a09888', fontSize: '11px', textAlign: 'center', lineHeight: '1.3', overflow: 'hidden' }}>
-                      {item.description}
-                    </p>
+            {shopCards.map((item, idx) => (
+              <div
+                key={idx}
+                onClick={() => { if (!item.isSoldOut) setPreviewCardIdx(idx); }}
+                style={{
+                  position: 'relative',
+                  cursor: item.isSoldOut ? 'not-allowed' : 'pointer',
+                  opacity: item.isSoldOut ? 0.3 : 1,
+                  transition: 'transform 0.2s, filter 0.2s',
+                  transform: `rotate(${(idx - 2.5) * 1.5}deg)`,
+                }}
+                onMouseEnter={e => { if (!item.isSoldOut) { e.currentTarget.style.transform = 'translateY(-8px) scale(1.08)'; e.currentTarget.style.filter = 'drop-shadow(0 0 12px rgba(212, 168, 84, 0.3))'; } }}
+                onMouseLeave={e => { if (!item.isSoldOut) { e.currentTarget.style.transform = `rotate(${(idx - 2.5) * 1.5}deg)`; e.currentTarget.style.filter = 'none'; } }}
+              >
+                <CardFrame card={item} width={cardW} />
+                {!item.isSoldOut && (
+                  <div style={{
+                    position: 'absolute', bottom: isShortScreen ? -4 : -6, left: '50%', transform: 'translateX(-50%)',
+                    backgroundColor: gold >= item.price ? 'rgba(80, 55, 15, 0.95)' : 'rgba(80, 20, 15, 0.95)',
+                    color: gold >= item.price ? '#d4a854' : '#cc6666',
+                    padding: isShortScreen ? '1px 8px' : '2px 10px', borderRadius: '10px',
+                    fontWeight: 'bold', fontSize: isShortScreen ? '10px' : '12px',
+                    border: `1px solid ${gold >= item.price ? 'rgba(180, 140, 50, 0.5)' : 'rgba(180, 60, 60, 0.5)'}`,
+                    zIndex: 10, whiteSpace: 'nowrap',
+                  }}>
+                    {item.price} G
                   </div>
-
-                  {!item.isSoldOut && (
-                    <div style={{
-                      position: 'absolute', bottom: '-10px', left: '50%', transform: 'translateX(-50%)',
-                      backgroundColor: gold >= item.price ? 'rgba(80, 55, 15, 0.95)' : 'rgba(80, 20, 15, 0.95)',
-                      color: gold >= item.price ? '#d4a854' : '#cc6666', padding: '3px 12px', borderRadius: '4px',
-                      fontWeight: 'bold', fontSize: '12px',
-                      border: `1px solid ${gold >= item.price ? 'rgba(180, 140, 50, 0.5)' : 'rgba(180, 60, 60, 0.5)'}`,
-                      zIndex: 10,
-                    }}>
-                      {item.price} G
-                    </div>
-                  )}
-                  {item.isSoldOut && (
-                    <div style={{ position: 'absolute', top: '40%', left: '0', right: '0', textAlign: 'center', color: '#884444', fontSize: '16px', fontWeight: 'bold', transform: 'rotate(-20deg)', textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>SOLD OUT</div>
-                  )}
-                </div>
-              );
-            })}
+                )}
+                {item.isSoldOut && (
+                  <div style={{
+                    position: 'absolute', top: '40%', left: 0, right: 0, textAlign: 'center',
+                    color: '#884444', fontSize: isShortScreen ? '12px' : '16px', fontWeight: 'bold',
+                    transform: 'rotate(-20deg)', textShadow: '1px 1px 3px rgba(0,0,0,0.5)',
+                  }}>SOLD OUT</div>
+                )}
+              </div>
+            ))}
           </div>
-        </div>
 
-        {/* 유물 & 서비스 */}
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <div style={{ backgroundColor: panelBg, padding: '15px', borderRadius: '8px', border: panelBorder, flex: 1 }}>
-            <h2 style={{ color: '#b8a078', margin: '0 0 10px 0', borderBottom: '1px solid rgba(120, 90, 40, 0.2)', paddingBottom: '8px', fontSize: '16px' }}>진귀한 유물</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {shopRelics.map((relic, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => handleBuyRelic(idx)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '10px',
-                    padding: '8px 10px', backgroundColor: 'rgba(25, 20, 15, 0.8)', borderRadius: '6px',
-                    opacity: relic.isSoldOut ? 0.25 : 1, cursor: relic.isSoldOut ? 'default' : 'pointer',
-                    border: '1px solid rgba(100, 80, 50, 0.25)', transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={e => { if (!relic.isSoldOut) { e.currentTarget.style.backgroundColor = 'rgba(40, 32, 22, 0.9)'; e.currentTarget.style.boxShadow = '0 0 10px rgba(180, 140, 50, 0.1)'; } }}
-                  onMouseLeave={e => { if (!relic.isSoldOut) { e.currentTarget.style.backgroundColor = 'rgba(25, 20, 15, 0.8)'; e.currentTarget.style.boxShadow = 'none'; } }}
-                >
-                  <span style={{ width: '30px', height: '30px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    {relic.image ? <img src={relic.image} alt={relic.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <span style={{ fontSize: '28px' }}>{relic.icon}</span>}
-                  </span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 'bold', color: '#e0d4bc', fontSize: '14px' }}>{relic.name}</div>
-                    <div style={{ fontSize: '10px', color: '#8a7e6a' }}>[{relic.tier}]</div>
+          {/* 유물 진열 */}
+          <div style={{
+            display: 'flex', gap: isShortScreen ? '12px' : '20px',
+            justifyContent: 'center', alignItems: 'center',
+            padding: isShortScreen ? '4px 8px' : '8px 16px',
+          }}>
+            {shopRelics.map((relic, idx) => (
+              <div
+                key={idx}
+                onClick={() => { if (!relic.isSoldOut) setPreviewRelicIdx(idx); }}
+                style={{
+                  position: 'relative',
+                  cursor: relic.isSoldOut ? 'not-allowed' : 'pointer',
+                  opacity: relic.isSoldOut ? 0.3 : 1,
+                  transition: 'transform 0.2s, filter 0.2s',
+                  transform: `rotate(${(idx - 1) * 3}deg)`,
+                }}
+                onMouseEnter={e => { if (!relic.isSoldOut) { e.currentTarget.style.transform = 'scale(1.15)'; e.currentTarget.style.filter = 'drop-shadow(0 0 10px rgba(212, 168, 84, 0.4))'; } }}
+                onMouseLeave={e => { if (!relic.isSoldOut) { e.currentTarget.style.transform = `rotate(${(idx - 1) * 3}deg)`; e.currentTarget.style.filter = 'none'; } }}
+              >
+                <div style={{
+                  width: relicSize, height: relicSize,
+                  backgroundColor: 'rgba(30, 25, 18, 0.9)',
+                  border: '2px solid rgba(120, 90, 40, 0.5)',
+                  borderRadius: '50%',
+                  display: 'flex', justifyContent: 'center', alignItems: 'center',
+                  overflow: 'hidden',
+                }}>
+                  {relic.image
+                    ? <img src={relic.image} alt={relic.name} style={{ width: '75%', height: '75%', objectFit: 'contain' }} />
+                    : <span style={{ fontSize: relicSize * 0.5 }}>{relic.icon}</span>
+                  }
+                </div>
+                {!relic.isSoldOut && (
+                  <div style={{
+                    position: 'absolute', bottom: isShortScreen ? -6 : -8, left: '50%', transform: 'translateX(-50%)',
+                    backgroundColor: gold >= relic.price ? 'rgba(80, 55, 15, 0.95)' : 'rgba(80, 20, 15, 0.95)',
+                    color: gold >= relic.price ? '#d4a854' : '#cc6666',
+                    padding: '1px 6px', borderRadius: '8px',
+                    fontWeight: 'bold', fontSize: isShortScreen ? '9px' : '11px',
+                    border: `1px solid ${gold >= relic.price ? 'rgba(180, 140, 50, 0.5)' : 'rgba(180, 60, 60, 0.5)'}`,
+                    zIndex: 10, whiteSpace: 'nowrap',
+                  }}>
+                    {relic.price}G
                   </div>
-                  {!relic.isSoldOut && (
-                    <div style={{ fontWeight: 'bold', fontSize: '14px', color: gold >= relic.price ? '#d4a854' : '#cc6666' }}>
-                      {relic.price} G
-                    </div>
-                  )}
-                  {relic.isSoldOut && <div style={{ color: '#884444', fontWeight: 'bold', fontSize: '12px' }}>SOLD</div>}
-                </div>
-              ))}
-              {shopRelics.length === 0 && <p style={{ color: '#6a5e4a', fontSize: '12px' }}>판매 중인 유물이 없습니다.</p>}
-            </div>
-          </div>
+                )}
+                {relic.isSoldOut && (
+                  <div style={{
+                    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                    color: '#884444', fontSize: '10px', fontWeight: 'bold',
+                    textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
+                  }}>SOLD</div>
+                )}
+              </div>
+            ))}
+            {shopRelics.length === 0 && <span style={{ color: '#6a5e4a', fontSize: '11px' }}>유물 없음</span>}
 
-          <div style={{ backgroundColor: panelBg, padding: '15px', borderRadius: '8px', border: panelBorder, flex: 1 }}>
-            <h2 style={{ color: '#b8a078', margin: '0 0 10px 0', borderBottom: '1px solid rgba(120, 90, 40, 0.2)', paddingBottom: '8px', fontSize: '16px' }}>서비스</h2>
+            {/* 덱 압축 */}
+            <div style={{ width: isShortScreen ? '20px' : '30px' }} />
             <button
               disabled={!removeServiceAvailable}
               onClick={handleRemoveService}
               style={{
-                width: '100%', padding: '12px 15px',
-                backgroundColor: removeServiceAvailable ? 'rgba(60, 20, 15, 0.85)' : 'rgba(25, 20, 15, 0.5)',
-                color: removeServiceAvailable ? '#cc8888' : '#5a5040',
-                border: `1px solid ${removeServiceAvailable ? 'rgba(180, 60, 60, 0.3)' : 'rgba(60, 50, 40, 0.2)'}`,
-                borderRadius: '6px', cursor: removeServiceAvailable ? 'pointer' : 'not-allowed',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                transition: 'all 0.2s',
+                background: 'none', border: 'none',
+                cursor: removeServiceAvailable ? 'pointer' : 'not-allowed',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
+                opacity: removeServiceAvailable ? 1 : 0.4,
+                transition: 'transform 0.2s',
               }}
-              onMouseEnter={e => { if (removeServiceAvailable) { e.currentTarget.style.backgroundColor = 'rgba(80, 30, 20, 0.9)'; e.currentTarget.style.boxShadow = '0 0 12px rgba(180, 60, 60, 0.15)'; } }}
-              onMouseLeave={e => { if (removeServiceAvailable) { e.currentTarget.style.backgroundColor = 'rgba(60, 20, 15, 0.85)'; e.currentTarget.style.boxShadow = 'none'; } }}
+              onMouseEnter={e => { if (removeServiceAvailable) e.currentTarget.style.transform = 'scale(1.15)'; }}
+              onMouseLeave={e => { if (removeServiceAvailable) e.currentTarget.style.transform = 'scale(1)'; }}
             >
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                <span style={{ fontSize: '16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <img src={iconCardRemove} alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} /> 덱 압축
-                </span>
-                <span style={{ fontSize: '11px', marginTop: '4px', color: removeServiceAvailable ? '#8a6a6a' : '#4a4030' }}>카드 1장 버리기</span>
-              </div>
+              <img src={iconCardRemove} alt="덱 압축" style={{ width: isShortScreen ? 72 : 96, height: isShortScreen ? 72 : 96, objectFit: 'contain' }} />
               {removeServiceAvailable && (
-                <span style={{ fontWeight: 'bold', fontSize: '18px', color: gold >= REMOVE_PRICE ? '#d4a854' : '#cc6666' }}>
-                  {REMOVE_PRICE} G
-                </span>
+                <span style={{ fontWeight: 'bold', fontSize: isShortScreen ? '10px' : '12px', color: gold >= REMOVE_PRICE ? '#d4a854' : '#cc6666' }}>{REMOVE_PRICE}G</span>
               )}
             </button>
           </div>
         </div>
-      </div>
 
-      {/* 우측: NPC + 나가기 */}
-      <div style={{
-        flex: isMobile ? undefined : 4,
-        display: 'flex', flexDirection: 'column',
-        justifyContent: 'flex-end', alignItems: 'center',
-        padding: isMobile ? '16px' : '20px',
-        position: 'relative',
-        borderLeft: isMobile ? undefined : '1px solid rgba(120, 90, 40, 0.15)',
-        backgroundColor: 'rgba(0,0,0,0.25)',
-      }}>
-        {!isMobile && (
-          <img
-            src={npcImg} alt="고철 상인"
+        {/* 하단: 떠나기 */}
+        <div style={{
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          padding: isShortScreen ? '6px 16px' : '12px 24px',
+          flexShrink: 0,
+        }}>
+          <button
+            onClick={() => setScene('MAP')}
             style={{
-              height: '75vh', width: '100%',
-              objectFit: 'contain', objectPosition: 'bottom center',
-              filter: 'drop-shadow(5px 10px 20px rgba(0,0,0,0.8))',
-              pointerEvents: 'none',
+              padding: isShortScreen ? '5px 14px' : '8px 24px',
+              fontSize: isShortScreen ? '11px' : '14px', fontWeight: 'bold',
+              backgroundColor: 'rgba(40, 35, 28, 0.9)', color: '#a09078',
+              border: '1px solid rgba(120, 100, 70, 0.4)',
+              borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
             }}
-          />
-        )}
-
-        <button
-          onClick={() => setScene('MAP')}
-          style={{
-            marginTop: isMobile ? '0' : '20px',
-            padding: isMobile ? '14px 30px' : '18px 55px',
-            fontSize: isMobile ? '16px' : '20px', fontWeight: 'bold',
-            backgroundColor: 'rgba(40, 35, 28, 0.9)', color: '#a09078',
-            border: '1px solid rgba(120, 100, 70, 0.4)',
-            borderRadius: '6px', cursor: 'pointer',
-            transition: 'all 0.2s', zIndex: 10,
-            width: isMobile ? '100%' : undefined,
-          }}
-          onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(55, 48, 35, 0.95)'; e.currentTarget.style.color = '#c8b898'; e.currentTarget.style.boxShadow = '0 0 12px rgba(120, 100, 70, 0.2)'; }}
-          onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(40, 35, 28, 0.9)'; e.currentTarget.style.color = '#a09078'; e.currentTarget.style.boxShadow = 'none'; }}
-        >
-          은신처 떠나기
-        </button>
+            onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(55, 48, 35, 0.95)'; e.currentTarget.style.color = '#c8b898'; }}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(40, 35, 28, 0.9)'; e.currentTarget.style.color = '#a09078'; }}
+          >
+            떠나기
+          </button>
+        </div>
       </div>
+
+      {/* 카드 프리뷰 오버레이 */}
+      {previewCard && !previewCard.isSoldOut && (
+        <div
+          onClick={() => setPreviewCardIdx(null)}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10000,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: isShortScreen ? '10px' : '20px',
+            animation: 'fadeIn 0.15s ease-out',
+          }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{ filter: 'drop-shadow(0 0 20px rgba(212, 168, 84, 0.3))' }}>
+            <CardFrame card={previewCard} width={previewCardW} />
+          </div>
+          <div onClick={e => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isShortScreen ? '6px' : '10px' }}>
+            <div style={{ fontSize: isShortScreen ? '14px' : '18px', color: gold >= previewCard.price ? '#d4a854' : '#cc6666', fontWeight: 'bold' }}>
+              {previewCard.price} G
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => setPreviewCardIdx(null)}
+                style={{
+                  padding: isShortScreen ? '8px 16px' : '10px 24px', fontSize: isShortScreen ? '13px' : '16px',
+                  backgroundColor: '#444', color: '#fff', border: '1px solid #666',
+                  borderRadius: '8px', cursor: 'pointer',
+                }}
+              >
+                닫기
+              </button>
+              <button
+                onClick={() => handleBuyCard(previewCardIdx!)}
+                disabled={gold < previewCard.price}
+                style={{
+                  padding: isShortScreen ? '8px 18px' : '10px 30px', fontSize: isShortScreen ? '14px' : '18px', fontWeight: 'bold',
+                  backgroundColor: gold >= previewCard.price ? '#8b6914' : '#555',
+                  color: gold >= previewCard.price ? '#fff' : '#888',
+                  border: `2px solid ${gold >= previewCard.price ? '#d4a854' : '#444'}`,
+                  borderRadius: '8px',
+                  cursor: gold >= previewCard.price ? 'pointer' : 'not-allowed',
+                  transition: 'background-color 0.2s',
+                }}
+                onMouseEnter={e => { if (gold >= previewCard.price) e.currentTarget.style.backgroundColor = '#a67c1a'; }}
+                onMouseLeave={e => { if (gold >= previewCard.price) e.currentTarget.style.backgroundColor = '#8b6914'; }}
+              >
+                구입
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 유물 프리뷰 오버레이 */}
+      {previewRelic && !previewRelic.isSoldOut && (
+        <div
+          onClick={() => setPreviewRelicIdx(null)}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10000,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: isShortScreen ? '12px' : '20px',
+            animation: 'fadeIn 0.15s ease-out',
+          }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isShortScreen ? '10px' : '16px',
+          }}>
+            {/* 유물 확대 이미지 */}
+            <div style={{
+              width: isShortScreen ? 80 : 120, height: isShortScreen ? 80 : 120,
+              backgroundColor: 'rgba(30, 25, 18, 0.95)',
+              border: '3px solid rgba(180, 140, 50, 0.6)',
+              borderRadius: '50%',
+              display: 'flex', justifyContent: 'center', alignItems: 'center',
+              overflow: 'hidden',
+              filter: 'drop-shadow(0 0 20px rgba(212, 168, 84, 0.3))',
+            }}>
+              {previewRelic.image
+                ? <img src={previewRelic.image} alt={previewRelic.name} style={{ width: '75%', height: '75%', objectFit: 'contain' }} />
+                : <span style={{ fontSize: isShortScreen ? 40 : 60 }}>{previewRelic.icon}</span>
+              }
+            </div>
+
+            {/* 유물 정보 */}
+            <div style={{ textAlign: 'center', maxWidth: '300px' }}>
+              <h3 style={{ margin: '0 0 6px 0', fontSize: isShortScreen ? '16px' : '22px', color: '#e0d4bc' }}>{previewRelic.name}</h3>
+              <p style={{ margin: '0 0 4px 0', fontSize: isShortScreen ? '10px' : '12px', color: '#8a7e6a' }}>[{previewRelic.tier}]</p>
+              <p style={{ margin: '0 0 12px 0', fontSize: isShortScreen ? '12px' : '14px', color: '#b8a888', lineHeight: '1.4' }}>{previewRelic.description}</p>
+              <div style={{ fontSize: isShortScreen ? '14px' : '18px', color: gold >= previewRelic.price ? '#d4a854' : '#cc6666', fontWeight: 'bold', marginBottom: '12px' }}>
+                {previewRelic.price} G
+              </div>
+            </div>
+
+            {/* 버튼 */}
+            <div style={{ display: 'flex', gap: '10px', marginTop: isShortScreen ? '14px' : '28px' }}>
+              <button
+                onClick={() => setPreviewRelicIdx(null)}
+                style={{
+                  padding: isShortScreen ? '8px 16px' : '10px 24px', fontSize: isShortScreen ? '13px' : '16px',
+                  backgroundColor: '#444', color: '#fff', border: '1px solid #666',
+                  borderRadius: '8px', cursor: 'pointer',
+                }}
+              >
+                닫기
+              </button>
+              <button
+                onClick={() => handleBuyRelic(previewRelicIdx!)}
+                disabled={gold < previewRelic.price}
+                style={{
+                  padding: isShortScreen ? '8px 18px' : '10px 30px', fontSize: isShortScreen ? '14px' : '18px', fontWeight: 'bold',
+                  backgroundColor: gold >= previewRelic.price ? '#8b6914' : '#555',
+                  color: gold >= previewRelic.price ? '#fff' : '#888',
+                  border: `2px solid ${gold >= previewRelic.price ? '#d4a854' : '#444'}`,
+                  borderRadius: '8px',
+                  cursor: gold >= previewRelic.price ? 'pointer' : 'not-allowed',
+                  transition: 'background-color 0.2s',
+                }}
+                onMouseEnter={e => { if (gold >= previewRelic.price) e.currentTarget.style.backgroundColor = '#a67c1a'; }}
+                onMouseLeave={e => { if (gold >= previewRelic.price) e.currentTarget.style.backgroundColor = '#8b6914'; }}
+              >
+                구입
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isRemoveModalOpen && (
         <RemoveCardModal

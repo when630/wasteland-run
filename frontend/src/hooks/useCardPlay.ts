@@ -186,7 +186,7 @@ export const useCardPlay = () => {
         // AoE: 생존 적 전체 좌표 전달
         const positions = livingEnemies.map((_, idx) => {
           const originalIdx = enemies.indexOf(livingEnemies[idx]);
-          return enemyPos(originalIdx >= 0 ? originalIdx : idx);
+          return enemyPos(originalIdx >= 0 ? originalIdx : idx, enemies.length);
         });
         dispatchVfx({
           cardBaseId: card.baseId,
@@ -197,7 +197,7 @@ export const useCardPlay = () => {
       } else if (vfxProfile.multiHitCount > 1) {
         // 멀티히트 (chainsaw): 150ms 간격 분산 디스패치
         const targetEnemyIndex = targetEnemy ? enemies.findIndex(e => e.id === targetEnemy.id) : 0;
-        const pos = enemyPos(targetEnemyIndex >= 0 ? targetEnemyIndex : 0);
+        const pos = enemyPos(targetEnemyIndex >= 0 ? targetEnemyIndex : 0, enemies.length);
         for (let hit = 0; hit < vfxProfile.multiHitCount; hit++) {
           setTimeout(() => {
             dispatchVfx({
@@ -212,7 +212,7 @@ export const useCardPlay = () => {
       } else {
         // 단일 타겟 — ammo 소비가 2 이상이면 발사 횟수만큼 시차 VFX
         const targetEnemyIndex = targetEnemy ? enemies.findIndex(e => e.id === targetEnemy.id) : 0;
-        const pos = enemyPos(targetEnemyIndex >= 0 ? targetEnemyIndex : 0);
+        const pos = enemyPos(targetEnemyIndex >= 0 ? targetEnemyIndex : 0, enemies.length);
         const shotCount = (vfxProfile.category === 'ELECTROMAGNETIC' && card.costAmmo > 1) ? card.costAmmo : 1;
         for (let shot = 0; shot < shotCount; shot++) {
           setTimeout(() => {

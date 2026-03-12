@@ -76,7 +76,7 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
         newEnemies.forEach((e, idx) => {
           const orig = state.enemies[idx];
           if (orig && orig.currentHp > 0 && e.currentHp <= 0) {
-            const pos = enemyPos(idx);
+            const pos = enemyPos(idx, state.enemies.length);
             dispatchVfx({
               cardBaseId: '__enemy_death__',
               sourceX: pos.x,
@@ -149,7 +149,7 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
 
         // 상태이상 틱 VFX 디스패치
         try {
-          const pos = enemyPos(enemyIndex);
+          const pos = enemyPos(enemyIndex, state.enemies.length);
           const vfxKey = statusResult.vfx?.type === 'POISON_TICK' ? '__enemy_poison_tick__' : '__enemy_burn_tick__';
           dispatchVfx({
             cardBaseId: vfxKey,
@@ -163,7 +163,7 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
       if (statusResult.isDead) {
         // 상태이상 사망 VFX
         try {
-          const pos = enemyPos(enemyIndex);
+          const pos = enemyPos(enemyIndex, state.enemies.length);
           dispatchVfx({
             cardBaseId: '__enemy_death__',
             sourceX: pos.x,
@@ -222,7 +222,7 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
           // 적 공격 VFX 디스패치 (다단히트 시 히트 수만큼 분산)
           try {
             const atkVfxType = isSpecial ? 'RANGED' : 'MELEE';
-            const srcPos = enemyPos(enemyIndex);
+            const srcPos = enemyPos(enemyIndex, state.enemies.length);
             for (let h = 0; h < hitCount; h++) {
               if (h === 0) {
                 dispatchVfx({
@@ -256,7 +256,7 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
 
             // 반사 데미지 VFX 디스패치
             try {
-              const ePos = enemyPos(enemyIndex);
+              const ePos = enemyPos(enemyIndex, state.enemies.length);
               dispatchVfx({
                 cardBaseId: '__enemy_reflect__',
                 sourceX: PLAYER_POS.x,
@@ -315,7 +315,7 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
 
           // 적 버프 VFX 디스패치
           try {
-            const buffPos = enemyPos(enemyIndex);
+            const buffPos = enemyPos(enemyIndex, state.enemies.length);
             dispatchVfx({
               cardBaseId: '__enemy_buff__',
               sourceX: buffPos.x,

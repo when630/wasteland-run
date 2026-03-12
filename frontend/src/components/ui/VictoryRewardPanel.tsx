@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { CardRewardModal } from './CardRewardModal';
 import { RelicRewardModal } from './RelicRewardModal';
 import { useRunStore } from '../../store/useRunStore';
+import { useRngStore } from '../../store/useRngStore';
 import { useResponsive } from '../../hooks/useResponsive';
-import { iconLoot, iconGoldReward, iconCardCount, iconRelicReward, iconBossClear } from '../../assets/images/GUI';
+import { iconGoldReward, iconCardCount, iconRelicReward, iconBossClear } from '../../assets/images/GUI';
+import type { Card } from '../../types/gameTypes';
+import { ALL_CARDS } from '../../assets/data/cards';
 
 interface VictoryRewardPanelProps {
   onContinue: () => void;
@@ -12,7 +15,8 @@ interface VictoryRewardPanelProps {
 
 export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContinue, currentScene }) => {
   const { addGold } = useRunStore();
-  const { isMobile } = useResponsive();
+  const { isMobile, height } = useResponsive();
+  const isShortScreen = height < 500;
 
   const [goldClaimed, setGoldClaimed] = useState(false);
   const [cardClaimed, setCardClaimed] = useState(false);
@@ -20,30 +24,23 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [isRelicModalOpen, setIsRelicModalOpen] = useState(false);
 
-  const rewardBtnStyle: React.CSSProperties = {
-    padding: '14px 24px', fontSize: '16px', fontWeight: 'bold', width: '100%',
-    backgroundColor: 'rgba(50, 38, 15, 0.9)', color: '#d4a854',
-    border: '1px solid rgba(180, 140, 50, 0.4)',
-    borderLeft: '3px solid #b8892e',
-    borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
-    display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px',
-    textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
-  };
+  // 보상 카드를 한 번만 생성 (모달 재오픈해도 유지)
+  const [rewardCards] = useState<Card[]>(() => {
+    const chapter = useRunStore.getState().currentChapter;
+    const dropPool = ALL_CARDS.filter(c => c.tier !== 'BASIC' && (c.chapter ?? 1) <= chapter);
+    const lootRng = useRngStore.getState().lootRng;
+    const shuffled = lootRng.shuffle(dropPool) as Card[];
+    return shuffled.slice(0, 3);
+  });
 
-  const rewardBtnHover = (e: React.MouseEvent<HTMLButtonElement>, enter: boolean) => {
-    if (enter) {
-      e.currentTarget.style.backgroundColor = 'rgba(70, 52, 20, 0.95)';
-      e.currentTarget.style.boxShadow = '0 0 15px rgba(180, 140, 50, 0.2)';
-    } else {
-      e.currentTarget.style.backgroundColor = 'rgba(50, 38, 15, 0.9)';
-      e.currentTarget.style.boxShadow = 'none';
-    }
-  };
+  const goldAmount = currentScene === 'BOSS' ? 100 : currentScene === 'ELITE' ? 50 : 20;
+  const showRelic = currentScene === 'ELITE' || currentScene === 'BOSS';
+  const iconSize = isShortScreen ? 44 : isMobile ? 52 : 64;
 
   return (
     <div style={{
       position: 'fixed',
-      top: 0, left: 0, width: '100vw', height: '100vh',
+      top: 0, left: 0, right: 0, bottom: 0,
       backgroundColor: 'rgba(5, 5, 3, 0.9)',
       zIndex: 200,
       display: 'flex', flexDirection: 'column',
@@ -51,86 +48,92 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
       color: '#e8dcc8',
       animation: 'fadeIn 0.5s ease-out',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px', animation: 'slideUp 0.4s ease-out' }}>
-        <img src={iconBossClear} alt="" style={{ width: isMobile ? 36 : 48, height: isMobile ? 36 : 48, objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(100, 255, 100, 0.5))' }} />
+      {/* 타이틀 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: isShortScreen ? '4px' : '8px', animation: 'slideUp 0.4s ease-out' }}>
+        <img src={iconBossClear} alt="" style={{ width: isShortScreen ? 28 : isMobile ? 36 : 48, height: isShortScreen ? 28 : isMobile ? 36 : 48, objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(100, 255, 100, 0.5))' }} />
         <h1 style={{
-          fontSize: isMobile ? '32px' : '44px', color: '#66cc88', margin: 0,
+          fontSize: isShortScreen ? '24px' : isMobile ? '32px' : '44px', color: '#66cc88', margin: 0,
           textShadow: '2px 3px 6px rgba(0,0,0,0.8), 0 0 20px rgba(100, 200, 100, 0.3)',
         }}>
           전투 승리!
         </h1>
       </div>
-      <p style={{ fontSize: isMobile ? '14px' : '16px', color: '#8a9a8a', marginBottom: isMobile ? '20px' : '30px' }}>
-        보상을 챙기거나 스킵하고 넘어갈 수 있습니다.
-      </p>
 
+      {/* 보상 아이콘 가로 배치 */}
       <div style={{
-        margin: '0 0 25px 0', padding: isMobile ? '18px' : '24px',
-        width: isMobile ? '90vw' : '380px', maxWidth: '380px',
-        backgroundColor: 'rgba(20, 16, 10, 0.9)',
-        borderRadius: '8px', border: '1px solid rgba(160, 120, 50, 0.3)',
-        boxShadow: '0 0 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03)',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        gap: isShortScreen ? '16px' : '24px',
+        margin: isShortScreen ? '16px 0' : '28px 0',
         animation: 'slideUp 0.5s ease-out',
       }}>
-        <h3 style={{
-          margin: '0 0 5px 0', color: '#d4a854', fontSize: '22px',
-          display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center',
-          textShadow: '1px 1px 3px rgba(0,0,0,0.6)',
-        }}>
-          <img src={iconLoot} alt="" style={{ width: 26, height: 26, objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(212,168,84,0.5))' }} />
-          전리품 발견
-        </h3>
-
-        {!goldClaimed && (
-          <button
-            onClick={() => {
-              const goldAmount = currentScene === 'BOSS' ? 100 : currentScene === 'ELITE' ? 50 : 20;
+        {/* 골드 */}
+        <button
+          onClick={() => {
+            if (!goldClaimed) {
               addGold(goldAmount);
               setGoldClaimed(true);
+            }
+          }}
+          disabled={goldClaimed}
+          style={{
+            background: 'none', border: 'none',
+            cursor: goldClaimed ? 'default' : 'pointer',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+            opacity: goldClaimed ? 0.35 : 1,
+            transition: 'transform 0.2s',
+          }}
+          onMouseEnter={e => { if (!goldClaimed) e.currentTarget.style.transform = 'scale(1.15)'; }}
+          onMouseLeave={e => { if (!goldClaimed) e.currentTarget.style.transform = 'scale(1)'; }}
+        >
+          <img src={iconGoldReward} alt="골드" style={{ width: iconSize, height: iconSize, objectFit: 'contain', filter: goldClaimed ? 'grayscale(1)' : 'drop-shadow(0 0 8px rgba(212,168,84,0.5))' }} />
+          <span style={{ fontSize: isShortScreen ? '12px' : '14px', fontWeight: 'bold', color: goldClaimed ? '#666' : '#d4a854' }}>
+            {goldAmount}G
+          </span>
+        </button>
+
+        {/* 카드 */}
+        <button
+          onClick={() => { if (!cardClaimed) setIsCardModalOpen(true); }}
+          disabled={cardClaimed}
+          style={{
+            background: 'none', border: 'none',
+            cursor: cardClaimed ? 'default' : 'pointer',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+            opacity: cardClaimed ? 0.35 : 1,
+            transition: 'transform 0.2s',
+          }}
+          onMouseEnter={e => { if (!cardClaimed) e.currentTarget.style.transform = 'scale(1.15)'; }}
+          onMouseLeave={e => { if (!cardClaimed) e.currentTarget.style.transform = 'scale(1)'; }}
+        >
+          <img src={iconCardCount} alt="카드" style={{ width: iconSize, height: iconSize, objectFit: 'contain', filter: cardClaimed ? 'grayscale(1)' : 'drop-shadow(0 0 8px rgba(100,150,220,0.5))' }} />
+        </button>
+
+        {/* 유물 (엘리트/보스만) */}
+        {showRelic && (
+          <button
+            onClick={() => { if (!relicClaimed) setIsRelicModalOpen(true); }}
+            disabled={relicClaimed}
+            style={{
+              background: 'none', border: 'none',
+              cursor: relicClaimed ? 'default' : 'pointer',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+              opacity: relicClaimed ? 0.35 : 1,
+              transition: 'transform 0.2s',
             }}
-            style={rewardBtnStyle}
-            onMouseEnter={(e) => rewardBtnHover(e, true)}
-            onMouseLeave={(e) => rewardBtnHover(e, false)}
+            onMouseEnter={e => { if (!relicClaimed) e.currentTarget.style.transform = 'scale(1.15)'; }}
+            onMouseLeave={e => { if (!relicClaimed) e.currentTarget.style.transform = 'scale(1)'; }}
           >
-            <img src={iconGoldReward} alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} />
-            {currentScene === 'BOSS' ? 100 : currentScene === 'ELITE' ? 50 : 20} 골드 획득
+            <img src={iconRelicReward} alt="유물" style={{ width: iconSize, height: iconSize, objectFit: 'contain', filter: relicClaimed ? 'grayscale(1)' : 'drop-shadow(0 0 8px rgba(200,100,100,0.5))' }} />
           </button>
-        )}
-
-        {!cardClaimed && (
-          <button
-            onClick={() => setIsCardModalOpen(true)}
-            style={{ ...rewardBtnStyle, color: '#88aacc', borderLeftColor: '#4a7aaa', borderColor: 'rgba(80, 130, 200, 0.3)' }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(30, 40, 60, 0.95)'; e.currentTarget.style.boxShadow = '0 0 15px rgba(80, 130, 200, 0.2)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(50, 38, 15, 0.9)'; e.currentTarget.style.boxShadow = 'none'; }}
-          >
-            <img src={iconCardCount} alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} />
-            새 카드 1장 선택 (3택 1)
-          </button>
-        )}
-
-        {(currentScene === 'ELITE' || currentScene === 'BOSS') && !relicClaimed && (
-          <button
-            onClick={() => setIsRelicModalOpen(true)}
-            style={{ ...rewardBtnStyle, color: '#cc8888', borderLeftColor: '#aa5555', borderColor: 'rgba(200, 80, 80, 0.3)' }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(60, 25, 25, 0.95)'; e.currentTarget.style.boxShadow = '0 0 15px rgba(200, 80, 80, 0.2)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(50, 38, 15, 0.9)'; e.currentTarget.style.boxShadow = 'none'; }}
-          >
-            <img src={iconRelicReward} alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} />
-            {currentScene === 'BOSS' ? '보스 유물' : '일반 유물'} 획득
-          </button>
-        )}
-
-        {goldClaimed && cardClaimed && (!(currentScene === 'ELITE' || currentScene === 'BOSS') || relicClaimed) && (
-          <span style={{ color: '#66aa77', marginTop: '6px', fontSize: '14px' }}>모든 보상을 획득했습니다.</span>
         )}
       </div>
 
+      {/* 계속하기 */}
       <button
         onClick={onContinue}
         style={{
-          padding: '14px 40px', fontSize: '18px', fontWeight: 'bold',
+          padding: isShortScreen ? '8px 24px' : '14px 40px',
+          fontSize: isShortScreen ? '14px' : '18px', fontWeight: 'bold',
           backgroundColor: 'rgba(40, 35, 28, 0.9)', color: '#a09078',
           border: '1px solid rgba(120, 100, 70, 0.4)',
           borderRadius: '6px', cursor: 'pointer',
@@ -144,6 +147,7 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
 
       {isCardModalOpen && (
         <CardRewardModal
+          rewardCards={rewardCards}
           onClose={() => setIsCardModalOpen(false)}
           onCardSelected={() => setCardClaimed(true)}
         />

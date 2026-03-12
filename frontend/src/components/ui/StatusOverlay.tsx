@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useBattleStore } from '../../store/useBattleStore';
 import { useRunStore } from '../../store/useRunStore';
 import type { Enemy } from '../../types/enemyTypes';
+import { enemyPos } from '../pixi/vfx/battleLayout';
 import {
   iconPhysicalDefense, iconSpecialDefense,
   iconIntentPhysical, iconIntentSpecial,
@@ -286,20 +287,21 @@ const IntentDisplay: React.FC<{ enemy: Enemy; scale: number; masked: boolean }> 
 };
 
 // 적 1마리에 대한 오버레이 전체
-const EnemyOverlay: React.FC<{ enemy: Enemy; index: number; scale: number; ox: number; oy: number; masked: boolean }> = ({
-  enemy, index, scale, ox, oy, masked,
+const EnemyOverlay: React.FC<{ enemy: Enemy; index: number; total: number; scale: number; ox: number; oy: number; masked: boolean }> = ({
+  enemy, index, total, scale, ox, oy, masked,
 }) => {
   if (enemy.currentHp <= 0) return null;
 
   const isBoss = enemy.tier === 'BOSS';
-  const cx = 1920 * (0.6 + index * 0.18) * scale + ox;
-  const cy = 1080 * 0.65 * scale + oy;
+  const ePos = enemyPos(index, total);
+  const cx = ePos.x * scale + ox;
+  const cy = ePos.y * scale + oy;
 
   // Y 오프셋 (Pixi 월드 좌표 기준 → 화면 픽셀로 스케일링)
   const intentY = (isBoss ? -290 : -170) * scale;
   const hpBarY = (isBoss ? 260 : 140) * scale;
-  const defenseY = hpBarY + 14 * scale;
-  const statusY = defenseY + 28 * scale;
+  const hpBarRight = (isBoss ? 120 : 80) * scale; // HP바 우측 끝 (width/2)
+  const statusY = hpBarY + (isBoss ? 24 : 22) * scale; // HP바 바로 아래
 
   const activeStatuses = enemy.statuses
     ? Object.entries(enemy.statuses).filter(([, val]) => val > 0)
@@ -316,18 +318,20 @@ const EnemyOverlay: React.FC<{ enemy: Enemy; index: number; scale: number; ox: n
         <IntentDisplay enemy={enemy} scale={scale} masked={masked} />
       </div>
 
-      {/* 방어력 */}
+      {/* 방어력 — HP바 오른쪽 옆 */}
       {(enemy.shield > 0 || enemy.resist > 0) && (
         <div style={{
           position: 'absolute',
-          left: cx, top: cy + defenseY,
-          transform: 'translate(-50%, 0)',
+          left: cx + hpBarRight + 8 * scale,
+          top: cy + hpBarY,
+          transform: 'translateY(-50%)',
+          display: 'flex', alignItems: 'center',
         }}>
           <DefenseBadge shield={enemy.shield} resist={enemy.resist} scale={scale} />
         </div>
       )}
 
-      {/* 상태이상 */}
+      {/* 상태이상 — HP바 바로 아래 */}
       {activeStatuses.length > 0 && (
         <div style={{
           position: 'absolute',
@@ -351,10 +355,11 @@ const PlayerOverlay: React.FC<{
   const { playerStatus, playerDebuffs, powerDefenseAmmo50, powerPhysicalScalingActive, powerPhysicalScalingBonus } = useBattleStore();
 
   const cx = 1920 * 0.25 * scale + ox;
-  const cy = 1080 * 0.65 * scale + oy;
+  const cy = 1080 * 0.55 * scale + oy;
 
-  const defenseY = 190 * scale;
-  const statusY = 220 * scale;
+  const hpBarY = 155 * scale;       // HP바 Y (BattleStage와 동기)
+  const hpBarRight = 80 * scale;    // HP바 우측 끝 (width 160의 절반)
+  const statusY = (155 + 28) * scale; // HP바 아래 + 여백
 
   // 버프/디버프 엔트리 수집
   interface Entry { value: string | number; icon?: string; label?: string; color: string; desc: string }
@@ -383,12 +388,14 @@ const PlayerOverlay: React.FC<{
 
   return (
     <>
-      {/* 방어력 */}
+      {/* 방어력 — HP바 오른쪽 옆 */}
       {(playerStatus.shield > 0 || playerStatus.resist > 0) && (
         <div style={{
           position: 'absolute',
-          left: cx, top: cy + defenseY,
-          transform: 'translate(-50%, 0)',
+          left: cx + hpBarRight + 8 * scale,
+          top: cy + hpBarY,
+          transform: 'translateY(-50%)',
+          display: 'flex', alignItems: 'center',
         }}>
           <DefenseBadge shield={playerStatus.shield} resist={playerStatus.resist} scale={scale} />
         </div>
@@ -440,6 +447,7 @@ export const StatusOverlay: React.FC = () => {
           key={enemy.id}
           enemy={enemy}
           index={idx}
+          total={enemies.length}
           scale={scale}
           ox={ox}
           oy={oy}

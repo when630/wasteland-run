@@ -12,14 +12,17 @@ export const useResponsive = (): ResponsiveInfo => {
   const [info, setInfo] = useState<ResponsiveInfo>(() => {
     const w = typeof window !== 'undefined' ? window.innerWidth : 1920;
     const h = typeof window !== 'undefined' ? window.innerHeight : 1080;
-    return { isMobile: w < 768, isTablet: w >= 768 && w < 1024, isDesktop: w >= 1024, width: w, height: h };
+    // 높이 500px 미만이면 가로 모드 모바일로 판정
+    const isMobile = w < 768 || h < 500;
+    return { isMobile, isTablet: !isMobile && w < 1024, isDesktop: w >= 1024 && h >= 500, width: w, height: h };
   });
 
   useEffect(() => {
     const handleResize = () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
-      setInfo({ isMobile: w < 768, isTablet: w >= 768 && w < 1024, isDesktop: w >= 1024, width: w, height: h });
+      const isMobile = w < 768 || h < 500;
+      setInfo({ isMobile, isTablet: !isMobile && w < 1024, isDesktop: w >= 1024 && h >= 500, width: w, height: h });
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);

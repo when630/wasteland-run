@@ -6,6 +6,7 @@ import { useCardPlay } from '../../hooks/useCardPlay';
 import { useResponsive } from '../../hooks/useResponsive';
 import { TargetingLine } from './TargetingLine';
 import { CardFrame } from './CardFrame';
+import { enemyPos } from '../pixi/vfx/battleLayout';
 
 const DRAG_MIN_DIST = 10;
 const PLAY_ZONE_RATIO = 0.78;
@@ -24,8 +25,9 @@ function findNearestEnemyId(sx: number, sy: number): string | null {
 
   es.forEach((enemy, i) => {
     if (enemy.currentHp <= 0) return;
-    const ex = 1920 * (0.6 + i * 0.18) * scale + cx;
-    const ey = 1080 * 0.65 * scale + cy;
+    const ePos = enemyPos(i, es.length);
+    const ex = ePos.x * scale + cx;
+    const ey = ePos.y * scale + cy;
     const d = Math.hypot(sx - ex, sy - ey);
     if (d < bestDist) { bestDist = d; bestId = enemy.id; }
   });
@@ -46,7 +48,7 @@ export const Hand: React.FC = () => {
   const { targetingCardId, playerStatus } = useBattleStore();
   const { playCard } = useCardPlay();
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
-  const { isMobile, isTablet } = useResponsive();
+  const { isMobile, isTablet, width } = useResponsive();
 
   // === Drag-to-play ===
   const [dragState, setDragState] = useState<{
@@ -150,12 +152,12 @@ export const Hand: React.FC = () => {
   }, [hand, dragState]);
 
   // 레이아웃 계산
-  const cardWidth = isMobile ? 78 : isTablet ? 95 : 110;
+  const cardWidth = isMobile ? 78 : isTablet ? 110 : width >= 1440 ? 160 : 140;
   const cardHeight = cardWidth * (320 / 220);
-  const baseOverlap = isMobile ? -28 : isTablet ? -35 : -42;
-  const overlapExtra = hand.length > 6 ? (hand.length - 6) * (isMobile ? -4 : -5) : 0;
+  const baseOverlap = isMobile ? -28 : isTablet ? -40 : width >= 1440 ? -55 : -50;
+  const overlapExtra = hand.length > 6 ? (hand.length - 6) * (isMobile ? -4 : -6) : 0;
   const cardOverlap = baseOverlap + overlapExtra;
-  const containerHeight = isMobile ? 160 : isTablet ? 200 : 240;
+  const containerHeight = isMobile ? 160 : isTablet ? 210 : width >= 1440 ? 280 : 260;
 
   return (
     <div style={{

@@ -9,7 +9,8 @@ import { iconEvent } from '../assets/images/GUI';
 import { useResponsive } from '../hooks/useResponsive';
 
 export const StartingEventView: React.FC = () => {
-  const { isMobile } = useResponsive();
+  const { isMobile, height } = useResponsive();
+  const isShortScreen = height < 500;
   const { setScene } = useRunStore();
   const [currentEvent, setCurrentEvent] = useState<RandomEvent | null>(null);
   const [resultText, setResultText] = useState<string | null>(null);
@@ -35,7 +36,7 @@ export const StartingEventView: React.FC = () => {
 
   return (
     <div style={{
-      width: '100vw', height: '100vh',
+      width: '100vw', minHeight: '100vh',
       backgroundImage: `url(${eventBg})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
@@ -43,9 +44,10 @@ export const StartingEventView: React.FC = () => {
       backgroundColor: 'rgba(17, 14, 10, 0.75)',
       color: '#e8dcc8',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      overflowY: 'auto', padding: isMobile ? '24px 0' : '0',
     }}>
       <h1 style={{
-        fontSize: isMobile ? '24px' : '44px', color: '#d4a854', marginBottom: '8px',
+        fontSize: isShortScreen ? '20px' : isMobile ? '24px' : '44px', color: '#d4a854', marginBottom: isShortScreen ? '4px' : '8px',
         textAlign: 'center', padding: '0 16px',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
         textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
@@ -57,15 +59,15 @@ export const StartingEventView: React.FC = () => {
 
       <div style={{
         backgroundColor: 'rgba(20, 16, 12, 0.85)',
-        padding: isMobile ? '20px' : '35px',
+        padding: isShortScreen ? '12px 16px' : isMobile ? '20px' : '35px',
         borderRadius: '8px',
         maxWidth: '750px', width: isMobile ? '90vw' : undefined,
-        textAlign: 'center', marginBottom: isMobile ? '20px' : '35px',
+        textAlign: 'center', marginBottom: isShortScreen ? '10px' : isMobile ? '20px' : '35px',
         border: '1px solid rgba(160, 120, 60, 0.3)',
         boxShadow: '0 0 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03)',
         animation: 'slideUp 0.5s ease-out',
       }}>
-        <p style={{ fontSize: isMobile ? '14px' : '18px', color: '#ccc0a8', lineHeight: '1.7', marginBottom: '16px' }}>
+        <p style={{ fontSize: isShortScreen ? '13px' : isMobile ? '14px' : '18px', color: '#ccc0a8', lineHeight: isShortScreen ? '1.4' : '1.7', marginBottom: isShortScreen ? '8px' : '16px' }}>
           {currentEvent.description}
         </p>
         <p style={{ fontSize: '14px', color: '#8a7e6a', fontStyle: 'italic' }}>
@@ -88,7 +90,7 @@ export const StartingEventView: React.FC = () => {
                 disabled={isDisabled}
                 onClick={() => handleOptionSelect(option)}
                 style={{
-                  padding: '18px 20px',
+                  padding: isShortScreen ? '10px 16px' : '18px 20px',
                   backgroundColor: isDisabled ? 'rgba(30, 25, 20, 0.6)' : 'rgba(40, 32, 22, 0.85)',
                   border: `1px solid ${isDisabled ? 'rgba(80, 60, 40, 0.3)' : 'rgba(160, 120, 60, 0.4)'}`,
                   borderLeft: `3px solid ${isDisabled ? 'rgba(80, 60, 40, 0.3)' : '#b8892e'}`,

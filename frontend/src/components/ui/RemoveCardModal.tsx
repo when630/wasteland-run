@@ -22,89 +22,142 @@ export const RemoveCardModal: React.FC<RemoveCardModalProps> = ({
   const { isMobile } = useResponsive();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
+  const selectedCard = masterDeck.find(c => c.id === selectedCardId) ?? null;
+
   const handleSelect = (card: Card) => {
     setSelectedCardId(card.id);
   };
 
-  const handleConfirm = () => {
+  const handleConfirmRemove = () => {
     if (!selectedCardId) return;
     const newMasterDeck = masterDeck.filter(card => card.id !== selectedCardId);
     setMasterDeck(newMasterDeck);
     onRemoveComplete();
   };
 
-  const cardW = isMobile ? 120 : 160;
+  const { height } = useResponsive();
+  const isShortScreen = height < 500;
+  const cardW = isShortScreen ? 90 : isMobile ? 120 : 200;
+  const previewW = isShortScreen ? 140 : isMobile ? 200 : 260;
 
   return (
     <div style={{
-      position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
       backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 10000,
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: isShortScreen ? 'flex-start' : 'center',
+      overflowY: 'auto', padding: isShortScreen ? '8px 10px' : isMobile ? '20px 0' : '0',
     }}>
-      <h2 style={{ fontSize: isMobile ? '24px' : '36px', color: '#ffaaaa', marginBottom: isMobile ? '12px' : '20px', display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center', padding: '0 16px' }}>
-        <img src={iconCardRemove} alt="" style={{ width: isMobile ? 28 : 36, height: isMobile ? 28 : 36, objectFit: 'contain' }} /> {title}
+      <h2 style={{ fontSize: isShortScreen ? '16px' : isMobile ? '24px' : '36px', color: '#ffaaaa', marginBottom: isShortScreen ? '4px' : isMobile ? '12px' : '20px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', padding: '0 16px', margin: isShortScreen ? '4px 0' : undefined }}>
+        <img src={iconCardRemove} alt="" style={{ width: isShortScreen ? 20 : isMobile ? 28 : 36, height: isShortScreen ? 20 : isMobile ? 28 : 36, objectFit: 'contain' }} /> {title}
       </h2>
-      <p style={{ fontSize: isMobile ? '14px' : '18px', color: '#ccc', marginBottom: isMobile ? '20px' : '40px', padding: '0 16px', textAlign: 'center' }}>
-        {description}
-      </p>
+      {!isShortScreen && (
+        <p style={{ fontSize: isMobile ? '14px' : '18px', color: '#ccc', marginBottom: isMobile ? '20px' : '40px', padding: '0 16px', textAlign: 'center' }}>
+          {description}
+        </p>
+      )}
 
       <div style={{
-        display: 'flex', flexWrap: 'wrap', gap: isMobile ? '8px' : '16px', justifyContent: 'center',
-        padding: isMobile ? '12px' : '20px', maxWidth: isMobile ? '95%' : '80%', maxHeight: '50vh', overflowY: 'auto',
-        backgroundColor: 'rgba(30, 20, 20, 0.8)', borderRadius: '12px', border: '1px solid #555',
+        display: 'grid',
+        gridTemplateColumns: `repeat(6, ${cardW}px)`,
+        gap: isShortScreen ? '6px' : isMobile ? '8px' : '14px',
+        justifyContent: 'center',
+        padding: isShortScreen ? '8px 12px' : isMobile ? '12px 16px' : '20px 30px',
+        width: '100%', boxSizing: 'border-box',
+        flex: isShortScreen ? 1 : undefined,
+        overflowY: 'auto',
+        minHeight: 0,
       }}>
         {masterDeck.length === 0 ? (
-          <p style={{ color: '#888' }}>덱에 카드가 없습니다.</p>
+          <p style={{ color: '#888', gridColumn: '1 / -1', textAlign: 'center' }}>덱에 카드가 없습니다.</p>
         ) : (
-          masterDeck.map((card) => {
-            const isSelected = selectedCardId === card.id;
-            return (
-              <div
-                key={card.id}
-                onClick={() => handleSelect(card)}
-                style={{
-                  cursor: 'pointer',
-                  transition: 'transform 0.1s, box-shadow 0.2s',
-                  transform: isSelected ? 'scale(1.05)' : 'scale(1)',
-                  borderRadius: `${12 * (cardW / 220)}px`,
-                  boxShadow: isSelected ? '0 0 20px rgba(255,170,170,0.6)' : 'none',
-                  opacity: selectedCardId && !isSelected ? 0.6 : 1,
-                }}
-              >
-                <CardFrame card={card} width={cardW} />
-              </div>
-            );
-          })
+          masterDeck.map((card) => (
+            <div
+              key={card.id}
+              onClick={() => handleSelect(card)}
+              style={{
+                cursor: 'pointer',
+                transition: 'transform 0.1s, box-shadow 0.2s',
+                borderRadius: `${12 * (cardW / 220)}px`,
+                justifySelf: 'center',
+              }}
+            >
+              <CardFrame card={card} width={cardW} />
+            </div>
+          ))
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: isMobile ? '12px' : '20px', marginTop: isMobile ? '24px' : '40px', flexDirection: isMobile ? 'column' : 'row', alignItems: 'center', padding: '0 16px', width: isMobile ? '80%' : undefined }}>
+      <div style={{ display: 'flex', gap: '10px', marginTop: isShortScreen ? '6px' : isMobile ? '24px' : '40px', marginBottom: isShortScreen ? '6px' : undefined, alignItems: 'center', padding: '0 16px', flexShrink: 0 }}>
         <button
           onClick={onClose}
           style={{
-            padding: isMobile ? '10px 20px' : '12px 30px', fontSize: isMobile ? '15px' : '18px',
+            padding: isShortScreen ? '6px 14px' : '12px 30px', fontSize: isShortScreen ? '13px' : '18px',
             backgroundColor: '#444', color: '#fff', border: '1px solid #666',
-            borderRadius: '8px', cursor: 'pointer', width: isMobile ? '100%' : undefined,
+            borderRadius: '8px', cursor: 'pointer',
           }}
         >
-          취소 (선택 해제)
-        </button>
-        <button
-          onClick={handleConfirm}
-          disabled={!selectedCardId}
-          style={{
-            padding: isMobile ? '10px 20px' : '12px 40px', fontSize: isMobile ? '16px' : '20px', fontWeight: 'bold',
-            width: isMobile ? '100%' : undefined,
-            backgroundColor: selectedCardId ? '#b04a4a' : '#555',
-            color: selectedCardId ? '#fff' : '#888',
-            border: `2px solid ${selectedCardId ? '#ffaaaa' : '#444'}`,
-            borderRadius: '8px', cursor: selectedCardId ? 'pointer' : 'not-allowed',
-            transition: 'background-color 0.2s',
-          }}
-        >
-          제거 실행
+          취소
         </button>
       </div>
+
+      {/* 카드 클릭 시 확대 오버레이 */}
+      {selectedCard && (
+        <div
+          onClick={() => setSelectedCardId(null)}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10001,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: isShortScreen ? '24px' : '20px',
+            animation: 'fadeIn 0.15s ease-out',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ filter: 'drop-shadow(0 0 20px rgba(255, 100, 100, 0.3))' }}
+          >
+            <CardFrame card={selectedCard} width={previewW} />
+          </div>
+
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              gap: isShortScreen ? '8px' : '12px',
+            }}
+          >
+            <div style={{ display: 'flex', gap: '10px', marginTop: isShortScreen ? '14px' : '28px' }}>
+              <button
+                onClick={() => setSelectedCardId(null)}
+                style={{
+                  padding: isShortScreen ? '8px 18px' : '12px 30px', fontSize: isShortScreen ? '14px' : '18px',
+                  backgroundColor: '#444', color: '#fff', border: '1px solid #666',
+                  borderRadius: '8px', cursor: 'pointer',
+                }}
+              >
+                닫기
+              </button>
+              <button
+                onClick={handleConfirmRemove}
+                style={{
+                  padding: isShortScreen ? '8px 20px' : '12px 40px', fontSize: isShortScreen ? '14px' : '20px', fontWeight: 'bold',
+                  backgroundColor: '#8b2020', color: '#fff',
+                  border: '2px solid #ff6666',
+                  borderRadius: '8px', cursor: 'pointer',
+                  transition: 'background-color 0.2s',
+                  textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#a52a2a'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#8b2020'; }}
+              >
+                제거
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -33,7 +33,8 @@ const calculateGrade = (isVictory: boolean, playTimeSeconds: number, enemiesKill
 
 export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
   const { playerHp, playerMaxHp, gold, relics, currentChapter, enemiesKilled, cardsPlayed, totalDamageDealt, totalDamageTaken, totalGoldEarned, runStartTime, setIsActive, saveRunData, submitRunStats } = useRunStore();
-  const { isMobile } = useResponsive();
+  const { isMobile, height } = useResponsive();
+  const isShortScreen = height < 500;
   const { currentFloor } = useMapStore();
   const { masterDeck } = useDeckStore();
 
@@ -55,29 +56,29 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    fontSize: '18px',
+    fontSize: isShortScreen ? '14px' : '18px',
     borderBottom: '1px solid #374151',
-    paddingBottom: '8px'
+    paddingBottom: isShortScreen ? '4px' : '8px'
   };
 
   return (
     <div style={{
-      position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
       backgroundColor: 'rgba(0, 0, 0, 0.95)', zIndex: 999,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      animation: 'fadeIn 1.5s ease-in-out', color: '#fff', overflowY: 'auto', padding: '40px 0'
+      animation: 'fadeIn 1.5s ease-in-out', color: '#fff', overflowY: 'auto', padding: isMobile ? '20px 10px' : '40px 0'
     }}>
       {/* 타이틀 */}
       <h1 style={{
-        fontSize: isMobile ? (isVictory ? '32px' : '40px') : (isVictory ? '56px' : '64px'),
+        fontSize: isShortScreen ? (isVictory ? '24px' : '28px') : isMobile ? (isVictory ? '32px' : '40px') : (isVictory ? '56px' : '64px'),
         color: isVictory ? '#fbbf24' : '#ef4444',
         textShadow: isVictory ? '0 0 20px rgba(251, 191, 36, 0.5)' : '0 0 20px rgba(239, 68, 68, 0.5)',
-        marginBottom: '10px', letterSpacing: isVictory ? '2px' : '5px'
+        marginBottom: isShortScreen ? '4px' : '10px', letterSpacing: isVictory ? '2px' : '5px'
       }}>
         {isVictory ? `${currentChapter}챕터 클리어!` : 'YOU DIED'}
       </h1>
 
-      <p style={{ fontSize: isMobile ? '14px' : '20px', color: '#d1d5db', textAlign: 'center', lineHeight: '1.6', maxWidth: isMobile ? '90%' : '600px', marginBottom: '20px', padding: isMobile ? '0 10px' : undefined }}>
+      <p style={{ fontSize: isShortScreen ? '12px' : isMobile ? '14px' : '20px', color: '#d1d5db', textAlign: 'center', lineHeight: '1.4', maxWidth: isMobile ? '90%' : '600px', marginBottom: isShortScreen ? '8px' : '20px', padding: isMobile ? '0 10px' : undefined }}>
         {isVictory
           ? (currentChapter >= 3
             ? '최종 지시자 오메가가 폭발과 함께 붕괴합니다.\n방주의 잔해 너머로 새벽빛이 비추고, 당신은 마침내 황무지를 관통했습니다.'
@@ -89,14 +90,14 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
 
       {/* 클리어 등급 */}
       <div style={{
-        display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px',
-        padding: '15px 40px', borderRadius: '12px',
+        display: 'flex', alignItems: 'center', gap: isShortScreen ? '8px' : '15px', marginBottom: isShortScreen ? '10px' : '25px',
+        padding: isShortScreen ? '8px 20px' : '15px 40px', borderRadius: '12px',
         background: `linear-gradient(135deg, rgba(31,41,55,0.9), rgba(17,24,39,0.9))`,
         border: `2px solid ${gradeColor}`
       }}>
         <span style={{ fontSize: '16px', color: '#9ca3af' }}>클리어 등급</span>
         <span style={{
-          fontSize: '48px', fontWeight: '900', color: gradeColor,
+          fontSize: isShortScreen ? '32px' : '48px', fontWeight: '900', color: gradeColor,
           textShadow: `0 0 15px ${gradeColor}50`
         }}>
           {grade}
@@ -104,7 +105,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
       </div>
 
       {/* 메인 컨텐츠 영역 — 2열 레이아웃 */}
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '30px', flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', gap: isShortScreen ? '10px' : '20px', marginBottom: isShortScreen ? '10px' : '30px', flexWrap: 'wrap', justifyContent: 'center' }}>
 
         {/* 좌측: 종합 리포트 */}
         <div style={{

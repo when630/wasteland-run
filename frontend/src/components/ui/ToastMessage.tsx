@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRunStore } from '../../store/useRunStore';
 import { iconToast } from '../../assets/images/GUI';
 import { useResponsive } from '../../hooks/useResponsive';
@@ -8,26 +8,39 @@ export const ToastMessage: React.FC = () => {
   const { isMobile } = useResponsive();
   const [isVisible, setIsVisible] = useState(false);
   const [displayMsg, setDisplayMsg] = useState('');
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (toastMessage) {
-      setDisplayMsg(toastMessage);
-      setIsVisible(true);
+    if (!toastMessage) return;
 
-      const timer = setTimeout(() => {
-        setIsVisible(false);
-      }, 2500);
+    // 이전 타이머 정리
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    if (clearTimerRef.current) clearTimeout(clearTimerRef.current);
 
-      const clearTimer = setTimeout(() => {
-        setToastMessage(null);
-      }, 2800);
+    setDisplayMsg(toastMessage);
+    setIsVisible(true);
 
-      return () => {
-        clearTimeout(timer);
-        clearTimeout(clearTimer);
-      };
-    }
-  }, [toastMessage, setToastMessage]);
+    hideTimerRef.current = setTimeout(() => {
+      setIsVisible(false);
+      hideTimerRef.current = null;
+    }, 3000);
+
+    clearTimerRef.current = setTimeout(() => {
+      setToastMessage(null);
+      clearTimerRef.current = null;
+    }, 3400);
+
+    // cleanup에서는 타이머를 지우지 않음 — ref로 직접 관리
+  }, [toastMessage]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 언마운트 시에만 정리
+  useEffect(() => {
+    return () => {
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+      if (clearTimerRef.current) clearTimeout(clearTimerRef.current);
+    };
+  }, []);
 
   if (!toastMessage && !isVisible) return null;
 
