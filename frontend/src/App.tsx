@@ -15,6 +15,7 @@ import { LeaderboardModal } from './components/ui/LeaderboardModal';
 
 import { useAudioStore } from './store/useAudioStore';
 import { HUD } from './components/ui/HUD';
+import { CardViewerModal } from './components/ui/CardViewerModal';
 
 function SceneManager() {
   const { currentScene } = useRunStore();
@@ -75,6 +76,7 @@ function SceneManager() {
     <>
       {scene}
       {showHUD && <HUD />}
+      <CardViewerModal />
     </>
   );
 }

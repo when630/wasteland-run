@@ -43,8 +43,8 @@ interface RunState {
 }
 
 export const useRunStore = create<RunState>((set) => ({
-  playerHp: 50,
-  playerMaxHp: 70,
+  playerHp: 84,
+  playerMaxHp: 84,
   gold: 0,
   currentMapNode: null,
   currentScene: 'MAIN_MENU', // 기본 씬은 메인 메뉴로 시작

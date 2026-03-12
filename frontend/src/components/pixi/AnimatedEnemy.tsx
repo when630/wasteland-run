@@ -45,12 +45,24 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
   const [scaleModifier, setScaleModifier] = useState(1);
   const [isHovered, setIsHovered] = useState(false);
 
-  // 호버 시 예상 데미지 계산
-  const previewDamage = useMemo(() => {
+  // 상태이상 예상 데미지 (항상 표시)
+  const statusPreviewDamage = useMemo(() => {
+    const statuses = enemy.statuses || {};
+    let dmg = 0;
+    if (statuses.BURN && statuses.BURN > 0) dmg += statuses.BURN * 3;
+    if (statuses.POISON && statuses.POISON > 0) dmg += statuses.POISON;
+    return dmg;
+  }, [enemy.statuses]);
+
+  // 호버 시 카드 예상 데미지 계산
+  const cardPreviewDamage = useMemo(() => {
     if (!isHovered || !targetingCard || !canBeTargeted) return 0;
     if (targetingCard.type !== 'PHYSICAL_ATTACK' && targetingCard.type !== 'SPECIAL_ATTACK') return 0;
     return calculatePreviewDamage(targetingCard, enemy, enemies, physicalScalingBonus, playerAmmo);
   }, [isHovered, targetingCard, canBeTargeted, enemy, enemies, physicalScalingBonus, playerAmmo]);
+
+  // 합산 예상 데미지
+  const previewDamage = cardPreviewDamage + statusPreviewDamage;
 
   // 활성 상태(공격 모션) 연출용
   const activeTimerRef = React.useRef<number>(0);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useBattleStore } from '../../store/useBattleStore';
 import { useRunStore } from '../../store/useRunStore';
 import type { Enemy } from '../../types/enemyTypes';
@@ -27,11 +27,24 @@ function useScreenLayout() {
 }
 
 // 상태이상 뱃지 색상/아이콘 매핑
-const STATUS_CONFIG: Record<string, { color: string; border: string; icon?: string; label?: string }> = {
-  BURN:       { color: 'rgba(255,100,0,0.85)',  border: '#ff8833', icon: iconBurn },
-  POISON:     { color: 'rgba(34,200,68,0.85)',   border: '#44ff66', label: 'P' },
-  VULNERABLE: { color: 'rgba(255,100,150,0.85)', border: '#ff88aa', icon: iconVulnerable },
-  WEAK:       { color: 'rgba(68,130,255,0.85)',  border: '#6699ff', icon: iconWeaken },
+const STATUS_CONFIG: Record<string, { color: string; border: string; icon?: string; label?: string; desc: string }> = {
+  BURN:       { color: 'rgba(255,100,0,0.85)',  border: '#ff8833', icon: iconBurn, desc: '화상: 턴 시작 시 스택만큼 피해, 이후 1 감소' },
+  POISON:     { color: 'rgba(34,200,68,0.85)',   border: '#44ff66', label: 'P', desc: '맹독: 턴 시작 시 스택만큼 방어 무시 피해, 이후 1 감소' },
+  VULNERABLE: { color: 'rgba(255,100,150,0.85)', border: '#ff88aa', icon: iconVulnerable, desc: '취약: 받는 피해 50% 증가 (남은 턴)' },
+  WEAK:       { color: 'rgba(68,130,255,0.85)',  border: '#6699ff', icon: iconWeaken, desc: '약화: 가하는 물리 피해 25% 감소 (남은 턴)' },
+};
+
+// 플레이어 버프/디버프 설명 매핑
+const PLAYER_BUFF_DESC: Record<string, string> = {
+  '무료': '다음 물리 공격 카드의 AP 비용이 0이 됩니다.',
+  '물리X': '이번 턴 동안 물리 공격 카드를 사용할 수 없습니다.',
+  '유지': '턴 종료 시 손패의 일부를 다음 턴으로 보존합니다.',
+  '반사': '물리 피격 시 공격자에게 표시된 수치만큼 피해를 반사합니다.',
+  'AP+': '특수 방어 사용 시 다음 턴 추가 AP를 얻습니다.',
+  '탄+': '특수 방어 사용 시 탄약을 획득합니다.',
+  '낙인': '운명의 낙인: 치명적 피해 시 한 번 부활합니다.',
+  '탄약': '방어 카드 사용 시 50% 확률로 탄약 1 획득.',
+  '스케일': '처치할 때마다 물리 피해가 누적 증가합니다.',
 };
 
 // 인라인 아이콘 헬퍼
@@ -43,65 +56,124 @@ const Icon: React.FC<{ src: string; size?: number }> = ({ src, size = 24 }) => (
   }} />
 );
 
-// 상태이상 뱃지 하나
-const StatusBadge: React.FC<{ statusKey: string; value: number; scale: number }> = ({ statusKey, value, scale }) => {
-  const cfg = STATUS_CONFIG[statusKey];
-  const badgeSize = Math.max(16, 22 * scale);
-  const fontSize = Math.max(10, 13 * scale);
+// 아이콘 + 우상단 숫자 + 클릭 툴팁 공용 뱃지
+const IconBadge: React.FC<{
+  icon?: string; label?: string; value: string | number;
+  color: string; desc: string; scale: number;
+}> = ({ icon, label, value, color, desc, scale }) => {
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowTooltip(prev => !prev);
+  }, []);
+
+  useEffect(() => {
+    if (!showTooltip) return;
+    const close = () => setShowTooltip(false);
+    window.addEventListener('pointerdown', close);
+    return () => window.removeEventListener('pointerdown', close);
+  }, [showTooltip]);
+
+  const iconSize = Math.max(24, 36 * scale);
+  const fontSize = Math.max(11, 14 * scale);
+  const tooltipFontSize = Math.max(10, 12 * scale);
 
   return (
-    <div style={{
-      display: 'inline-flex', alignItems: 'center', gap: 2 * scale,
-      background: cfg?.color ?? 'rgba(150,150,150,0.85)',
-      border: `1.5px solid ${cfg?.border ?? '#aaa'}`,
-      borderRadius: 4 * scale,
-      padding: `${1 * scale}px ${4 * scale}px`,
-    }}>
-      {cfg?.icon ? (
-        <Icon src={cfg.icon} size={badgeSize} />
+    <div
+      style={{
+        position: 'relative',
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer',
+        pointerEvents: 'auto',
+      }}
+      onPointerDown={handleClick}
+    >
+      {icon ? (
+        <Icon src={icon} size={iconSize} />
       ) : (
-        <span style={{ fontSize: badgeSize * 0.7, fontWeight: 'bold', color: '#fff' }}>
-          {cfg?.label ?? statusKey.charAt(0)}
+        <span style={{
+          width: iconSize, height: iconSize,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: iconSize * 0.5, fontWeight: 'bold', color: '#fff',
+          background: color, borderRadius: 6 * scale,
+          textShadow: '1px 1px 2px black',
+        }}>
+          {label}
         </span>
       )}
       <span style={{
+        position: 'absolute',
+        top: -4 * scale,
+        right: -4 * scale,
         fontSize, fontWeight: 'bold', color: '#fff',
-        textShadow: '1px 1px 2px black',
+        textShadow: '1px 1px 3px rgba(0,0,0,0.95), -1px -1px 3px rgba(0,0,0,0.95), 0 0 6px rgba(0,0,0,0.8)',
         lineHeight: 1,
+        pointerEvents: 'none',
       }}>
         {value}
       </span>
+      {showTooltip && (
+        <div style={{
+          position: 'absolute',
+          bottom: '110%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'rgba(10,10,20,0.92)',
+          border: `1px solid ${color}`,
+          borderRadius: 6 * scale,
+          padding: `${4 * scale}px ${8 * scale}px`,
+          whiteSpace: 'nowrap',
+          pointerEvents: 'none',
+          zIndex: 100,
+        }}>
+          <div style={{ fontSize: tooltipFontSize, color: '#ddd' }}>
+            {desc}
+          </div>
+        </div>
+      )}
     </div>
+  );
+};
+
+// 적 상태이상 뱃지
+const StatusBadge: React.FC<{ statusKey: string; value: number; scale: number }> = ({ statusKey, value, scale }) => {
+  const cfg = STATUS_CONFIG[statusKey];
+  return (
+    <IconBadge
+      icon={cfg?.icon}
+      label={cfg?.label ?? statusKey.charAt(0)}
+      value={value}
+      color={cfg?.border ?? '#aaa'}
+      desc={cfg?.desc ?? statusKey}
+      scale={scale}
+    />
   );
 };
 
 // 방어력 표시
 const DefenseBadge: React.FC<{ shield: number; resist: number; scale: number }> = ({ shield, resist, scale }) => {
   if (shield <= 0 && resist <= 0) return null;
-  const iconSize = Math.max(16, 22 * scale);
-  const fontSize = Math.max(11, 15 * scale);
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 * scale }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 * scale }}>
       {shield > 0 && (
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 2 * scale,
-          background: 'rgba(0,0,0,0.6)', borderRadius: 4 * scale, padding: `${1 * scale}px ${5 * scale}px`,
-          border: '1px solid rgba(100,180,255,0.5)',
-        }}>
-          <Icon src={iconPhysicalDefense} size={iconSize} />
-          <span style={{ fontSize, fontWeight: 'bold', color: '#8cf', textShadow: '1px 1px 2px black' }}>{shield}</span>
-        </div>
+        <IconBadge
+          icon={iconPhysicalDefense}
+          value={shield}
+          color="#4488cc"
+          desc="물리 방어도: 물리 공격 피해를 흡수합니다. 턴 종료 시 초기화."
+          scale={scale}
+        />
       )}
       {resist > 0 && (
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 2 * scale,
-          background: 'rgba(0,0,0,0.6)', borderRadius: 4 * scale, padding: `${1 * scale}px ${5 * scale}px`,
-          border: '1px solid rgba(200,100,255,0.5)',
-        }}>
-          <Icon src={iconSpecialDefense} size={iconSize} />
-          <span style={{ fontSize, fontWeight: 'bold', color: '#d8f', textShadow: '1px 1px 2px black' }}>{resist}</span>
-        </div>
+        <IconBadge
+          icon={iconSpecialDefense}
+          value={resist}
+          color="#aa66ff"
+          desc="특수 방어도: 특수 공격 피해를 흡수합니다. 턴 종료 시 초기화."
+          scale={scale}
+        />
       )}
     </div>
   );
@@ -109,15 +181,29 @@ const DefenseBadge: React.FC<{ shield: number; resist: number; scale: number }> 
 
 // 적 의도 표시
 const IntentDisplay: React.FC<{ enemy: Enemy; scale: number; masked: boolean }> = ({ enemy, scale, masked }) => {
-  if (!enemy.currentIntent) return null;
+  const [showTooltip, setShowTooltip] = useState(false);
 
-  let display = enemy.currentIntent.description
-    .replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{2B55}\u{FE00}-\u{FE0F}\u{200D}]/gu, '')
-    .trim();
-  if (masked) display = display.replace(/\d+/g, '?');
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowTooltip(prev => !prev);
+  }, []);
+
+  // 외부 클릭 시 닫기
+  useEffect(() => {
+    if (!showTooltip) return;
+    const close = () => setShowTooltip(false);
+    window.addEventListener('pointerdown', close);
+    return () => window.removeEventListener('pointerdown', close);
+  }, [showTooltip]);
+
+  if (!enemy.currentIntent) return null;
 
   const intentType = enemy.currentIntent.type;
   const damageType = enemy.currentIntent.damageType;
+  const amount = enemy.currentIntent.amount;
+  const description = enemy.currentIntent.description
+    .replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{2B55}\u{FE00}-\u{FE0F}\u{200D}]/gu, '')
+    .trim();
 
   let intentIcon: string | null = null;
   if (intentType === 'ATTACK') {
@@ -126,24 +212,73 @@ const IntentDisplay: React.FC<{ enemy: Enemy; scale: number; masked: boolean }> 
     intentIcon = iconPhysicalDefense;
   }
 
-  const iconSize = Math.max(20, 30 * scale);
-  const fontSize = Math.max(11, 14 * scale);
+  // 숫자 표시: 유물 마스킹 시 '?', 아니면 amount
+  const amountText = amount != null ? (masked ? '?' : `${amount}`) : null;
+
+  // 툴팁 텍스트 조합
+  const typeLabel = intentType === 'ATTACK'
+    ? (damageType === 'SPECIAL' ? '특수 공격' : '물리 공격')
+    : intentType === 'BUFF' ? '방어/버프' : '행동';
+  const tooltipLine1 = typeLabel;
+  const tooltipLine2 = masked ? description.replace(/\d+/g, '?') : description;
+
+  const iconSize = Math.max(32, 48 * scale);
+  const fontSize = Math.max(14, 18 * scale);
+  const tooltipFontSize = Math.max(10, 12 * scale);
 
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 * scale,
-      background: 'rgba(0,0,0,0.65)', borderRadius: 6 * scale,
-      padding: `${2 * scale}px ${8 * scale}px`,
-      border: '1px solid rgba(80,140,255,0.4)',
-    }}>
+    <div
+      style={{
+        position: 'relative',
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer',
+        pointerEvents: 'auto',
+      }}
+      onPointerDown={handleClick}
+    >
       {intentIcon && <Icon src={intentIcon} size={iconSize} />}
-      <span style={{
-        fontSize, fontWeight: 'bold', color: '#8cf',
-        textShadow: '1px 1px 2px black',
-        whiteSpace: 'nowrap',
-      }}>
-        {display}
-      </span>
+      {amountText && (
+        <span style={{
+          position: 'absolute',
+          top: -6 * scale,
+          right: -6 * scale,
+          fontSize, fontWeight: 'bold', color: '#fff',
+          textShadow: '1px 1px 3px rgba(0,0,0,0.95), -1px -1px 3px rgba(0,0,0,0.95), 0 0 6px rgba(0,0,0,0.8)',
+          whiteSpace: 'nowrap',
+          lineHeight: 1,
+          pointerEvents: 'none',
+        }}>
+          {amountText}
+        </span>
+      )}
+      {showTooltip && (
+        <div style={{
+          position: 'absolute',
+          bottom: '110%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'rgba(10,10,20,0.92)',
+          border: '1px solid rgba(120,170,255,0.5)',
+          borderRadius: 6 * scale,
+          padding: `${4 * scale}px ${8 * scale}px`,
+          whiteSpace: 'nowrap',
+          pointerEvents: 'none',
+          zIndex: 100,
+        }}>
+          <div style={{
+            fontSize: tooltipFontSize, fontWeight: 'bold',
+            color: intentType === 'ATTACK' ? (damageType === 'SPECIAL' ? '#c8aaff' : '#ffaa88') : '#88ccff',
+            marginBottom: 2 * scale,
+          }}>
+            {tooltipLine1}
+          </div>
+          <div style={{
+            fontSize: tooltipFontSize, color: '#ccc',
+          }}>
+            {tooltipLine2}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -220,32 +355,29 @@ const PlayerOverlay: React.FC<{
   const statusY = 220 * scale;
 
   // 버프/디버프 엔트리 수집
-  interface Entry { label: string; icon?: string; color?: string }
+  interface Entry { value: string | number; icon?: string; label?: string; color: string; desc: string }
   const entries: Entry[] = [];
 
-  if (playerStatus.nextPhysicalFree) entries.push({ label: '무료', color: '#ffdd88' });
-  if (playerStatus.cannotPlayPhysicalAttack) entries.push({ label: '물리X', color: '#ff8888' });
-  if (playerStatus.retainCardCount > 0) entries.push({ label: `유지${playerStatus.retainCardCount}`, color: '#ffdd88' });
-  if (playerStatus.reflectPhysical > 0) entries.push({ label: `반사${playerStatus.reflectPhysical}`, color: '#88ccff' });
-  if (playerStatus.apOnSpecialDefend > 0) entries.push({ label: `AP+${playerStatus.apOnSpecialDefend}`, color: '#88ff88' });
-  if (playerStatus.ammoOnSpecialDefend > 0) entries.push({ label: `탄+${playerStatus.ammoOnSpecialDefend}`, color: '#ccaa44' });
-  if (playerStatus.markOfFate) entries.push({ label: '낙인', color: '#ff6666' });
-  if (powerDefenseAmmo50) entries.push({ label: '탄약', color: '#ccaa44' });
-  if (powerPhysicalScalingActive) entries.push({ label: `+${powerPhysicalScalingBonus}`, color: '#ffaa44' });
+  if (playerStatus.nextPhysicalFree) entries.push({ label: '무료', value: '', color: '#ffdd88', desc: PLAYER_BUFF_DESC['무료'] });
+  if (playerStatus.cannotPlayPhysicalAttack) entries.push({ label: '물X', value: '', color: '#ff8888', desc: PLAYER_BUFF_DESC['물리X'] });
+  if (playerStatus.retainCardCount > 0) entries.push({ label: '유지', value: playerStatus.retainCardCount, color: '#ffdd88', desc: PLAYER_BUFF_DESC['유지'] });
+  if (playerStatus.reflectPhysical > 0) entries.push({ label: '반사', value: playerStatus.reflectPhysical, color: '#88ccff', desc: PLAYER_BUFF_DESC['반사'] });
+  if (playerStatus.apOnSpecialDefend > 0) entries.push({ label: 'AP', value: playerStatus.apOnSpecialDefend, color: '#88ff88', desc: PLAYER_BUFF_DESC['AP+'] });
+  if (playerStatus.ammoOnSpecialDefend > 0) entries.push({ label: '탄', value: playerStatus.ammoOnSpecialDefend, color: '#ccaa44', desc: PLAYER_BUFF_DESC['탄+'] });
+  if (playerStatus.markOfFate) entries.push({ label: '낙인', value: '', color: '#ff6666', desc: PLAYER_BUFF_DESC['낙인'] });
+  if (powerDefenseAmmo50) entries.push({ label: '탄약', value: '', color: '#ccaa44', desc: PLAYER_BUFF_DESC['탄약'] });
+  if (powerPhysicalScalingActive) entries.push({ label: '강화', value: `+${powerPhysicalScalingBonus}`, color: '#ffaa44', desc: PLAYER_BUFF_DESC['스케일'] });
 
-  // 디버프
-  if (playerDebuffs.VULNERABLE > 0) entries.push({ label: `${playerDebuffs.VULNERABLE}`, icon: iconVulnerable });
-  if (playerDebuffs.WEAK > 0) entries.push({ label: `${playerDebuffs.WEAK}`, icon: iconWeaken });
+  // 디버프 (아이콘 있는 것)
+  if (playerDebuffs.VULNERABLE > 0) entries.push({ icon: iconVulnerable, value: playerDebuffs.VULNERABLE, color: '#ff88aa', desc: STATUS_CONFIG.VULNERABLE.desc });
+  if (playerDebuffs.WEAK > 0) entries.push({ icon: iconWeaken, value: playerDebuffs.WEAK, color: '#6699ff', desc: STATUS_CONFIG.WEAK.desc });
   Object.entries(playerDebuffs).forEach(([key, val]) => {
     if (key === 'VULNERABLE' || key === 'WEAK') return;
     if (val > 0) {
       const cfg = STATUS_CONFIG[key];
-      entries.push({ label: `${val}`, icon: cfg?.icon, color: cfg?.border });
+      entries.push({ icon: cfg?.icon, label: cfg?.label ?? key.charAt(0), value: val, color: cfg?.border ?? '#aaa', desc: cfg?.desc ?? key });
     }
   });
-
-  const fontSize = Math.max(10, 13 * scale);
-  const badgeIconSize = Math.max(14, 20 * scale);
 
   return (
     <>
@@ -266,27 +398,19 @@ const PlayerOverlay: React.FC<{
           position: 'absolute',
           left: cx, top: cy + statusY,
           transform: 'translate(-50%, 0)',
-          display: 'flex', gap: 3 * scale, flexWrap: 'wrap', justifyContent: 'center',
-          maxWidth: 200 * scale,
+          display: 'flex', gap: 6 * scale, flexWrap: 'wrap', justifyContent: 'center',
+          maxWidth: 250 * scale,
         }}>
           {entries.map((entry, idx) => (
-            <div key={idx} style={{
-              display: 'inline-flex', alignItems: 'center', gap: 2 * scale,
-              background: 'rgba(0,0,0,0.7)',
-              border: `1px solid ${entry.color ?? 'rgba(255,220,130,0.5)'}`,
-              borderRadius: 4 * scale,
-              padding: `${1 * scale}px ${4 * scale}px`,
-            }}>
-              {entry.icon && <Icon src={entry.icon} size={badgeIconSize} />}
-              <span style={{
-                fontSize, fontWeight: 'bold',
-                color: entry.color ?? '#ffdd88',
-                textShadow: '1px 1px 2px black',
-                lineHeight: 1,
-              }}>
-                {entry.label}
-              </span>
-            </div>
+            <IconBadge
+              key={idx}
+              icon={entry.icon}
+              label={entry.label}
+              value={entry.value}
+              color={entry.color}
+              desc={entry.desc}
+              scale={scale}
+            />
           ))}
         </div>
       )}
