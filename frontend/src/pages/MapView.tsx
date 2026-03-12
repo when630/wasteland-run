@@ -97,12 +97,12 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
       {/* 맵 노드 트리 렌더링 영역 — 양피지 느낌 */}
       <div style={{
         position: 'relative',
-        display: 'flex', flexDirection: 'column-reverse', gap: '60px', alignItems: 'center',
-        padding: '50px 40px', borderRadius: '8px',
+        display: 'flex', flexDirection: 'column-reverse', gap: '70px', alignItems: 'center',
+        padding: '60px 60px', borderRadius: '8px',
         background: 'linear-gradient(135deg, #d4b896 0%, #e8d5b0 25%, #d9c4a0 50%, #e0cba5 75%, #c8a882 100%)',
         border: '3px solid #8b6f47',
         boxShadow: '0 0 30px rgba(0,0,0,0.5), inset 0 0 60px rgba(139, 111, 71, 0.3)',
-        minWidth: '600px',
+        minWidth: '850px',
         marginBottom: '100px'
       }}>
         {/* 양피지 질감 오버레이 */}
@@ -119,12 +119,12 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
           if (floorNodes.length === 0) return null;
 
           return (
-            <div key={`floor-${floorNum}`} style={{ display: 'flex', gap: '24px', justifyContent: 'center', width: '100%', position: 'relative', zIndex: 1 }}>
+            <div key={`floor-${floorNum}`} style={{ display: 'flex', gap: '40px', justifyContent: 'center', width: '100%', position: 'relative', zIndex: 1 }}>
               {[0, 1, 2, 3, 4, 5, 6].map(pos => {
                 const node = floorNodes.find(n => n.positionX === pos);
 
                 if (!node) {
-                  return <div key={`empty-${floorNum}-${pos}`} style={{ width: '50px', height: '50px', flexShrink: 0 }} />;
+                  return <div key={`empty-${floorNum}-${pos}`} style={{ width: '56px', height: '56px', flexShrink: 0 }} />;
                 }
 
                 const isCurrent = node.id === currentNodeId;
@@ -141,7 +141,7 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
                       if (!viewOnly && isNextAvailable) handleNodeClick(node.id, node.type);
                     }}
                     style={{
-                      width: '50px', height: '50px',
+                      width: '56px', height: '56px',
                       display: 'flex', justifyContent: 'center', alignItems: 'center',
                       cursor: viewOnly ? 'default' : (isNextAvailable ? 'pointer' : 'default'),
                       opacity: (isCurrent || isVisited || isNextAvailable) ? 1 : 0.35,
@@ -208,7 +208,7 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
                 endAnchor="bottom"
                 color={lineColor}
                 strokeWidth={strokeWidth}
-                path="straight"
+                path="smooth"
                 showHead={false}
                 zIndex={edgeZIndex}
               />
