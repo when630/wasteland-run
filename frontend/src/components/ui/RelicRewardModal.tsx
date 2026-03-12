@@ -4,6 +4,7 @@ import { useRngStore } from '../../store/useRngStore';
 import { RELICS } from '../../assets/data/relics';
 import type { Relic, RelicTier } from '../../types/relicTypes';
 import { iconRelicReward } from '../../assets/images/GUI';
+import { useResponsive } from '../../hooks/useResponsive';
 
 interface RelicRewardModalProps {
   onClose: () => void;
@@ -13,6 +14,7 @@ interface RelicRewardModalProps {
 
 export const RelicRewardModal: React.FC<RelicRewardModalProps> = ({ onClose, onRelicSelected, guaranteedTier }) => {
   const { addRelic, relics: ownedRelics, setToastMessage } = useRunStore();
+  const { isMobile } = useResponsive();
 
   const [rewardRelic] = useState<Relic | null>(() => {
     let available = RELICS.filter(r => !ownedRelics.includes(r.id));
@@ -44,23 +46,23 @@ export const RelicRewardModal: React.FC<RelicRewardModalProps> = ({ onClose, onR
       animation: 'fadeIn 0.3s ease-out',
     }}>
       <h2 style={{
-        fontSize: '32px', color: '#cc8888', marginBottom: '20px',
+        fontSize: isMobile ? '24px' : '32px', color: '#cc8888', marginBottom: isMobile ? '12px' : '20px',
         display: 'flex', alignItems: 'center', gap: '10px',
         textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
       }}>
-        <img src={iconRelicReward} alt="" style={{ width: 36, height: 36, objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(200, 80, 80, 0.5))' }} />
+        <img src={iconRelicReward} alt="" style={{ width: isMobile ? 28 : 36, height: isMobile ? 28 : 36, objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(200, 80, 80, 0.5))' }} />
         숨겨진 유물 발견
       </h2>
 
       {rewardRelic ? (
         <>
-          <p style={{ fontSize: '16px', color: '#8a7e6a', marginBottom: '35px' }}>
+          <p style={{ fontSize: isMobile ? '13px' : '16px', color: '#8a7e6a', marginBottom: isMobile ? '20px' : '35px' }}>
             {guaranteedTier === 'BOSS' ? '보스가 남긴 진귀한 유물입니다.' : '먼지 구덩이 속에서 신기한 물건을 발견했습니다.'}
           </p>
           <div
             onClick={() => handleSelectRelic(rewardRelic.id)}
             style={{
-              width: '280px', minHeight: '200px',
+              width: isMobile ? '85vw' : '280px', maxWidth: '280px', minHeight: isMobile ? '160px' : '200px',
               backgroundColor: 'rgba(40, 20, 20, 0.85)',
               border: '1px solid rgba(180, 80, 80, 0.4)',
               borderRadius: '10px',
@@ -96,7 +98,7 @@ export const RelicRewardModal: React.FC<RelicRewardModalProps> = ({ onClose, onR
           </div>
         </>
       ) : (
-        <p style={{ fontSize: '16px', color: '#8a7e6a', marginBottom: '35px' }}>
+        <p style={{ fontSize: isMobile ? '13px' : '16px', color: '#8a7e6a', marginBottom: isMobile ? '20px' : '35px' }}>
           더 이상 이 구역에서 획득할 수 있는 유물이 없습니다.
         </p>
       )}

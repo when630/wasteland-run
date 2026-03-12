@@ -3,6 +3,7 @@ import { useDeckStore } from '../../store/useDeckStore';
 import type { Card } from '../../types/gameTypes';
 import { iconCardUpgrade } from '../../assets/images/GUI';
 import { CardFrame } from './CardFrame';
+import { useResponsive } from '../../hooks/useResponsive';
 
 interface UpgradeCardModalProps {
   onClose: () => void;
@@ -11,6 +12,7 @@ interface UpgradeCardModalProps {
 
 export const UpgradeCardModal: React.FC<UpgradeCardModalProps> = ({ onClose, onUpgradeComplete }) => {
   const { masterDeck, upgradeCard } = useDeckStore();
+  const { isMobile } = useResponsive();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
   const handleSelect = (card: Card) => {
@@ -24,7 +26,7 @@ export const UpgradeCardModal: React.FC<UpgradeCardModalProps> = ({ onClose, onU
     onUpgradeComplete();
   };
 
-  const cardW = 160;
+  const cardW = isMobile ? 120 : 160;
 
   return (
     <div style={{
@@ -32,16 +34,16 @@ export const UpgradeCardModal: React.FC<UpgradeCardModalProps> = ({ onClose, onU
       backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 10000,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
     }}>
-      <h2 style={{ fontSize: '36px', color: '#ffaaaa', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
-        <img src={iconCardUpgrade} alt="" style={{ width: 36, height: 36, objectFit: 'contain' }} /> 덱 정비: 카드 강화
+      <h2 style={{ fontSize: isMobile ? '24px' : '36px', color: '#ffaaaa', marginBottom: isMobile ? '12px' : '20px', display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center', padding: '0 16px' }}>
+        <img src={iconCardUpgrade} alt="" style={{ width: isMobile ? 28 : 36, height: isMobile ? 28 : 36, objectFit: 'contain' }} /> 덱 정비: 카드 강화
       </h2>
-      <p style={{ fontSize: '18px', color: '#ccc', marginBottom: '40px' }}>
+      <p style={{ fontSize: isMobile ? '14px' : '18px', color: '#ccc', marginBottom: isMobile ? '20px' : '40px', padding: '0 16px', textAlign: 'center' }}>
         강화할 카드를 한 장 선택하세요. 선택된 카드는 즉시 전투력이 영구 상승합니다.
       </p>
 
       <div style={{
-        display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center',
-        padding: '20px', maxWidth: '80%', maxHeight: '50vh', overflowY: 'auto',
+        display: 'flex', flexWrap: 'wrap', gap: isMobile ? '8px' : '16px', justifyContent: 'center',
+        padding: isMobile ? '12px' : '20px', maxWidth: isMobile ? '95%' : '80%', maxHeight: '50vh', overflowY: 'auto',
         backgroundColor: 'rgba(30, 20, 20, 0.8)', borderRadius: '12px', border: '1px solid #555',
       }}>
         {masterDeck.map((card) => {
@@ -78,13 +80,13 @@ export const UpgradeCardModal: React.FC<UpgradeCardModalProps> = ({ onClose, onU
         })}
       </div>
 
-      <div style={{ display: 'flex', gap: '20px', marginTop: '40px' }}>
+      <div style={{ display: 'flex', gap: isMobile ? '12px' : '20px', marginTop: isMobile ? '24px' : '40px', flexDirection: isMobile ? 'column' : 'row', alignItems: 'center', padding: '0 16px', width: isMobile ? '80%' : undefined }}>
         <button
           onClick={onClose}
           style={{
-            padding: '12px 30px', fontSize: '18px',
+            padding: isMobile ? '10px 20px' : '12px 30px', fontSize: isMobile ? '15px' : '18px',
             backgroundColor: '#444', color: '#fff', border: '1px solid #666',
-            borderRadius: '8px', cursor: 'pointer',
+            borderRadius: '8px', cursor: 'pointer', width: isMobile ? '100%' : undefined,
           }}
         >
           취소
@@ -93,7 +95,8 @@ export const UpgradeCardModal: React.FC<UpgradeCardModalProps> = ({ onClose, onU
           onClick={handleConfirm}
           disabled={!selectedCardId}
           style={{
-            padding: '12px 40px', fontSize: '20px', fontWeight: 'bold',
+            padding: isMobile ? '10px 20px' : '12px 40px', fontSize: isMobile ? '16px' : '20px', fontWeight: 'bold',
+            width: isMobile ? '100%' : undefined,
             backgroundColor: selectedCardId ? '#b04a4a' : '#555',
             color: selectedCardId ? '#fff' : '#888',
             border: `2px solid ${selectedCardId ? '#ffaaaa' : '#444'}`,

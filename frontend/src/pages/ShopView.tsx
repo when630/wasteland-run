@@ -11,14 +11,14 @@ import { RemoveCardModal } from '../components/ui/RemoveCardModal';
 import shopBg from '../assets/images/backgrounds/shop_map_background.png';
 import npcImg from '../assets/images/characters/merchant.png';
 import { iconGoldReward, iconCardRemove } from '../assets/images/GUI';
-
-const mob = () => window.innerWidth < 768;
+import { useResponsive } from '../hooks/useResponsive';
 
 interface ShopCard extends Card { price: number; isSoldOut: boolean; }
 interface ShopRelic extends Relic { price: number; isSoldOut: boolean; }
 
 export const ShopView: React.FC = () => {
   const { gold, addGold, setScene, setToastMessage, relics: ownedRelics, addRelic } = useRunStore();
+  const { isMobile } = useResponsive();
   const { addCardToMasterDeck } = useDeckStore();
 
   const [shopCards, setShopCards] = useState<ShopCard[]>([]);
@@ -101,33 +101,33 @@ export const ShopView: React.FC = () => {
       backgroundBlendMode: 'overlay',
       backgroundColor: 'rgba(18, 14, 10, 0.7)',
       color: '#e8dcc8',
-      display: 'flex', flexDirection: mob() ? 'column' : 'row',
-      overflow: mob() ? 'auto' : 'hidden',
+      display: 'flex', flexDirection: isMobile ? 'column' : 'row',
+      overflow: isMobile ? 'auto' : 'hidden',
     }}>
 
       {/* 좌측: 상점 진열대 */}
       <div style={{
-        flex: mob() ? undefined : 6,
-        padding: mob() ? '12px' : '20px',
+        flex: isMobile ? undefined : 6,
+        padding: isMobile ? '12px' : '20px',
         display: 'flex', flexDirection: 'column', gap: '12px',
-        overflowY: mob() ? 'auto' : 'hidden',
+        overflowY: isMobile ? 'auto' : 'hidden',
       }}>
         {/* 헤더 */}
         <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          backgroundColor: panelBg, padding: mob() ? '10px 14px' : '12px 22px',
+          backgroundColor: panelBg, padding: isMobile ? '10px 14px' : '12px 22px',
           borderRadius: '8px', border: panelBorder, flexWrap: 'wrap', gap: '4px',
           boxShadow: '0 2px 15px rgba(0,0,0,0.3)',
         }}>
           <h1 style={{
-            fontSize: mob() ? '20px' : '28px', color: '#d4a854', margin: 0,
+            fontSize: isMobile ? '20px' : '28px', color: '#d4a854', margin: 0,
             display: 'flex', alignItems: 'center', gap: '8px',
             textShadow: '1px 2px 3px rgba(0,0,0,0.7)',
           }}>
-            <img src={iconGoldReward} alt="" style={{ width: mob() ? 24 : 30, height: mob() ? 24 : 30, objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(212,168,84,0.5))' }} />
+            <img src={iconGoldReward} alt="" style={{ width: isMobile ? 24 : 30, height: isMobile ? 24 : 30, objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(212,168,84,0.5))' }} />
             고철 암시장
           </h1>
-          <div style={{ fontSize: mob() ? '16px' : '20px', color: '#d4a854', fontWeight: 'bold', textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
+          <div style={{ fontSize: isMobile ? '16px' : '20px', color: '#d4a854', fontWeight: 'bold', textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
             {gold} G
           </div>
         </div>
@@ -135,7 +135,7 @@ export const ShopView: React.FC = () => {
         {/* 카드 판매 */}
         <div style={{ backgroundColor: panelBg, padding: '15px', borderRadius: '8px', border: panelBorder }}>
           <h2 style={{ color: '#b8a078', margin: '0 0 10px 0', borderBottom: '1px solid rgba(120, 90, 40, 0.2)', paddingBottom: '8px', fontSize: '18px' }}>장비 구입</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: mob() ? 'repeat(3, 1fr)' : 'repeat(3, 130px)', gap: '10px', justifyContent: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 130px)', gap: '10px', justifyContent: 'center' }}>
             {shopCards.map((item, idx) => {
               let cardBorder = 'rgba(100, 80, 50, 0.4)';
               if (item.type.includes('ATTACK')) cardBorder = 'rgba(180, 80, 60, 0.4)';
@@ -146,7 +146,7 @@ export const ShopView: React.FC = () => {
                   <div
                     onClick={() => handleBuyCard(idx)}
                     style={{
-                      width: mob() ? '100%' : '130px', height: mob() ? '140px' : '170px',
+                      width: isMobile ? '100%' : '130px', height: isMobile ? '140px' : '170px',
                       backgroundColor: 'rgba(25, 20, 15, 0.9)',
                       border: `1px solid ${cardBorder}`, borderRadius: '8px',
                       padding: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -263,15 +263,15 @@ export const ShopView: React.FC = () => {
 
       {/* 우측: NPC + 나가기 */}
       <div style={{
-        flex: mob() ? undefined : 4,
+        flex: isMobile ? undefined : 4,
         display: 'flex', flexDirection: 'column',
         justifyContent: 'flex-end', alignItems: 'center',
-        padding: mob() ? '16px' : '20px',
+        padding: isMobile ? '16px' : '20px',
         position: 'relative',
-        borderLeft: mob() ? undefined : '1px solid rgba(120, 90, 40, 0.15)',
+        borderLeft: isMobile ? undefined : '1px solid rgba(120, 90, 40, 0.15)',
         backgroundColor: 'rgba(0,0,0,0.25)',
       }}>
-        {window.innerWidth >= 768 && (
+        {!isMobile && (
           <img
             src={npcImg} alt="고철 상인"
             style={{
@@ -286,14 +286,14 @@ export const ShopView: React.FC = () => {
         <button
           onClick={() => setScene('MAP')}
           style={{
-            marginTop: mob() ? '0' : '20px',
-            padding: mob() ? '14px 30px' : '18px 55px',
-            fontSize: mob() ? '16px' : '20px', fontWeight: 'bold',
+            marginTop: isMobile ? '0' : '20px',
+            padding: isMobile ? '14px 30px' : '18px 55px',
+            fontSize: isMobile ? '16px' : '20px', fontWeight: 'bold',
             backgroundColor: 'rgba(40, 35, 28, 0.9)', color: '#a09078',
             border: '1px solid rgba(120, 100, 70, 0.4)',
             borderRadius: '6px', cursor: 'pointer',
             transition: 'all 0.2s', zIndex: 10,
-            width: mob() ? '100%' : undefined,
+            width: isMobile ? '100%' : undefined,
           }}
           onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(55, 48, 35, 0.95)'; e.currentTarget.style.color = '#c8b898'; e.currentTarget.style.boxShadow = '0 0 12px rgba(120, 100, 70, 0.2)'; }}
           onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(40, 35, 28, 0.9)'; e.currentTarget.style.color = '#a09078'; e.currentTarget.style.boxShadow = 'none'; }}

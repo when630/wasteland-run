@@ -4,10 +4,10 @@ import { UpgradeCardModal } from '../components/ui/UpgradeCardModal';
 import { onRestOrEventEnter } from '../logic/relicEffects';
 import restBg from '../assets/images/backgrounds/campfire_map_background.png';
 import { iconRest, iconCardUpgrade, iconHeart } from '../assets/images/GUI';
-
-const isMobile = () => window.innerWidth < 768;
+import { useResponsive } from '../hooks/useResponsive';
 
 export const RestView: React.FC = () => {
+  const { isMobile } = useResponsive();
   const { playerHp, playerMaxHp, healPlayer, setScene, relics } = useRunStore();
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [healResult, setHealResult] = useState<number | null>(null);
@@ -47,25 +47,25 @@ export const RestView: React.FC = () => {
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
     }}>
       <h1 style={{
-        fontSize: isMobile() ? '28px' : '44px', color: '#e8a444', marginBottom: '8px',
+        fontSize: isMobile ? '28px' : '44px', color: '#e8a444', marginBottom: '8px',
         textAlign: 'center', padding: '0 16px',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
         textShadow: '2px 3px 6px rgba(0,0,0,0.8), 0 0 20px rgba(232, 164, 68, 0.3)',
         animation: 'fadeIn 0.6s ease-out',
       }}>
-        <img src={iconRest} alt="" style={{ width: isMobile() ? 32 : 44, height: isMobile() ? 32 : 44, objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(232, 164, 68, 0.6))' }} />
+        <img src={iconRest} alt="" style={{ width: isMobile ? 32 : 44, height: isMobile ? 32 : 44, objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(232, 164, 68, 0.6))' }} />
         타오르는 모닥불
       </h1>
       <p style={{
-        fontSize: isMobile() ? '14px' : '18px', color: '#a09078',
-        marginBottom: isMobile() ? '24px' : '45px', textAlign: 'center', padding: '0 16px',
+        fontSize: isMobile ? '14px' : '18px', color: '#a09078',
+        marginBottom: isMobile ? '24px' : '45px', textAlign: 'center', padding: '0 16px',
       }}>
         잠시 몸을 녹이고 정비할 시간입니다. 현재 HP: {playerHp}/{playerMaxHp}
       </p>
 
       <div style={{
-        display: 'flex', gap: isMobile() ? '16px' : '28px',
-        flexDirection: isMobile() ? 'column' : 'row',
+        display: 'flex', gap: isMobile ? '16px' : '28px',
+        flexDirection: isMobile ? 'column' : 'row',
         alignItems: 'center', padding: '0 16px',
         animation: 'slideUp 0.5s ease-out',
       }}>
@@ -75,7 +75,7 @@ export const RestView: React.FC = () => {
             <button
               onClick={handleHeal}
               style={{
-                width: isMobile() ? '80vw' : '220px', height: isMobile() ? '180px' : '280px',
+                width: isMobile ? '80vw' : '220px', height: isMobile ? '180px' : '280px',
                 backgroundColor: 'rgba(25, 40, 25, 0.85)',
                 border: '1px solid rgba(80, 180, 80, 0.3)',
                 borderRadius: '10px', cursor: 'pointer',
@@ -108,7 +108,7 @@ export const RestView: React.FC = () => {
               onClick={handleUpgrade}
               disabled={!canUpgrade}
               style={{
-                width: isMobile() ? '80vw' : '220px', height: isMobile() ? '180px' : '280px',
+                width: isMobile ? '80vw' : '220px', height: isMobile ? '180px' : '280px',
                 backgroundColor: canUpgrade ? 'rgba(35, 20, 45, 0.85)' : 'rgba(20, 18, 16, 0.6)',
                 border: `1px solid ${canUpgrade ? 'rgba(160, 100, 220, 0.3)' : 'rgba(60, 50, 40, 0.3)'}`,
                 borderRadius: '10px',
@@ -144,7 +144,7 @@ export const RestView: React.FC = () => {
         ) : (
           <div style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px',
-            backgroundColor: 'rgba(15, 50, 30, 0.85)', padding: isMobile() ? '24px' : '45px 70px', borderRadius: '10px',
+            backgroundColor: 'rgba(15, 50, 30, 0.85)', padding: isMobile ? '24px' : '45px 70px', borderRadius: '10px',
             border: '1px solid rgba(60, 180, 100, 0.4)',
             boxShadow: '0 0 30px rgba(60, 180, 100, 0.15)',
             animation: 'slideUp 0.4s ease-out',

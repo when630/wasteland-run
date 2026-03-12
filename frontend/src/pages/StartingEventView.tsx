@@ -6,10 +6,10 @@ import type { RandomEvent, EventOption } from '../types/eventTypes';
 import { useRngStore } from '../store/useRngStore';
 import eventBg from '../assets/images/backgrounds/event_map_background.png';
 import { iconEvent } from '../assets/images/GUI';
-
-const isMobile = () => window.innerWidth < 768;
+import { useResponsive } from '../hooks/useResponsive';
 
 export const StartingEventView: React.FC = () => {
+  const { isMobile } = useResponsive();
   const { setScene } = useRunStore();
   const [currentEvent, setCurrentEvent] = useState<RandomEvent | null>(null);
   const [resultText, setResultText] = useState<string | null>(null);
@@ -45,27 +45,27 @@ export const StartingEventView: React.FC = () => {
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
     }}>
       <h1 style={{
-        fontSize: isMobile() ? '24px' : '44px', color: '#d4a854', marginBottom: '8px',
+        fontSize: isMobile ? '24px' : '44px', color: '#d4a854', marginBottom: '8px',
         textAlign: 'center', padding: '0 16px',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
         textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
         animation: 'fadeIn 0.6s ease-out',
       }}>
-        <img src={iconEvent} alt="" style={{ width: isMobile() ? 28 : 44, height: isMobile() ? 28 : 44, objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(212,168,84,0.5))' }} />
+        <img src={iconEvent} alt="" style={{ width: isMobile ? 28 : 44, height: isMobile ? 28 : 44, objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(212,168,84,0.5))' }} />
         {currentEvent.title}
       </h1>
 
       <div style={{
         backgroundColor: 'rgba(20, 16, 12, 0.85)',
-        padding: isMobile() ? '20px' : '35px',
+        padding: isMobile ? '20px' : '35px',
         borderRadius: '8px',
-        maxWidth: '750px', width: isMobile() ? '90vw' : undefined,
-        textAlign: 'center', marginBottom: isMobile() ? '20px' : '35px',
+        maxWidth: '750px', width: isMobile ? '90vw' : undefined,
+        textAlign: 'center', marginBottom: isMobile ? '20px' : '35px',
         border: '1px solid rgba(160, 120, 60, 0.3)',
         boxShadow: '0 0 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03)',
         animation: 'slideUp 0.5s ease-out',
       }}>
-        <p style={{ fontSize: isMobile() ? '14px' : '18px', color: '#ccc0a8', lineHeight: '1.7', marginBottom: '16px' }}>
+        <p style={{ fontSize: isMobile ? '14px' : '18px', color: '#ccc0a8', lineHeight: '1.7', marginBottom: '16px' }}>
           {currentEvent.description}
         </p>
         <p style={{ fontSize: '14px', color: '#8a7e6a', fontStyle: 'italic' }}>
@@ -76,7 +76,7 @@ export const StartingEventView: React.FC = () => {
       {!resultText ? (
         <div style={{
           display: 'flex', gap: '12px', flexDirection: 'column',
-          width: isMobile() ? '90vw' : '600px',
+          width: isMobile ? '90vw' : '600px',
           animation: 'slideUp 0.6s ease-out',
         }}>
           {currentEvent.options.map((option, idx) => {
@@ -124,10 +124,10 @@ export const StartingEventView: React.FC = () => {
       ) : (
         <div style={{
           backgroundColor: 'rgba(40, 30, 10, 0.9)',
-          padding: isMobile() ? '20px' : '30px', borderRadius: '8px',
+          padding: isMobile ? '20px' : '30px', borderRadius: '8px',
           border: '1px solid rgba(212, 168, 84, 0.4)',
           borderLeft: '3px solid #d4a854',
-          maxWidth: '600px', width: isMobile() ? '90vw' : undefined, textAlign: 'center', boxSizing: 'border-box',
+          maxWidth: '600px', width: isMobile ? '90vw' : undefined, textAlign: 'center', boxSizing: 'border-box',
           boxShadow: '0 0 25px rgba(212, 168, 84, 0.15)',
           animation: 'slideUp 0.4s ease-out',
         }}>

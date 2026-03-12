@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import Xarrow from 'react-xarrows';
 import { useRunStore } from '../store/useRunStore';
 import { useMapStore, type NodeType } from '../store/useMapStore';
+import { useResponsive } from '../hooks/useResponsive';
 import mapBg from '../assets/images/backgrounds/map_background.png';
 import battleBadge from '../assets/images/map/battle_badge.png';
 import eliteBadge from '../assets/images/map/elite_badge.png';
@@ -18,6 +19,7 @@ interface MapViewProps {
 export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) => {
   const { setScene } = useRunStore();
   const { nodes, currentNodeId, visitedNodeIds, generateMap, setPendingNode, commitPendingNode } = useMapStore();
+  const { isMobile } = useResponsive();
 
   // 첫 마운트 시 맵이 없으면 생성 (현재 챕터 기반)
   const { currentChapter } = useRunStore();
@@ -83,27 +85,28 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
         </button>
       )}
       <h1 style={{
-        fontSize: '48px', marginBottom: '20px', flexShrink: 0,
+        fontSize: isMobile ? '28px' : '48px', marginBottom: isMobile ? '12px' : '20px', flexShrink: 0,
         color: '#3e2a14',
         textShadow: '1px 1px 0 #c4a96a',
         fontFamily: 'serif'
       }}>
         황무지 지도
       </h1>
-      <p style={{ fontSize: '20px', color: '#5a3e28', marginBottom: '40px', flexShrink: 0, fontFamily: 'serif', textShadow: '0 1px 0 rgba(196, 169, 106, 0.5)' }}>
+      <p style={{ fontSize: isMobile ? '14px' : '20px', color: '#5a3e28', marginBottom: isMobile ? '20px' : '40px', flexShrink: 0, fontFamily: 'serif', textShadow: '0 1px 0 rgba(196, 169, 106, 0.5)' }}>
         {viewOnly ? '현재 진행 상황을 확인하세요.' : '여정을 이어갈 다음 노드를 선택하세요.'}
       </p>
 
       {/* 맵 노드 트리 렌더링 영역 — 양피지 느낌 */}
       <div style={{
         position: 'relative',
-        display: 'flex', flexDirection: 'column-reverse', gap: '70px', alignItems: 'center',
-        padding: '60px 60px', borderRadius: '8px',
+        display: 'flex', flexDirection: 'column-reverse', gap: isMobile ? '40px' : '70px', alignItems: 'center',
+        padding: isMobile ? '24px 12px' : '60px 60px', borderRadius: '8px',
         background: 'linear-gradient(135deg, #d4b896 0%, #e8d5b0 25%, #d9c4a0 50%, #e0cba5 75%, #c8a882 100%)',
-        border: '3px solid #8b6f47',
+        border: isMobile ? '2px solid #8b6f47' : '3px solid #8b6f47',
         boxShadow: '0 0 30px rgba(0,0,0,0.5), inset 0 0 60px rgba(139, 111, 71, 0.3)',
-        minWidth: '850px',
-        marginBottom: '100px'
+        minWidth: isMobile ? 'auto' : '850px',
+        width: isMobile ? '95vw' : undefined,
+        marginBottom: isMobile ? '40px' : '100px'
       }}>
         {/* 양피지 질감 오버레이 */}
         <div style={{
@@ -119,12 +122,12 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
           if (floorNodes.length === 0) return null;
 
           return (
-            <div key={`floor-${floorNum}`} style={{ display: 'flex', gap: '40px', justifyContent: 'center', width: '100%', position: 'relative', zIndex: 1 }}>
+            <div key={`floor-${floorNum}`} style={{ display: 'flex', gap: isMobile ? '6px' : '40px', justifyContent: 'center', width: '100%', position: 'relative', zIndex: 1 }}>
               {[0, 1, 2, 3, 4, 5, 6].map(pos => {
                 const node = floorNodes.find(n => n.positionX === pos);
 
                 if (!node) {
-                  return <div key={`empty-${floorNum}-${pos}`} style={{ width: '56px', height: '56px', flexShrink: 0 }} />;
+                  return <div key={`empty-${floorNum}-${pos}`} style={{ width: isMobile ? '36px' : '56px', height: isMobile ? '36px' : '56px', flexShrink: 0 }} />;
                 }
 
                 const isCurrent = node.id === currentNodeId;
@@ -141,7 +144,7 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
                       if (!viewOnly && isNextAvailable) handleNodeClick(node.id, node.type);
                     }}
                     style={{
-                      width: '56px', height: '56px',
+                      width: isMobile ? '36px' : '56px', height: isMobile ? '36px' : '56px',
                       display: 'flex', justifyContent: 'center', alignItems: 'center',
                       cursor: viewOnly ? 'default' : (isNextAvailable ? 'pointer' : 'default'),
                       opacity: (isCurrent || isVisited || isNextAvailable) ? 1 : 0.35,

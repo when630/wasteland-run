@@ -2,6 +2,7 @@ import React from 'react';
 import { useAudioStore } from '../../store/useAudioStore';
 import { useRunStore } from '../../store/useRunStore';
 import { iconSettings } from '../../assets/images/GUI';
+import { useResponsive } from '../../hooks/useResponsive';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -11,6 +12,7 @@ interface SettingsModalProps {
 export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showQuitButton = false }) => {
   const { bgmVolume, sfxVolume, setBgmVolume, setSfxVolume, playClick, playHit } = useAudioStore();
   const { saveRunData, isActive, runSeed, setScene } = useRunStore();
+  const { isMobile } = useResponsive();
 
   const handleQuitToMain = async () => {
     // 확인 후 메인 메뉴로 나가기 처리
@@ -45,7 +47,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showQuitB
     backgroundColor: '#111',
     border: '2px solid #555',
     borderRadius: '12px',
-    padding: window.innerWidth < 768 ? '24px' : '40px',
+    padding: isMobile ? '24px' : '40px',
     width: 'min(400px, 90vw)',
     display: 'flex',
     flexDirection: 'column',
@@ -56,7 +58,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showQuitB
 
   const titleStyle: React.CSSProperties = {
     margin: 0,
-    fontSize: window.innerWidth < 768 ? '24px' : '32px',
+    fontSize: isMobile ? '24px' : '32px',
     color: '#ccc',
     textAlign: 'center',
     borderBottom: '1px solid #333',
