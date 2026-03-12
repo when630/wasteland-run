@@ -9,12 +9,13 @@ import { useRngStore } from '../store/useRngStore';
 import eventBg from '../assets/images/backgrounds/event_map_background.png';
 import { iconEvent } from '../assets/images/GUI';
 
+const isMobile = () => window.innerWidth < 768;
+
 export const EventView: React.FC = () => {
   const { setScene, relics, playerMaxHp, healPlayer } = useRunStore();
   const [currentEvent, setCurrentEvent] = useState<RandomEvent | null>(null);
   const [resultText, setResultText] = useState<string | null>(null);
 
-  // 모달 호출 제어 상태
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [pendingResultText, setPendingResultText] = useState<string | null>(null);
@@ -26,7 +27,6 @@ export const EventView: React.FC = () => {
     const pick = RANDOM_EVENTS[eventRng.nextInt(RANDOM_EVENTS.length)];
     setCurrentEvent(pick);
 
-    // 유물 효과 일괄 적용
     const { healAmount } = onRestOrEventEnter(relics, playerMaxHp);
     if (healAmount > 0) {
       healPlayer(healAmount);
@@ -40,34 +40,27 @@ export const EventView: React.FC = () => {
   const handleOptionSelect = (option: EventOption) => {
     const result = option.onSelect();
 
-    // 특수 트리거 분리
     if (result === 'TRIGGER_CARD_REMOVE') {
       setRemainingCardRemoves(1);
       setIsRemoveModalOpen(true);
       setPendingResultText('기계공이 카드를 받아들고 기괴한 웃음을 지으며 완전히 분해해버렸습니다. (카드 제거 완료)');
       return;
     }
-
     if (result === 'TRIGGER_CARD_REMOVE_2') {
       setRemainingCardRemoves(2);
       setIsRemoveModalOpen(true);
       setPendingResultText('카드 2장을 제거하고 몸의 부담을 덜었습니다. 최대 체력이 15 증가했습니다!');
       return;
     }
-
     if (result === 'TRIGGER_CARD_UPGRADE') {
       setIsUpgradeModalOpen(true);
       setPendingResultText('홀로그램의 기록을 분석하여 전투 기술을 개선했습니다. (카드 업그레이드 완료)');
       return;
     }
-
     if (result === 'TRIGGER_ELITE_BATTLE') {
-      // 강제 엘리트 전투 씬으로 전환
       setScene('ELITE');
       return;
     }
-
-    // 일반 텍스트 결과인 경우 바로 보여주기
     setResultText(result);
   };
 
@@ -93,10 +86,6 @@ export const EventView: React.FC = () => {
     }
   };
 
-  const handleCloseResult = () => {
-    setScene('MAP');
-  };
-
   return (
     <div style={{
       width: '100vw', height: '100vh',
@@ -104,33 +93,49 @@ export const EventView: React.FC = () => {
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundBlendMode: 'overlay',
-      backgroundColor: 'rgba(17, 24, 39, 0.8)',
-      color: '#fff',
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+      backgroundColor: 'rgba(17, 14, 10, 0.75)',
+      color: '#e8dcc8',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
     }}>
-      <h1 style={{ fontSize: window.innerWidth < 768 ? '24px' : '48px', color: '#a78bfa', marginBottom: '10px', textAlign: 'center', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-        <img src={iconEvent} alt="" style={{ width: window.innerWidth < 768 ? 28 : 48, height: window.innerWidth < 768 ? 28 : 48, objectFit: 'contain' }} /> {currentEvent.title}
+      {/* 타이틀 */}
+      <h1 style={{
+        fontSize: isMobile() ? '24px' : '44px', color: '#d4a854', marginBottom: '8px',
+        textAlign: 'center', padding: '0 16px',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+        textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+        animation: 'fadeIn 0.6s ease-out',
+      }}>
+        <img src={iconEvent} alt="" style={{ width: isMobile() ? 28 : 44, height: isMobile() ? 28 : 44, objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(212,168,84,0.5))' }} />
+        {currentEvent.title}
       </h1>
 
+      {/* 설명 패널 */}
       <div style={{
-        backgroundColor: '#1f2937', padding: window.innerWidth < 768 ? '20px' : '40px', borderRadius: '16px',
-        maxWidth: '800px', width: window.innerWidth < 768 ? '90vw' : undefined, textAlign: 'center', marginBottom: window.innerWidth < 768 ? '20px' : '40px',
-        border: '1px solid #374151', minHeight: window.innerWidth < 768 ? undefined : '150px',
-        boxSizing: 'border-box',
+        backgroundColor: 'rgba(20, 16, 12, 0.85)',
+        padding: isMobile() ? '20px' : '35px',
+        borderRadius: '8px',
+        maxWidth: '750px', width: isMobile() ? '90vw' : undefined,
+        textAlign: 'center', marginBottom: isMobile() ? '20px' : '35px',
+        border: '1px solid rgba(160, 120, 60, 0.3)',
+        boxShadow: '0 0 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03)',
+        animation: 'slideUp 0.5s ease-out',
       }}>
-        <p style={{ fontSize: window.innerWidth < 768 ? '14px' : '20px', color: '#d1d5db', lineHeight: '1.6', marginBottom: '20px' }}>
+        <p style={{ fontSize: isMobile() ? '14px' : '18px', color: '#ccc0a8', lineHeight: '1.7', marginBottom: '16px' }}>
           {currentEvent.description}
         </p>
-        <p style={{ fontSize: '16px', color: '#9ca3af', fontStyle: 'italic' }}>
+        <p style={{ fontSize: '14px', color: '#8a7e6a', fontStyle: 'italic' }}>
           {currentEvent.visualDesc}
         </p>
       </div>
 
-      {/* 이벤트 선택지 렌더링 : 결과가 아직 안 나왔을 때만 렌더링 */}
+      {/* 선택지 */}
       {!resultText ? (
-        <div style={{ display: 'flex', gap: '15px', flexDirection: 'column', width: window.innerWidth < 768 ? '90vw' : '600px' }}>
+        <div style={{
+          display: 'flex', gap: '12px', flexDirection: 'column',
+          width: isMobile() ? '90vw' : '600px',
+          animation: 'slideUp 0.6s ease-out',
+        }}>
           {currentEvent.options.map((option, idx) => {
-            // 조건문이 존재하고 해당 조건을 만족하지 못하면 disabled 처리
             const isDisabled = option.condition ? !option.condition() : false;
 
             return (
@@ -139,58 +144,70 @@ export const EventView: React.FC = () => {
                 disabled={isDisabled}
                 onClick={() => handleOptionSelect(option)}
                 style={{
-                  padding: '20px',
-                  backgroundColor: isDisabled ? '#1f2937' : '#374151',
-                  border: `2px solid ${isDisabled ? '#374151' : '#4b5563'}`,
-                  borderRadius: '8px',
+                  padding: '18px 20px',
+                  backgroundColor: isDisabled ? 'rgba(30, 25, 20, 0.6)' : 'rgba(40, 32, 22, 0.85)',
+                  border: `1px solid ${isDisabled ? 'rgba(80, 60, 40, 0.3)' : 'rgba(160, 120, 60, 0.4)'}`,
+                  borderLeft: `3px solid ${isDisabled ? 'rgba(80, 60, 40, 0.3)' : '#b8892e'}`,
+                  borderRadius: '6px',
                   cursor: isDisabled ? 'not-allowed' : 'pointer',
-                  fontSize: '18px', color: isDisabled ? '#6b7280' : '#fff', textAlign: 'left',
-                  transition: 'background-color 0.2s',
-                  opacity: isDisabled ? 0.6 : 1
+                  fontSize: '16px', color: isDisabled ? '#6b6050' : '#e0d4bc', textAlign: 'left',
+                  transition: 'all 0.2s',
+                  opacity: isDisabled ? 0.5 : 1,
                 }}
                 onMouseEnter={(e) => {
-                  if (!isDisabled) e.currentTarget.style.backgroundColor = '#4b5563';
+                  if (!isDisabled) {
+                    e.currentTarget.style.backgroundColor = 'rgba(60, 48, 30, 0.9)';
+                    e.currentTarget.style.borderLeftColor = '#d4a854';
+                    e.currentTarget.style.boxShadow = '0 0 15px rgba(180, 140, 60, 0.15)';
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  if (!isDisabled) e.currentTarget.style.backgroundColor = '#374151';
+                  if (!isDisabled) {
+                    e.currentTarget.style.backgroundColor = 'rgba(40, 32, 22, 0.85)';
+                    e.currentTarget.style.borderLeftColor = '#b8892e';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
                 }}
               >
-                <div style={{ color: isDisabled ? '#6b7280' : '#fbbf24', fontWeight: 'bold', marginBottom: '8px' }}>
+                <div style={{ color: isDisabled ? '#6b6050' : '#d4a854', fontWeight: 'bold', marginBottom: '6px', fontSize: '17px' }}>
                   {option.label}
-                  {isDisabled && ' (달성 조건 미비)'}
+                  {isDisabled && ' (조건 미충족)'}
                 </div>
-                <div style={{ fontSize: '15px' }}>{option.description}</div>
+                <div style={{ fontSize: '14px', color: isDisabled ? '#5a5040' : '#a09880', lineHeight: '1.4' }}>{option.description}</div>
               </button>
             );
           })}
         </div>
       ) : (
-        /* 결과 노출용 컴포넌트 */
         <div style={{
-          backgroundColor: '#064e3b', padding: window.innerWidth < 768 ? '20px' : '30px', borderRadius: '12px',
-          border: '2px solid #10b981', maxWidth: '600px', width: window.innerWidth < 768 ? '90vw' : undefined, textAlign: 'center', boxSizing: 'border-box',
-          animation: 'fadeIn 0.5s ease-in-out'
+          backgroundColor: 'rgba(15, 40, 25, 0.9)',
+          padding: isMobile() ? '20px' : '30px', borderRadius: '8px',
+          border: '1px solid rgba(60, 180, 100, 0.4)',
+          borderLeft: '3px solid #44aa66',
+          maxWidth: '600px', width: isMobile() ? '90vw' : undefined, textAlign: 'center', boxSizing: 'border-box',
+          boxShadow: '0 0 25px rgba(60, 180, 100, 0.15)',
+          animation: 'slideUp 0.4s ease-out',
         }}>
-          <h3 style={{ color: '#34d399', fontSize: '24px', marginBottom: '20px' }}>선택 결과</h3>
-          <p style={{ fontSize: '18px', color: '#ecfdf5', lineHeight: '1.6', marginBottom: '30px' }}>
+          <h3 style={{ color: '#66cc88', fontSize: '22px', marginBottom: '16px', textShadow: '1px 1px 3px rgba(0,0,0,0.6)' }}>선택 결과</h3>
+          <p style={{ fontSize: '16px', color: '#c8e8d4', lineHeight: '1.6', marginBottom: '25px' }}>
             {resultText}
           </p>
           <button
-            onClick={handleCloseResult}
+            onClick={() => setScene('MAP')}
             style={{
-              padding: '12px 40px', fontSize: '20px', fontWeight: 'bold',
-              backgroundColor: '#10b981', color: '#fff', border: 'none',
-              borderRadius: '8px', cursor: 'pointer', transition: 'background-color 0.2s'
+              padding: '12px 40px', fontSize: '18px', fontWeight: 'bold',
+              backgroundColor: 'rgba(30, 70, 45, 0.9)', color: '#c8e8d4',
+              border: '1px solid rgba(60, 180, 100, 0.4)',
+              borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
             }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#059669'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(40, 90, 55, 0.95)'; e.currentTarget.style.boxShadow = '0 0 15px rgba(60, 180, 100, 0.3)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(30, 70, 45, 0.9)'; e.currentTarget.style.boxShadow = 'none'; }}
           >
-            기록을 갈무리하고 길을 떠난다
+            길을 떠난다
           </button>
         </div>
       )}
 
-      {/* 이벤트 도중 카드 액션 트리거 시 마운트되는 부가 모달 */}
       {isRemoveModalOpen && (
         <RemoveCardModal
           key={removeModalKey}

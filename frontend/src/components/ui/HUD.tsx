@@ -4,19 +4,17 @@ import { useDeckStore } from '../../store/useDeckStore';
 import { useAudioStore } from '../../store/useAudioStore';
 import { useResponsive } from '../../hooks/useResponsive';
 import { SettingsModal } from './SettingsModal';
-import { CompendiumModal } from './CompendiumModal';
 import { DebugMenu } from './DebugMenu';
 import { RelicBar } from './RelicBar';
 import { MapView } from '../../pages/MapView';
 import { useMapStore } from '../../store/useMapStore';
 import { colors } from '../../styles/theme';
-import { iconHeart, iconGold, iconSettings, iconLeaderboard, iconCardCount } from '../../assets/images/GUI';
+import { iconHeart, iconGold, iconSettings, iconCardCount } from '../../assets/images/GUI';
 
 export const HUD: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isCompendiumOpen, setIsCompendiumOpen] = useState(false);
   const [isMapOverlayOpen, setIsMapOverlayOpen] = useState(false);
-  const { playerHp, playerMaxHp, gold, currentScene, currentChapter, setIsLeaderboardOpen } = useRunStore();
+  const { playerHp, playerMaxHp, gold, currentScene, currentChapter } = useRunStore();
 
   const CHAPTER_NAMES: Record<number, string> = {
     1: '오염된 외곽 도시',
@@ -78,25 +76,6 @@ export const HUD: React.FC = () => {
             style={iconStyle} onMouseEnter={handleIconHover} onMouseLeave={handleIconLeave} title="지도 보기">🗺️</div>
         )}
 
-        {/* 명예의 전당 */}
-        <div onClick={() => { useAudioStore.getState().playClick(); setIsLeaderboardOpen(true); }}
-          style={iconStyle} onMouseEnter={handleIconHover} onMouseLeave={handleIconLeave} title="명예의 전당">
-          {iconImg(iconLeaderboard)}
-        </div>
-
-        {/* 도감 */}
-        <div onClick={() => { useAudioStore.getState().playClick(); setIsCompendiumOpen(true); }}
-          style={iconStyle} onMouseEnter={handleIconHover} onMouseLeave={handleIconLeave} title="도감">📖</div>
-
-        {/* 환경 설정 */}
-        <div onClick={() => { useAudioStore.getState().playClick(); setIsSettingsOpen(true); }}
-          style={iconStyle} onMouseEnter={handleIconHover} onMouseLeave={handleIconLeave} title="환경 설정">
-          {iconImg(iconSettings)}
-        </div>
-
-        {/* 디버그 메뉴 */}
-        <DebugMenu />
-
         {/* 덱 카운트 */}
         <div
           onClick={() => setViewingPile('DECK')}
@@ -104,7 +83,8 @@ export const HUD: React.FC = () => {
             cursor: 'pointer', userSelect: 'none', fontSize: '24px',
             textShadow: '2px 2px 2px black',
             display: 'flex', alignItems: 'center', gap: '5px',
-            transition: 'transform 0.2s'
+            transition: 'transform 0.2s',
+            marginRight: isMobile ? '8px' : '15px',
           }}
           onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
           onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -112,13 +92,21 @@ export const HUD: React.FC = () => {
         >
           {iconImg(iconCardCount)} <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{drawPile.length + hand.length + discardPile.length + exhaustPile.length}</span>
         </div>
+
+        {/* 디버그 메뉴 */}
+        <DebugMenu />
+
+        {/* 환경 설정 */}
+        <div onClick={() => { useAudioStore.getState().playClick(); setIsSettingsOpen(true); }}
+          style={iconStyle} onMouseEnter={handleIconHover} onMouseLeave={handleIconLeave} title="환경 설정">
+          {iconImg(iconSettings)}
+        </div>
       </div>
 
       {/* 유물 바 */}
       <RelicBar />
 
       {/* 모달들 */}
-      {isCompendiumOpen && <CompendiumModal onClose={() => setIsCompendiumOpen(false)} />}
       {isSettingsOpen && <SettingsModal onClose={() => setIsSettingsOpen(false)} showQuitButton={true} />}
       {isMapOverlayOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 9999 }}>

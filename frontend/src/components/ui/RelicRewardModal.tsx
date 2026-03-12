@@ -8,28 +8,23 @@ import { iconRelicReward } from '../../assets/images/GUI';
 interface RelicRewardModalProps {
   onClose: () => void;
   onRelicSelected: () => void;
-  guaranteedTier?: RelicTier; // 'BOSS' 등이 넘어오면 보스 유물만 필터링
+  guaranteedTier?: RelicTier;
 }
 
 export const RelicRewardModal: React.FC<RelicRewardModalProps> = ({ onClose, onRelicSelected, guaranteedTier }) => {
   const { addRelic, relics: ownedRelics, setToastMessage } = useRunStore();
 
-  // 초기 렌더링 시 조건에 맞는 유물을 식별하여 무작위로 1개(또는 n개) 추출
-  // 현재는 승리 보상으로 1개만 뜨고 획득/스킵 하는 구조로 작성합니다.
   const [rewardRelic] = useState<Relic | null>(() => {
-    // 1. 이미 보유 중인 유물 제외
     let available = RELICS.filter(r => !ownedRelics.includes(r.id));
 
-    // 2. 등급 조건이 있다면 필터링 (기본 엘리트는 COMMON/UNCOMMON/RARE 중, 보스는 BOSS 중)
     if (guaranteedTier === 'BOSS') {
       available = available.filter(r => r.tier === 'BOSS');
     } else {
       available = available.filter(r => r.tier !== 'BOSS');
     }
 
-    if (available.length === 0) return null; // 더 이상 얻을 유물이 없음
+    if (available.length === 0) return null;
 
-    // 무작위 1개 셔플 & 픽
     const lootRng = useRngStore.getState().lootRng;
     return available[lootRng.nextInt(available.length)];
   });
@@ -44,66 +39,83 @@ export const RelicRewardModal: React.FC<RelicRewardModalProps> = ({ onClose, onR
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-      backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999,
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+      backgroundColor: 'rgba(5, 5, 3, 0.92)', zIndex: 9999,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      animation: 'fadeIn 0.3s ease-out',
     }}>
-      <h2 style={{ fontSize: '36px', color: '#ffaaaa', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <img src={iconRelicReward} alt="" style={{ width: 36, height: 36, objectFit: 'contain' }} /> 전리품: 숨겨진 유물 발견
+      <h2 style={{
+        fontSize: '32px', color: '#cc8888', marginBottom: '20px',
+        display: 'flex', alignItems: 'center', gap: '10px',
+        textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+      }}>
+        <img src={iconRelicReward} alt="" style={{ width: 36, height: 36, objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(200, 80, 80, 0.5))' }} />
+        숨겨진 유물 발견
       </h2>
 
       {rewardRelic ? (
         <>
-          <p style={{ fontSize: '18px', color: '#ccc', marginBottom: '40px' }}>
+          <p style={{ fontSize: '16px', color: '#8a7e6a', marginBottom: '35px' }}>
             {guaranteedTier === 'BOSS' ? '보스가 남긴 진귀한 유물입니다.' : '먼지 구덩이 속에서 신기한 물건을 발견했습니다.'}
           </p>
           <div
             onClick={() => handleSelectRelic(rewardRelic.id)}
             style={{
-              width: '280px', height: '220px',
-              backgroundColor: '#3a2a2a', border: '2px solid #b04a4a', borderRadius: '12px',
-              padding: '20px', cursor: 'pointer',
+              width: '280px', minHeight: '200px',
+              backgroundColor: 'rgba(40, 20, 20, 0.85)',
+              border: '1px solid rgba(180, 80, 80, 0.4)',
+              borderRadius: '10px',
+              padding: '24px', cursor: 'pointer',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              transition: 'transform 0.2s', boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
+              transition: 'all 0.25s',
+              boxShadow: '0 4px 25px rgba(0,0,0,0.5)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-15px) scale(1.05)';
-              e.currentTarget.style.borderColor = '#ffaaaa';
+              e.currentTarget.style.transform = 'translateY(-10px) scale(1.03)';
+              e.currentTarget.style.borderColor = 'rgba(220, 120, 120, 0.6)';
+              e.currentTarget.style.boxShadow = '0 0 30px rgba(200, 80, 80, 0.25)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0) scale(1)';
-              e.currentTarget.style.borderColor = '#b04a4a';
+              e.currentTarget.style.borderColor = 'rgba(180, 80, 80, 0.4)';
+              e.currentTarget.style.boxShadow = '0 4px 25px rgba(0,0,0,0.5)';
             }}
           >
             <span style={{ width: '64px', height: '64px', marginBottom: '15px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              {rewardRelic.image ? <img src={rewardRelic.image} alt={rewardRelic.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <span style={{ fontSize: '64px' }}>{rewardRelic.icon}</span>}
+              {rewardRelic.image
+                ? <img src={rewardRelic.image} alt={rewardRelic.name} style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(200, 100, 100, 0.4))' }} />
+                : <span style={{ fontSize: '56px' }}>{rewardRelic.icon}</span>
+              }
             </span>
-            <h3 style={{ margin: '0 0 10px 0', fontSize: '24px', color: '#fff', textAlign: 'center' }}>
+            <h3 style={{ margin: '0 0 6px 0', fontSize: '22px', color: '#e8dcc8', textAlign: 'center', textShadow: '1px 1px 3px rgba(0,0,0,0.6)' }}>
               {rewardRelic.name}
-              <span style={{ fontSize: '12px', color: '#ffaaaa', marginLeft: '8px', verticalAlign: 'middle' }}>[{rewardRelic.tier}]</span>
+              <span style={{ fontSize: '11px', color: '#cc8888', marginLeft: '8px', verticalAlign: 'middle' }}>[{rewardRelic.tier}]</span>
             </h3>
-            <p style={{ color: '#ddd', fontSize: '15px', textAlign: 'center', lineHeight: '1.4', margin: 0 }}>
+            <p style={{ color: '#a09888', fontSize: '14px', textAlign: 'center', lineHeight: '1.5', margin: 0 }}>
               {rewardRelic.description}
             </p>
           </div>
         </>
       ) : (
-        <p style={{ fontSize: '18px', color: '#ccc', marginBottom: '40px' }}>
+        <p style={{ fontSize: '16px', color: '#8a7e6a', marginBottom: '35px' }}>
           더 이상 이 구역에서 획득할 수 있는 유물이 없습니다.
         </p>
       )}
 
       <button
         onClick={() => {
-          onRelicSelected(); // 건너뛰어도 보상 처리 완료로 마킹
+          onRelicSelected();
           onClose();
         }}
         style={{
-          marginTop: '50px', padding: '10px 30px', fontSize: '18px',
-          backgroundColor: '#444', color: '#fff', border: '1px solid #666',
-          borderRadius: '8px', cursor: 'pointer'
+          marginTop: '45px', padding: '10px 30px', fontSize: '16px',
+          backgroundColor: 'rgba(40, 35, 28, 0.9)', color: '#8a7e6a',
+          border: '1px solid rgba(100, 80, 50, 0.4)',
+          borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
         }}
+        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(55, 48, 35, 0.95)'; e.currentTarget.style.color = '#a09078'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(40, 35, 28, 0.9)'; e.currentTarget.style.color = '#8a7e6a'; }}
       >
-        건너뛰기 (가져가지 않음)
+        건너뛰기
       </button>
     </div>
   );

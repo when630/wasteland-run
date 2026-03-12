@@ -14,12 +14,11 @@ export const ToastMessage: React.FC = () => {
 
       const timer = setTimeout(() => {
         setIsVisible(false);
-      }, 2000); // 2초 표시
+      }, 2500);
 
-      // 애니메이션(0.3s)이 끝난 후 store 도 비움
       const clearTimer = setTimeout(() => {
         setToastMessage(null);
-      }, 2300);
+      }, 2800);
 
       return () => {
         clearTimeout(timer);
@@ -30,47 +29,53 @@ export const ToastMessage: React.FC = () => {
 
   if (!toastMessage && !isVisible) return null;
 
-  // 메시지 내용에 따른 색상/아이콘 분기
   const isWarning = /!|부족|불가|없|실패/.test(displayMsg);
   const isSuccess = /발동|획득|회복|완료|수신/.test(displayMsg);
 
   let bgColor: string;
   let borderColor: string;
+  let glowColor: string;
 
   if (isWarning) {
-    bgColor = 'rgba(220, 50, 50, 0.95)';
-    borderColor = '#ff8888';
+    bgColor = 'rgba(80, 20, 15, 0.95)';
+    borderColor = '#cc4433';
+    glowColor = 'rgba(200, 60, 40, 0.4)';
   } else if (isSuccess) {
-    bgColor = 'rgba(34, 130, 68, 0.95)';
-    borderColor = '#66cc88';
+    bgColor = 'rgba(20, 60, 30, 0.95)';
+    borderColor = '#44aa66';
+    glowColor = 'rgba(60, 180, 80, 0.4)';
   } else {
-    bgColor = 'rgba(180, 140, 40, 0.95)';
-    borderColor = '#ddb844';
+    bgColor = 'rgba(60, 45, 15, 0.95)';
+    borderColor = '#aa8833';
+    glowColor = 'rgba(180, 140, 40, 0.4)';
   }
 
   return (
     <div
       style={{
         position: 'fixed',
-        top: '20%',
+        top: '15%',
         left: '50%',
         transform: 'translateX(-50%)',
         backgroundColor: bgColor,
-        color: 'white',
-        padding: '12px 24px',
-        borderRadius: '8px',
-        fontSize: '18px',
+        color: '#e8dcc8',
+        padding: '14px 28px',
+        borderRadius: '4px',
+        fontSize: '17px',
         fontWeight: 'bold',
-        boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+        letterSpacing: '0.5px',
+        boxShadow: `0 0 20px ${glowColor}, 0 4px 15px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08)`,
         border: `1px solid ${borderColor}`,
+        borderLeft: `3px solid ${borderColor}`,
         zIndex: 9999,
         pointerEvents: 'none',
         opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out',
-        marginTop: isVisible ? '0' : '-10px',
+        transition: 'opacity 0.3s ease-in-out',
+        animation: isVisible ? 'slideDown 0.3s ease-out' : undefined,
+        textShadow: '1px 1px 2px rgba(0,0,0,0.6)',
       }}
     >
-      <img src={iconToast} alt="" style={{ width: 20, height: 20, objectFit: 'contain', verticalAlign: 'middle', marginRight: '6px' }} />
+      <img src={iconToast} alt="" style={{ width: 20, height: 20, objectFit: 'contain', verticalAlign: 'middle', marginRight: '8px', filter: 'drop-shadow(0 0 3px rgba(255,180,60,0.5))' }} />
       {displayMsg}
     </div>
   );

@@ -38,13 +38,19 @@ export const CardRewardModal: React.FC<CardRewardModalProps> = ({ onClose, onCar
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-      backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999,
+      backgroundColor: 'rgba(5, 5, 3, 0.92)', zIndex: 9999,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      animation: 'fadeIn 0.3s ease-out',
     }}>
-      <h2 style={{ fontSize: isMobile ? '24px' : '36px', color: '#ffdd44', marginBottom: isMobile ? '15px' : '30px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <img src={iconLoot} alt="" style={{ width: isMobile ? 28 : 36, height: isMobile ? 28 : 36, objectFit: 'contain' }} /> 전리품: 카드 선택
+      <h2 style={{
+        fontSize: isMobile ? '24px' : '32px', color: '#d4a854', marginBottom: isMobile ? '10px' : '20px',
+        display: 'flex', alignItems: 'center', gap: '10px',
+        textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+      }}>
+        <img src={iconLoot} alt="" style={{ width: isMobile ? 28 : 36, height: isMobile ? 28 : 36, objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(212,168,84,0.5))' }} />
+        전리품: 카드 선택
       </h2>
-      <p style={{ fontSize: isMobile ? '14px' : '18px', color: '#ccc', marginBottom: isMobile ? '20px' : '40px' }}>
+      <p style={{ fontSize: isMobile ? '13px' : '16px', color: '#8a7e6a', marginBottom: isMobile ? '20px' : '35px' }}>
         덱에 추가할 카드를 한 장 선택하세요.
       </p>
 
@@ -55,16 +61,16 @@ export const CardRewardModal: React.FC<CardRewardModalProps> = ({ onClose, onCar
             onClick={() => handleSelectCard(card)}
             style={{
               cursor: 'pointer',
-              transition: 'transform 0.2s, box-shadow 0.2s',
+              transition: 'transform 0.25s, filter 0.25s',
               borderRadius: `${12 * (cardW / 220)}px`,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-15px) scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 0 30px rgba(255,255,255,0.2)';
+              e.currentTarget.style.filter = 'drop-shadow(0 0 15px rgba(212, 168, 84, 0.4))';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0) scale(1)';
-              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.filter = 'none';
             }}
           >
             <CardFrame card={card} width={cardW} />
@@ -75,12 +81,15 @@ export const CardRewardModal: React.FC<CardRewardModalProps> = ({ onClose, onCar
       <button
         onClick={onClose}
         style={{
-          marginTop: '50px', padding: '10px 30px', fontSize: '18px',
-          backgroundColor: '#444', color: '#fff', border: '1px solid #666',
-          borderRadius: '8px', cursor: 'pointer',
+          marginTop: '45px', padding: '10px 30px', fontSize: '16px',
+          backgroundColor: 'rgba(40, 35, 28, 0.9)', color: '#8a7e6a',
+          border: '1px solid rgba(100, 80, 50, 0.4)',
+          borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
         }}
+        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(55, 48, 35, 0.95)'; e.currentTarget.style.color = '#a09078'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(40, 35, 28, 0.9)'; e.currentTarget.style.color = '#8a7e6a'; }}
       >
-        건너뛰기 (선택 안 함)
+        건너뛰기
       </button>
     </div>
   );

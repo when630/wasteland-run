@@ -12,16 +12,10 @@ import shopBg from '../assets/images/backgrounds/shop_map_background.png';
 import npcImg from '../assets/images/characters/merchant.png';
 import { iconGoldReward, iconCardRemove } from '../assets/images/GUI';
 
-// 상점 판매용 카드 타입 확장 (가격, 품절 속성)
-interface ShopCard extends Card {
-  price: number;
-  isSoldOut: boolean;
-}
+const mob = () => window.innerWidth < 768;
 
-interface ShopRelic extends Relic {
-  price: number;
-  isSoldOut: boolean;
-}
+interface ShopCard extends Card { price: number; isSoldOut: boolean; }
+interface ShopRelic extends Relic { price: number; isSoldOut: boolean; }
 
 export const ShopView: React.FC = () => {
   const { gold, addGold, setScene, setToastMessage, relics: ownedRelics, addRelic } = useRunStore();
@@ -29,206 +23,167 @@ export const ShopView: React.FC = () => {
 
   const [shopCards, setShopCards] = useState<ShopCard[]>([]);
   const [shopRelics, setShopRelics] = useState<ShopRelic[]>([]);
-
-  // 덱 압축 서비스 상태
   const [removeServiceAvailable, setRemoveServiceAvailable] = useState(true);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
-  const REMOVE_PRICE = 50; // 기존 75에서 하향 (덱 압축 장려)
+  const REMOVE_PRICE = 50;
 
-  // 컴포넌트 마운트 시 (상점 진입 시마다) 물품 로드
   useEffect(() => {
-    // 1. 판매할 카드 6장 무작위 뽑기
     const lootRng = useRngStore.getState().lootRng;
     const chapter = useRunStore.getState().currentChapter;
     const dropPool = ALL_CARDS.filter(c => c.tier !== 'BASIC' && (c.chapter ?? 1) <= chapter);
     const shuffledCards = customShuffle(dropPool, lootRng);
     const selectedCards = shuffledCards.slice(0, 6).map((card, idx) => {
-      // 50~80 랜덤 골드 책정 (10단위)
       const randomPrice = lootRng.nextInt(4) * 10 + 50;
-      return {
-        ...card,
-        id: `shop_card_${idx}`,
-        price: randomPrice,
-        isSoldOut: false
-      } as ShopCard;
+      return { ...card, id: `shop_card_${idx}`, price: randomPrice, isSoldOut: false } as ShopCard;
     });
     setShopCards(selectedCards);
 
-    // 2. 판매할 미보유 유물 1~2개 뽑기 (보스 유물 제외)
-    const availableRelics = RELICS.filter(
-      r => r.tier !== 'BOSS' && !ownedRelics.includes(r.id)
-    );
+    const availableRelics = RELICS.filter(r => r.tier !== 'BOSS' && !ownedRelics.includes(r.id));
     const shuffledRelics = customShuffle(availableRelics, lootRng);
     const selectedRelics = shuffledRelics.slice(0, Math.min(2, shuffledRelics.length)).map(relic => {
-      // 티어별 기본 가격 산정 (유물 구매 접근성 상향)
       let price = 80;
       if (relic.tier === 'UNCOMMON') price = 120;
       else if (relic.tier === 'RARE') price = 200;
-
-      // 약간의 랜덤 편차 (-20 ~ +20)
       price += lootRng.nextInt(5) * 10 - 20;
       return { ...relic, price, isSoldOut: false };
     });
     setShopRelics(selectedRelics);
-
     setRemoveServiceAvailable(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 카드 구매 로직
   const handleBuyCard = async (idx: number) => {
     const item = shopCards[idx];
     if (item.isSoldOut) return;
-    if (gold < item.price) {
-      setToastMessage('골드가 부족합니다…');
-      return;
-    }
-
+    if (gold < item.price) { setToastMessage('골드가 부족합니다...'); return; }
     addGold(-item.price);
-
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { price, isSoldOut, id, ...cardBlueprint } = item;
     addCardToMasterDeck(cardBlueprint as Omit<Card, 'id'>);
-
     setToastMessage(`${item.name} 획득!`);
-
-    // 배열 업데이트 (품절 동기화)
-    const newArr = [...shopCards];
-    newArr[idx].isSoldOut = true;
-    setShopCards(newArr);
-
-    // 자동 저장
+    const newArr = [...shopCards]; newArr[idx].isSoldOut = true; setShopCards(newArr);
     await useRunStore.getState().saveRunData();
   };
 
-  // 유물 구매 로직
   const handleBuyRelic = async (idx: number) => {
     const item = shopRelics[idx];
     if (item.isSoldOut) return;
-    if (gold < item.price) {
-      setToastMessage('골드가 부족합니다…');
-      return;
-    }
-
+    if (gold < item.price) { setToastMessage('골드가 부족합니다...'); return; }
     addGold(-item.price);
     addRelic(item.id);
     setToastMessage(`${item.name} 획득!`);
-
-    const newArr = [...shopRelics];
-    newArr[idx].isSoldOut = true;
-    setShopRelics(newArr);
-
-    // 자동 저장
+    const newArr = [...shopRelics]; newArr[idx].isSoldOut = true; setShopRelics(newArr);
     await useRunStore.getState().saveRunData();
   };
 
-  // 덱 압축 서비스 트리거
   const handleRemoveService = () => {
     if (!removeServiceAvailable) return;
-    if (gold < REMOVE_PRICE) {
-      setToastMessage('골드가 부족합니다…');
-      return;
-    }
-    // 선 결제 대신 모달에서 진짜 제거가 확정될 때 차감하도록 모달만 먼저 띄움
+    if (gold < REMOVE_PRICE) { setToastMessage('골드가 부족합니다...'); return; }
     setIsRemoveModalOpen(true);
   };
 
-  // 덱 압축 "성공" 시 콜백 (모달 안에서 실행됨)
   const onRemoveConfirm = async () => {
     addGold(-REMOVE_PRICE);
     setRemoveServiceAvailable(false);
     setIsRemoveModalOpen(false);
     setToastMessage('카드를 덱에서 제거했습니다.');
-
-    // 자동 저장
     await useRunStore.getState().saveRunData();
   };
 
-  const handleLeave = () => {
-    setScene('MAP');
-  };
+  // 공용 스타일
+  const panelBg = 'rgba(18, 15, 10, 0.88)';
+  const panelBorder = '1px solid rgba(120, 90, 40, 0.25)';
 
   return (
     <div style={{
-      width: '100vw', minHeight: '100vh', height: '100vh', // 전체 화면 고정
+      width: '100vw', minHeight: '100vh', height: '100vh',
       backgroundImage: `url(${shopBg})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
+      backgroundSize: 'cover', backgroundPosition: 'center',
       backgroundBlendMode: 'overlay',
-      backgroundColor: 'rgba(24, 24, 27, 0.7)',
-      color: '#e5e7eb',
-      display: 'flex', flexDirection: window.innerWidth < 768 ? 'column' as const : 'row' as const,
-      overflow: window.innerWidth < 768 ? 'auto' : 'hidden',
+      backgroundColor: 'rgba(18, 14, 10, 0.7)',
+      color: '#e8dcc8',
+      display: 'flex', flexDirection: mob() ? 'column' : 'row',
+      overflow: mob() ? 'auto' : 'hidden',
     }}>
 
-      {/* 🌟 좌측 패널: 상점 진열대 (약 60%) */}
+      {/* 좌측: 상점 진열대 */}
       <div style={{
-        flex: window.innerWidth < 768 ? undefined : 6,
-        padding: window.innerWidth < 768 ? '12px' : '20px',
-        display: 'flex', flexDirection: 'column',
-        gap: '12px',
-        overflowY: window.innerWidth < 768 ? 'auto' : 'hidden'
+        flex: mob() ? undefined : 6,
+        padding: mob() ? '12px' : '20px',
+        display: 'flex', flexDirection: 'column', gap: '12px',
+        overflowY: mob() ? 'auto' : 'hidden',
       }}>
-        {/* 상단 타이틀 및 골드 정보 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', padding: window.innerWidth < 768 ? '8px 12px' : '10px 20px', borderRadius: '12px', flexWrap: 'wrap', gap: '4px' }}>
-          <h1 style={{ fontSize: window.innerWidth < 768 ? '20px' : '32px', color: '#fbbf24', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <img src={iconGoldReward} alt="" style={{ width: window.innerWidth < 768 ? 24 : 32, height: window.innerWidth < 768 ? 24 : 32, objectFit: 'contain' }} /> 고철 암시장
+        {/* 헤더 */}
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          backgroundColor: panelBg, padding: mob() ? '10px 14px' : '12px 22px',
+          borderRadius: '8px', border: panelBorder, flexWrap: 'wrap', gap: '4px',
+          boxShadow: '0 2px 15px rgba(0,0,0,0.3)',
+        }}>
+          <h1 style={{
+            fontSize: mob() ? '20px' : '28px', color: '#d4a854', margin: 0,
+            display: 'flex', alignItems: 'center', gap: '8px',
+            textShadow: '1px 2px 3px rgba(0,0,0,0.7)',
+          }}>
+            <img src={iconGoldReward} alt="" style={{ width: mob() ? 24 : 30, height: mob() ? 24 : 30, objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(212,168,84,0.5))' }} />
+            고철 암시장
           </h1>
-          <div style={{ fontSize: window.innerWidth < 768 ? '16px' : '20px', color: '#fbbf24', fontWeight: 'bold' }}>
+          <div style={{ fontSize: mob() ? '16px' : '20px', color: '#d4a854', fontWeight: 'bold', textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
             {gold} G
           </div>
         </div>
 
-        {/* 🌟 장비(카드) 판매 구역 (6장 최적화) */}
-        <div style={{ backgroundColor: '#27272a', padding: '15px', borderRadius: '12px' }}>
-          <h2 style={{ color: '#fff', margin: '0 0 10px 0', borderBottom: '1px solid #52525b', paddingBottom: '8px', fontSize: '20px' }}>장비 구입 (Cards)</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? 'repeat(3, 1fr)' : 'repeat(3, 130px)', gap: '10px', justifyContent: 'center' }}>
+        {/* 카드 판매 */}
+        <div style={{ backgroundColor: panelBg, padding: '15px', borderRadius: '8px', border: panelBorder }}>
+          <h2 style={{ color: '#b8a078', margin: '0 0 10px 0', borderBottom: '1px solid rgba(120, 90, 40, 0.2)', paddingBottom: '8px', fontSize: '18px' }}>장비 구입</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: mob() ? 'repeat(3, 1fr)' : 'repeat(3, 130px)', gap: '10px', justifyContent: 'center' }}>
             {shopCards.map((item, idx) => {
-              let cardBg = '#2a2a4a';
-              if (item.type.includes('ATTACK')) cardBg = '#4a2a2a';
-              else if (item.type.includes('DEFENSE')) cardBg = '#2a4a3a';
+              let cardBorder = 'rgba(100, 80, 50, 0.4)';
+              if (item.type.includes('ATTACK')) cardBorder = 'rgba(180, 80, 60, 0.4)';
+              else if (item.type.includes('DEFENSE')) cardBorder = 'rgba(60, 140, 100, 0.4)';
 
               return (
                 <div key={idx} style={{ position: 'relative' }}>
                   <div
                     onClick={() => handleBuyCard(idx)}
                     style={{
-                      width: window.innerWidth < 768 ? '100%' : '130px', height: window.innerWidth < 768 ? '140px' : '170px',
-                      backgroundColor: cardBg,
-                      border: `2px solid #52525b`, borderRadius: '10px',
+                      width: mob() ? '100%' : '130px', height: mob() ? '140px' : '170px',
+                      backgroundColor: 'rgba(25, 20, 15, 0.9)',
+                      border: `1px solid ${cardBorder}`, borderRadius: '8px',
                       padding: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center',
-                      opacity: item.isSoldOut ? 0.3 : 1,
+                      opacity: item.isSoldOut ? 0.25 : 1,
                       cursor: item.isSoldOut ? 'not-allowed' : 'pointer',
-                      transition: 'transform 0.1s'
+                      transition: 'all 0.2s',
                     }}
-                    onMouseEnter={e => { if (!item.isSoldOut) e.currentTarget.style.transform = 'scale(1.05)'; }}
-                    onMouseLeave={e => { if (!item.isSoldOut) e.currentTarget.style.transform = 'scale(1)'; }}
+                    onMouseEnter={e => { if (!item.isSoldOut) { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 0 15px rgba(180, 140, 50, 0.15)'; } }}
+                    onMouseLeave={e => { if (!item.isSoldOut) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; } }}
                   >
-                    <h3 style={{ margin: '0 0 6px 0', fontSize: '13px', color: '#fff', textAlign: 'center' }}>{item.name}</h3>
+                    <h3 style={{ margin: '0 0 6px 0', fontSize: '13px', color: '#e0d4bc', textAlign: 'center' }}>{item.name}</h3>
                     <div style={{
-                      backgroundColor: 'rgba(0,0,0,0.5)', padding: '2px 6px',
-                      borderRadius: '16px', color: '#00ffff', marginBottom: '6px', fontSize: '10px'
+                      backgroundColor: 'rgba(0,0,0,0.4)', padding: '2px 8px',
+                      borderRadius: '4px', color: '#88bbcc', marginBottom: '6px', fontSize: '10px',
+                      border: '1px solid rgba(80, 130, 180, 0.2)',
                     }}>
                       AP: {item.costAp} {item.costAmmo > 0 && `| 탄: ${item.costAmmo}`}
                     </div>
-                    <p style={{ color: '#ddd', fontSize: '11px', textAlign: 'center', lineHeight: '1.3', overflow: 'hidden' }}>
+                    <p style={{ color: '#a09888', fontSize: '11px', textAlign: 'center', lineHeight: '1.3', overflow: 'hidden' }}>
                       {item.description}
                     </p>
                   </div>
 
-                  {/* 가격표 뱃지 */}
                   {!item.isSoldOut && (
                     <div style={{
                       position: 'absolute', bottom: '-10px', left: '50%', transform: 'translateX(-50%)',
-                      backgroundColor: gold >= item.price ? '#b45309' : '#991b1b',
-                      color: '#fff', padding: '3px 10px', borderRadius: '10px',
-                      fontWeight: 'bold', fontSize: '12px', border: '2px solid #fbbf24',
-                      zIndex: 10
+                      backgroundColor: gold >= item.price ? 'rgba(80, 55, 15, 0.95)' : 'rgba(80, 20, 15, 0.95)',
+                      color: gold >= item.price ? '#d4a854' : '#cc6666', padding: '3px 12px', borderRadius: '4px',
+                      fontWeight: 'bold', fontSize: '12px',
+                      border: `1px solid ${gold >= item.price ? 'rgba(180, 140, 50, 0.5)' : 'rgba(180, 60, 60, 0.5)'}`,
+                      zIndex: 10,
                     }}>
                       {item.price} G
                     </div>
                   )}
                   {item.isSoldOut && (
-                    <div style={{ position: 'absolute', top: '40%', left: '0', right: '0', textAlign: 'center', color: '#ef4444', fontSize: '18px', fontWeight: 'bold', transform: 'rotate(-20deg)' }}>SOLD OUT</div>
+                    <div style={{ position: 'absolute', top: '40%', left: '0', right: '0', textAlign: 'center', color: '#884444', fontSize: '16px', fontWeight: 'bold', transform: 'rotate(-20deg)', textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>SOLD OUT</div>
                   )}
                 </div>
               );
@@ -236,122 +191,117 @@ export const ShopView: React.FC = () => {
           </div>
         </div>
 
-        {/* 🌟 유물 & 서비스 구역 (높이 압축) */}
-        <div style={{ display: 'flex', gap: '15px' }}>
-          {/* 유물 샵 */}
-          <div style={{ backgroundColor: '#27272a', padding: '15px', borderRadius: '12px', flex: 1 }}>
-            <h2 style={{ color: '#fff', margin: '0 0 10px 0', borderBottom: '1px solid #52525b', paddingBottom: '8px', fontSize: '18px' }}>진귀한 유물</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {/* 유물 & 서비스 */}
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ backgroundColor: panelBg, padding: '15px', borderRadius: '8px', border: panelBorder, flex: 1 }}>
+            <h2 style={{ color: '#b8a078', margin: '0 0 10px 0', borderBottom: '1px solid rgba(120, 90, 40, 0.2)', paddingBottom: '8px', fontSize: '16px' }}>진귀한 유물</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {shopRelics.map((relic, idx) => (
                 <div
                   key={idx}
                   onClick={() => handleBuyRelic(idx)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: '10px',
-                    padding: '8px', backgroundColor: '#3f3f46', borderRadius: '8px',
-                    opacity: relic.isSoldOut ? 0.3 : 1, cursor: relic.isSoldOut ? 'default' : 'pointer',
-                    border: '1px solid #52525b', transition: 'transform 0.1s'
+                    padding: '8px 10px', backgroundColor: 'rgba(25, 20, 15, 0.8)', borderRadius: '6px',
+                    opacity: relic.isSoldOut ? 0.25 : 1, cursor: relic.isSoldOut ? 'default' : 'pointer',
+                    border: '1px solid rgba(100, 80, 50, 0.25)', transition: 'all 0.2s',
                   }}
-                  onMouseEnter={e => { if (!relic.isSoldOut) e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                  onMouseLeave={e => { if (!relic.isSoldOut) e.currentTarget.style.transform = 'translateY(0)'; }}
+                  onMouseEnter={e => { if (!relic.isSoldOut) { e.currentTarget.style.backgroundColor = 'rgba(40, 32, 22, 0.9)'; e.currentTarget.style.boxShadow = '0 0 10px rgba(180, 140, 50, 0.1)'; } }}
+                  onMouseLeave={e => { if (!relic.isSoldOut) { e.currentTarget.style.backgroundColor = 'rgba(25, 20, 15, 0.8)'; e.currentTarget.style.boxShadow = 'none'; } }}
                 >
                   <span style={{ width: '30px', height: '30px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    {relic.image ? <img src={relic.image} alt={relic.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <span style={{ fontSize: '30px' }}>{relic.icon}</span>}
+                    {relic.image ? <img src={relic.image} alt={relic.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <span style={{ fontSize: '28px' }}>{relic.icon}</span>}
                   </span>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '14px' }}>{relic.name}</div>
-                    <div style={{ fontSize: '10px', color: '#a1a1aa' }}>[{relic.tier}]</div>
+                    <div style={{ fontWeight: 'bold', color: '#e0d4bc', fontSize: '14px' }}>{relic.name}</div>
+                    <div style={{ fontSize: '10px', color: '#8a7e6a' }}>[{relic.tier}]</div>
                   </div>
                   {!relic.isSoldOut && (
-                    <div style={{ fontWeight: 'bold', fontSize: '14px', color: gold >= relic.price ? '#fbbf24' : '#ef4444' }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '14px', color: gold >= relic.price ? '#d4a854' : '#cc6666' }}>
                       {relic.price} G
                     </div>
                   )}
-                  {relic.isSoldOut && <div style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '12px' }}>SOLD</div>}
+                  {relic.isSoldOut && <div style={{ color: '#884444', fontWeight: 'bold', fontSize: '12px' }}>SOLD</div>}
                 </div>
               ))}
-              {shopRelics.length === 0 && <p style={{ color: '#a1a1aa', fontSize: '12px' }}>판매 중인 유물이 없습니다.</p>}
+              {shopRelics.length === 0 && <p style={{ color: '#6a5e4a', fontSize: '12px' }}>판매 중인 유물이 없습니다.</p>}
             </div>
           </div>
 
-          {/* 제거 서비스 */}
-          <div style={{ backgroundColor: '#27272a', padding: '15px', borderRadius: '12px', flex: 1 }}>
-            <h2 style={{ color: '#fff', margin: '0 0 10px 0', borderBottom: '1px solid #52525b', paddingBottom: '8px', fontSize: '18px' }}>서비스</h2>
+          <div style={{ backgroundColor: panelBg, padding: '15px', borderRadius: '8px', border: panelBorder, flex: 1 }}>
+            <h2 style={{ color: '#b8a078', margin: '0 0 10px 0', borderBottom: '1px solid rgba(120, 90, 40, 0.2)', paddingBottom: '8px', fontSize: '16px' }}>서비스</h2>
             <button
               disabled={!removeServiceAvailable}
               onClick={handleRemoveService}
               style={{
-                width: '100%', padding: '12px 15px', backgroundColor: removeServiceAvailable ? '#7f1d1d' : '#3f3f46',
-                color: removeServiceAvailable ? '#fca5a5' : '#71717a', border: '1px solid #991b1b',
-                borderRadius: '8px', cursor: removeServiceAvailable ? 'pointer' : 'not-allowed',
+                width: '100%', padding: '12px 15px',
+                backgroundColor: removeServiceAvailable ? 'rgba(60, 20, 15, 0.85)' : 'rgba(25, 20, 15, 0.5)',
+                color: removeServiceAvailable ? '#cc8888' : '#5a5040',
+                border: `1px solid ${removeServiceAvailable ? 'rgba(180, 60, 60, 0.3)' : 'rgba(60, 50, 40, 0.2)'}`,
+                borderRadius: '6px', cursor: removeServiceAvailable ? 'pointer' : 'not-allowed',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                transition: 'filter 0.1s'
+                transition: 'all 0.2s',
               }}
-              onMouseEnter={e => { if (removeServiceAvailable) e.currentTarget.style.filter = 'brightness(1.2)'; }}
-              onMouseLeave={e => { if (removeServiceAvailable) e.currentTarget.style.filter = 'brightness(1)'; }}
+              onMouseEnter={e => { if (removeServiceAvailable) { e.currentTarget.style.backgroundColor = 'rgba(80, 30, 20, 0.9)'; e.currentTarget.style.boxShadow = '0 0 12px rgba(180, 60, 60, 0.15)'; } }}
+              onMouseLeave={e => { if (removeServiceAvailable) { e.currentTarget.style.backgroundColor = 'rgba(60, 20, 15, 0.85)'; e.currentTarget.style.boxShadow = 'none'; } }}
             >
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                <span style={{ fontSize: '18px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}><img src={iconCardRemove} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} /> 덱 압축</span>
-                <span style={{ fontSize: '12px', marginTop: '4px' }}>카드 1장 버리기</span>
+                <span style={{ fontSize: '16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <img src={iconCardRemove} alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} /> 덱 압축
+                </span>
+                <span style={{ fontSize: '11px', marginTop: '4px', color: removeServiceAvailable ? '#8a6a6a' : '#4a4030' }}>카드 1장 버리기</span>
               </div>
               {removeServiceAvailable && (
-                <span style={{ fontWeight: 'bold', fontSize: '20px', color: gold >= REMOVE_PRICE ? '#fbbf24' : '#ef4444' }}>
+                <span style={{ fontWeight: 'bold', fontSize: '18px', color: gold >= REMOVE_PRICE ? '#d4a854' : '#cc6666' }}>
                   {REMOVE_PRICE} G
                 </span>
               )}
             </button>
           </div>
         </div>
-
       </div>
 
-      {/* 🌟 우측 패널: 거대 NPC 및 나가기 버튼 (모바일에서는 축소) */}
+      {/* 우측: NPC + 나가기 */}
       <div style={{
-        flex: window.innerWidth < 768 ? undefined : 4,
+        flex: mob() ? undefined : 4,
         display: 'flex', flexDirection: 'column',
         justifyContent: 'flex-end', alignItems: 'center',
-        padding: window.innerWidth < 768 ? '16px' : '20px',
+        padding: mob() ? '16px' : '20px',
         position: 'relative',
-        borderLeft: window.innerWidth < 768 ? undefined : '2px dashed rgba(255,255,255,0.1)',
-        backgroundColor: 'rgba(0,0,0,0.3)'
+        borderLeft: mob() ? undefined : '1px solid rgba(120, 90, 40, 0.15)',
+        backgroundColor: 'rgba(0,0,0,0.25)',
       }}>
-        {/* NPC 이미지 — 모바일에서는 숨김 */}
         {window.innerWidth >= 768 && (
           <img
-            src={npcImg}
-            alt="고철 상인"
+            src={npcImg} alt="고철 상인"
             style={{
-              height: '75vh',
-              width: '100%',
-              objectFit: 'contain',
-              objectPosition: 'bottom center',
-              filter: 'drop-shadow(5px 10px 15px rgba(0,0,0,0.8))',
-              pointerEvents: 'none'
+              height: '75vh', width: '100%',
+              objectFit: 'contain', objectPosition: 'bottom center',
+              filter: 'drop-shadow(5px 10px 20px rgba(0,0,0,0.8))',
+              pointerEvents: 'none',
             }}
           />
         )}
 
-        {/* 나가기 버튼 */}
         <button
-          onClick={handleLeave}
+          onClick={() => setScene('MAP')}
           style={{
-            marginTop: window.innerWidth < 768 ? '0' : '20px',
-            padding: window.innerWidth < 768 ? '14px 30px' : '20px 60px',
-            fontSize: window.innerWidth < 768 ? '18px' : '24px', fontWeight: 'bold',
-            backgroundColor: '#3f3f46', color: '#fff', border: '2px solid #a1a1aa',
-            borderRadius: '12px', cursor: 'pointer',
-            boxShadow: '0 4px 10px rgba(0,0,0,0.5)',
+            marginTop: mob() ? '0' : '20px',
+            padding: mob() ? '14px 30px' : '18px 55px',
+            fontSize: mob() ? '16px' : '20px', fontWeight: 'bold',
+            backgroundColor: 'rgba(40, 35, 28, 0.9)', color: '#a09078',
+            border: '1px solid rgba(120, 100, 70, 0.4)',
+            borderRadius: '6px', cursor: 'pointer',
             transition: 'all 0.2s', zIndex: 10,
-            width: window.innerWidth < 768 ? '100%' : undefined,
+            width: mob() ? '100%' : undefined,
           }}
-          onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#52525b'; e.currentTarget.style.transform = 'scale(1.05)'; }}
-          onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#3f3f46'; e.currentTarget.style.transform = 'scale(1)'; }}
+          onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(55, 48, 35, 0.95)'; e.currentTarget.style.color = '#c8b898'; e.currentTarget.style.boxShadow = '0 0 12px rgba(120, 100, 70, 0.2)'; }}
+          onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(40, 35, 28, 0.9)'; e.currentTarget.style.color = '#a09078'; e.currentTarget.style.boxShadow = 'none'; }}
         >
           은신처 떠나기
         </button>
       </div>
 
-      {/* 덱 압축 시 모달 연동 (전체화면 오버레이이므로 위치 무관) */}
       {isRemoveModalOpen && (
         <RemoveCardModal
           onClose={() => setIsRemoveModalOpen(false)}
