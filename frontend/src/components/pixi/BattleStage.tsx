@@ -13,17 +13,31 @@ import { VfxLayer } from './vfx/VfxLayer';
 import { dispatchVfx } from './vfx/vfxDispatcher';
 import { PLAYER_POS } from './vfx/battleLayout';
 import playerImg from '../../assets/images/characters/player.png';
+import playerPhysicalAttackImg from '../../assets/images/characters/player_physical_attack.png';
+import playerSpecialAttackImg from '../../assets/images/characters/player_special_attack.png';
+import playerPhysicalHitImg from '../../assets/images/characters/player_physical_hit.png';
+import playerSpecialHitImg from '../../assets/images/characters/player_special_hit.png';
+import type { PlayerSpriteState } from '../../store/battle/types';
 
 export const BattleStage: React.FC = () => {
   // 스토어에서 런 상태 및 전투 상태 가져오기
   const { playerHp, playerMaxHp } = useRunStore();
-  const { currentTurn, enemies, targetingCardId, playerAmmo, playerHitQueue, consumePlayerHitQueue, activeEnemyIndex, damageNumbers, clearExpiredDamageNumbers, powerPhysicalScalingBonus } = useBattleStore();
+  const { currentTurn, enemies, targetingCardId, playerAmmo, playerHitQueue, consumePlayerHitQueue, activeEnemyIndex, damageNumbers, clearExpiredDamageNumbers, powerPhysicalScalingBonus, playerSpriteState, setPlayerSpriteState } = useBattleStore();
   const { hand } = useDeckStore();
   const { playCard } = useCardPlay();
 
   // 타입 충돌을 피하기 위해 useMemo로 텍스처와 스타일 인스턴스 생성
   const placeholderTexture = useMemo(() => PIXI.Texture.WHITE, []);
-  const playerTexture = useMemo(() => PIXI.Texture.from(playerImg), []);
+  const playerTextures = useMemo(() => {
+    const map: Record<PlayerSpriteState, PIXI.Texture> = {
+      IDLE: PIXI.Texture.from(playerImg),
+      PHYSICAL_ATTACK: PIXI.Texture.from(playerPhysicalAttackImg),
+      SPECIAL_ATTACK: PIXI.Texture.from(playerSpecialAttackImg),
+      PHYSICAL_HIT: PIXI.Texture.from(playerPhysicalHitImg),
+      SPECIAL_HIT: PIXI.Texture.from(playerSpecialHitImg),
+    };
+    return map;
+  }, []);
 
   const defaultTextStyle = useMemo(() => new PIXI.TextStyle({
     fill: 0xffffff,
@@ -109,6 +123,7 @@ export const BattleStage: React.FC = () => {
 
       if (hitType === 'DAMAGE') {
         // 🌟 직접 피격: 넉백 + 붉은 번쩍 + 화면 흔들림
+        setPlayerSpriteState('PHYSICAL_HIT');
         setPlayerTint(0xff2222);
         setPlayerHitOffset(-20);
         // 화면 흔들림 (300ms 감쇄 진동)
@@ -130,11 +145,13 @@ export const BattleStage: React.FC = () => {
         safeTimeout(() => setPlayerHitOffset(-4), 180);
         safeTimeout(() => {
           resetVisuals();
+          setPlayerSpriteState('IDLE');
           isAnimatingRef.current = false;
           consumePlayerHitQueue(); // 다음 큐 아이템으로
         }, 300);
       } else if (hitType === 'BURN') {
         // 🌟 화상 틱: 오렌지 점멸 + Y 떨림 + Pixi VFX
+        setPlayerSpriteState('SPECIAL_HIT');
         try {
           dispatchVfx({
             cardBaseId: '__enemy_burn_tick__',
@@ -153,11 +170,13 @@ export const BattleStage: React.FC = () => {
         safeTimeout(() => {
           clearInterval(burnInterval);
           resetVisuals();
+          setPlayerSpriteState('IDLE');
           isAnimatingRef.current = false;
           consumePlayerHitQueue();
         }, 350);
       } else if (hitType === 'POISON') {
         // 🌟 맹독 틱: 녹색 점멸 + 투명도 깜빡 + Pixi VFX
+        setPlayerSpriteState('SPECIAL_HIT');
         try {
           dispatchVfx({
             cardBaseId: '__enemy_poison_tick__',
@@ -176,6 +195,7 @@ export const BattleStage: React.FC = () => {
         safeTimeout(() => {
           clearInterval(poisonInterval);
           resetVisuals();
+          setPlayerSpriteState('IDLE');
           isAnimatingRef.current = false;
           consumePlayerHitQueue();
         }, 350);
@@ -184,7 +204,7 @@ export const BattleStage: React.FC = () => {
         consumePlayerHitQueue();
       }
     }
-  }, [playerHitQueue, consumePlayerHitQueue, safeTimeout, resetVisuals]);
+  }, [playerHitQueue, consumePlayerHitQueue, safeTimeout, resetVisuals, setPlayerSpriteState]);
 
   // 데미지 넘버 정리 타이머
   useEffect(() => {
@@ -257,7 +277,7 @@ export const BattleStage: React.FC = () => {
         // 커서 로직 삭제 -> 상위 래퍼의 글로벌 .targeting-mode 클래스 위임
         >
           <Sprite
-            texture={playerTexture}
+            texture={playerTextures[playerSpriteState]}
             width={150}
             height={300}
             anchor={0.5}

@@ -197,11 +197,14 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
       // 2. 행동 처리
       if (enemyObj.currentIntent) {
         if (enemyObj.currentIntent.type === 'ATTACK' && enemyObj.currentIntent.amount) {
-          const isSpecial = enemyObj.currentIntent.damageType === 'SPECIAL';
+          const intent = enemyObj.currentIntent;
+          // 공격 스프라이트 전환용
+          enemyObj = { ...enemyObj, visualEffect: { type: 'ATTACKING' as const, tick: Date.now() } };
+          const isSpecial = intent.damageType === 'SPECIAL';
 
           const { rawDamage, hitCount } = parseAttackIntent(
-            enemyObj.currentIntent.amount,
-            enemyObj.currentIntent.description,
+            intent.amount!,
+            intent.description,
             currentStatuses.WEAK || 0,
             state.playerDebuffs.VULNERABLE || 0
           );
@@ -209,7 +212,7 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
           const dmgResult = calculateDamageToPlayer(
             rawDamage, hitCount, isSpecial,
             { shield: newShield, resist: newResist },
-            enemyObj.currentIntent.description
+            intent.description
           );
 
           newShield = dmgResult.newShield;
@@ -289,15 +292,15 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
               }
             }
 
-            if (enemyObj.currentIntent!.description.includes('소이탄')) {
+            if (intent.description.includes('소이탄')) {
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { id, ...burnBlueprint } = STATUS_CARDS[0];
               useDeckStore.getState().addCardToDiscardPile(burnBlueprint);
               useRunStore.getState().setToastMessage('오염물질 침투 — 덱에 [화상] 카드가 섞여들었다!');
             }
 
-            if (enemyObj.currentIntent!.applyDebuff) {
-              const { status, amount } = enemyObj.currentIntent!.applyDebuff;
+            if (intent.applyDebuff) {
+              const { status, amount } = intent.applyDebuff;
               const currentDebuffs = get().playerDebuffs;
               set({ playerDebuffs: { ...currentDebuffs, [status]: (currentDebuffs[status] || 0) + amount } });
               useRunStore.getState().setToastMessage(`${enemyObj.name}의 공격! ${status} ${amount}턴 부여!`);

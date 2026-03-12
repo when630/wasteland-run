@@ -1,10 +1,22 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Container, Sprite, Text, useTick } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import type { Enemy } from '../../types/enemyTypes';
 import type { Card } from '../../types/gameTypes';
 import { calculatePreviewDamage } from '../../logic/damageCalculation';
 import { HpBar } from './HpBar';
+
+// 텍스처 캐시 (동일 URL 중복 생성 방지)
+const textureCache = new Map<string, PIXI.Texture>();
+function getTexture(url: string | undefined, fallback: PIXI.Texture): PIXI.Texture {
+  if (!url) return fallback;
+  let tex = textureCache.get(url);
+  if (!tex) {
+    tex = PIXI.Texture.from(url);
+    textureCache.set(url, tex);
+  }
+  return tex;
+}
 
 interface AnimatedEnemyProps {
   enemy: Enemy;
@@ -77,6 +89,20 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
 
   // PIXI Ticker 루프 - 컴포넌트 마운트 및 매 프레임마다 실행
   useTick(() => {
+    // 스프라이트 페이즈 업데이트 (텍스처 전환용)
+    if (hasSprite && enemy.visualEffect) {
+      const elapsed = Date.now() - enemy.visualEffect.tick;
+      if (enemy.visualEffect.type === 'ATTACKING' && elapsed < 600) {
+        if (spritePhaseRef.current !== 'attack') { spritePhaseRef.current = 'attack'; setSpritePhase('attack'); }
+      } else if (enemy.visualEffect.type === 'DAMAGE' && elapsed < 300) {
+        if (spritePhaseRef.current !== 'hit') { spritePhaseRef.current = 'hit'; setSpritePhase('hit'); }
+      } else if (spritePhaseRef.current !== 'idle') {
+        spritePhaseRef.current = 'idle'; setSpritePhase('idle');
+      }
+    } else if (hasSprite && spritePhaseRef.current !== 'idle') {
+      spritePhaseRef.current = 'idle'; setSpritePhase('idle');
+    }
+
     // 활성 상태: 제자리 진동 + 밝은 색상으로 공격 모션 연출
     if (isActive && enemy.currentHp > 0 && activeTimerRef.current > 0) {
       const elapsed = Date.now() - activeTimerRef.current;
@@ -194,10 +220,27 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
 
   // 보스 분기 처리
   const isBoss = enemy.tier === 'BOSS';
-  const width = isBoss ? 350 : 150;
-  const height = isBoss ? 450 : 200;
+  const hasSprite = !!enemy.spriteUrl;
+  const width = isBoss ? 350 : (hasSprite ? 420 : 150);
+  const height = isBoss ? 450 : (hasSprite ? 230 : 200);
   const nameYOffset = isBoss ? -250 : -130;
   const hpYOffset = isBoss ? 260 : 140;
+
+  // 스프라이트 URL이 있으면 상태별 텍스처 전환
+  const [spritePhase, setSpritePhase] = useState<'idle' | 'attack' | 'hit'>('idle');
+  const spritePhaseRef = useRef(spritePhase);
+
+  const currentTexture = useMemo(() => {
+    if (!hasSprite) return texture;
+    if (spritePhase === 'attack') return getTexture(enemy.spriteAttackUrl, getTexture(enemy.spriteUrl, texture));
+    if (spritePhase === 'hit') return getTexture(enemy.spriteHitUrl, getTexture(enemy.spriteUrl, texture));
+    return getTexture(enemy.spriteUrl, texture);
+  }, [hasSprite, spritePhase, enemy.spriteUrl, enemy.spriteAttackUrl, enemy.spriteHitUrl, texture]);
+
+  // 스프라이트가 있으면 기본 tint를 흰색(원본 색상 유지)으로
+  const spriteTint = hasSprite
+    ? (tint === 0xff0000 ? 0xffffff : tint)  // 기본 빨강 → 원본색, 나머지 이펙트 유지
+    : tint;
 
   return (
     <Container
@@ -218,11 +261,11 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
         style={defaultTextStyle}
       />
       <Sprite
-        texture={texture}
+        texture={currentTexture}
         width={width * scaleModifier}
         height={height * scaleModifier}
         anchor={0.5}
-        tint={tint}
+        tint={spriteTint}
       />
       {/* 적 체력 바 */}
       <HpBar

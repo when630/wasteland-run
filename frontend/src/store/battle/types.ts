@@ -30,6 +30,8 @@ export const DEFAULT_PLAYER_STATUS: PlayerBattleStatus = {
   physicalAttacksThisTurn: 0,
 };
 
+export type PlayerSpriteState = 'IDLE' | 'PHYSICAL_ATTACK' | 'SPECIAL_ATTACK' | 'PHYSICAL_HIT' | 'SPECIAL_HIT';
+
 export interface PlayerSlice {
   playerActionPoints: number;
   playerMaxAp: number;
@@ -37,6 +39,7 @@ export interface PlayerSlice {
   playerStatus: PlayerBattleStatus;
   playerDebuffs: Record<string, number>;
   playerHitQueue: Array<{ type: 'DAMAGE' | 'BURN' | 'POISON' }>;
+  playerSpriteState: PlayerSpriteState;
   hasPlayedUtilityThisTurn: boolean;
   powerDefenseAmmo50: boolean;
   powerPhysicalScalingActive: boolean;
@@ -48,6 +51,7 @@ export interface PlayerSlice {
   addPlayerShield: (amount: number) => void;
   addPlayerResist: (amount: number) => void;
   consumePlayerHitQueue: () => void;
+  setPlayerSpriteState: (state: PlayerSpriteState) => void;
   setPlayerStatusField: (field: Partial<PlayerBattleStatus>) => void;
   setMarkOfFate: (enemyId: string, healAmount: number, ammoAmount: number) => void;
   setPowerDefenseAmmo50: (active: boolean) => void;

@@ -164,6 +164,33 @@ export const DebugTestPanel: React.FC<{
     st.enemies.forEach(e => { if (e.currentHp > 0) st.applyDamageToEnemy(e.id, 9999, 'PIERCING'); });
   };
 
+  const forceEnemyAttack = (dmg: number, damageType: 'PHYSICAL' | 'SPECIAL') => {
+    if (!firstAlive) return;
+    const tid = firstAlive.id;
+    const idx = useBattleStore.getState().enemies.findIndex(e => e.id === tid);
+    if (idx === -1) return;
+    // 임시 공격 의도 설정
+    useBattleStore.setState(s => ({
+      enemies: s.enemies.map(e => e.id !== tid ? e : {
+        ...e,
+        currentIntent: { type: 'ATTACK' as const, amount: dmg, damageType, description: `디버그 ${damageType} ${dmg}` },
+      }),
+    }));
+    // 적 턴 실행
+    setTimeout(() => {
+      useBattleStore.getState().executeOneEnemyTurn(idx);
+      // 의도를 원래 대기로 복원
+      setTimeout(() => {
+        useBattleStore.setState(s => ({
+          enemies: s.enemies.map(e => e.id !== tid ? e : {
+            ...e,
+            currentIntent: { type: 'DEFEND' as const, description: '🎯 대기 중...' },
+          }),
+        }));
+      }, 600);
+    }, 50);
+  };
+
   const spawnNewEnemy = (baseId: string) => {
     const alive = useBattleStore.getState().enemies.filter(e => e.currentHp > 0);
     if (alive.length >= 3) { useRunStore.getState().setToastMessage('최대 3마리까지만 소환 가능합니다.'); return; }
@@ -361,6 +388,13 @@ export const DebugTestPanel: React.FC<{
             <NumRow label="Resist" value={firstAlive?.resist || 0} onMinus={() => modEnemyField('resist', -5)} onPlus={() => modEnemyField('resist', 5)} minusLabel="-5" plusLabel="+5" />
             <NumRow label="HP" value={firstAlive?.currentHp || 0} onMinus={() => modEnemyHp(-20)} onPlus={() => modEnemyHp(20)} minusLabel="-20" plusLabel="+20" />
             <Btn label="Kill All" onClick={killAll} bg="#622" color="#f88" />
+            <div style={{ marginTop: '4px', fontSize: '10px', color: '#888' }}>적 강제 공격</div>
+            <div style={{ display: 'flex', gap: '3px' }}>
+              <Btn label="물리 5" onClick={() => forceEnemyAttack(5, 'PHYSICAL')} bg="#533" color="#f88" flex small />
+              <Btn label="물리 15" onClick={() => forceEnemyAttack(15, 'PHYSICAL')} bg="#533" color="#f88" flex small />
+              <Btn label="특수 5" onClick={() => forceEnemyAttack(5, 'SPECIAL')} bg="#335" color="#8bf" flex small />
+              <Btn label="특수 15" onClick={() => forceEnemyAttack(15, 'SPECIAL')} bg="#335" color="#8bf" flex small />
+            </div>
           </div>
         )}
 

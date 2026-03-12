@@ -9,6 +9,7 @@ export const createPlayerSlice: StateCreator<BattleState, [], [], PlayerSlice> =
   playerStatus: { ...DEFAULT_PLAYER_STATUS },
   playerDebuffs: {},
   playerHitQueue: [],
+  playerSpriteState: 'IDLE',
   hasPlayedUtilityThisTurn: false,
   powerDefenseAmmo50: false,
   powerPhysicalScalingActive: false,
@@ -39,6 +40,8 @@ export const createPlayerSlice: StateCreator<BattleState, [], [], PlayerSlice> =
   consumePlayerHitQueue: () => set((state) => ({
     playerHitQueue: state.playerHitQueue.slice(1)
   })),
+
+  setPlayerSpriteState: (spriteState) => set({ playerSpriteState: spriteState }),
 
   setPlayerStatusField: (field) => set((state) => ({
     playerStatus: { ...state.playerStatus, ...field }

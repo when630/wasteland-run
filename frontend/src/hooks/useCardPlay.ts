@@ -147,6 +147,15 @@ export const useCardPlay = () => {
     else if (hasBuff) useAudioStore.getState().playHeal();
     else useAudioStore.getState().playDraw();
 
+    // 공격 카드 스프라이트 전환
+    if (card.type === 'PHYSICAL_ATTACK') {
+      useBattleStore.getState().setPlayerSpriteState('PHYSICAL_ATTACK');
+      setTimeout(() => useBattleStore.getState().setPlayerSpriteState('IDLE'), 500);
+    } else if (card.type === 'SPECIAL_ATTACK') {
+      useBattleStore.getState().setPlayerSpriteState('SPECIAL_ATTACK');
+      setTimeout(() => useBattleStore.getState().setPlayerSpriteState('IDLE'), 500);
+    }
+
     // VFX 디스패치
     const vfxProfile = VFX_PROFILES[card.baseId];
 
@@ -163,6 +172,15 @@ export const useCardPlay = () => {
     // 공격 카드 VFX — 적 위치에 이펙트
     if (vfxProfile && hasDamage) {
       const livingEnemies = enemies.filter(e => e.currentHp > 0);
+      // 특수 공격(총기) → 권총 높이에서 발사, 물리 공격 → 주먹 높이에서
+      const vfxSourceX = card.type === 'SPECIAL_ATTACK'
+        ? PLAYER_POS.x + 40
+        : PLAYER_POS.x;
+      const vfxSourceY = card.type === 'SPECIAL_ATTACK'
+        ? PLAYER_POS.y - 80
+        : card.type === 'PHYSICAL_ATTACK'
+          ? PLAYER_POS.y - 60
+          : PLAYER_POS.y;
 
       if (vfxProfile.isAoe) {
         // AoE: 생존 적 전체 좌표 전달
@@ -172,8 +190,8 @@ export const useCardPlay = () => {
         });
         dispatchVfx({
           cardBaseId: card.baseId,
-          sourceX: PLAYER_POS.x,
-          sourceY: PLAYER_POS.y,
+          sourceX: vfxSourceX,
+          sourceY: vfxSourceY,
           targetPositions: positions,
         });
       } else if (vfxProfile.multiHitCount > 1) {
@@ -184,8 +202,8 @@ export const useCardPlay = () => {
           setTimeout(() => {
             dispatchVfx({
               cardBaseId: card.baseId,
-              sourceX: PLAYER_POS.x,
-              sourceY: PLAYER_POS.y,
+              sourceX: vfxSourceX,
+              sourceY: vfxSourceY,
               targetPositions: [pos],
               hitIndex: hit,
             });
@@ -200,8 +218,8 @@ export const useCardPlay = () => {
           setTimeout(() => {
             dispatchVfx({
               cardBaseId: card.baseId,
-              sourceX: PLAYER_POS.x,
-              sourceY: PLAYER_POS.y,
+              sourceX: vfxSourceX,
+              sourceY: vfxSourceY,
               targetPositions: [pos],
               hitIndex: shot,
             });

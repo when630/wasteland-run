@@ -22,4 +22,7 @@ export interface Enemy {
   currentIntent: Intent | null; // 현재 턴에 하려는 행동
   statuses?: Record<string, number>; // 상태이상 (VULNERABLE, WEAK, BURN, POISON 등)
   visualEffect?: { type: 'DAMAGE' | 'BUFF' | 'BURN_TICK' | 'POISON_TICK' | 'BURN_POISON_TICK' | 'ATTACKING'; tick: number };
+  spriteUrl?: string;        // 기본 스프라이트 이미지
+  spriteAttackUrl?: string;  // 공격 스프라이트 이미지
+  spriteHitUrl?: string;     // 피격 스프라이트 이미지
 }

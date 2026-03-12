@@ -1,5 +1,8 @@
 import type { Enemy, Intent, EnemyTier } from '../../types/enemyTypes';
 import { generateUniqueId, type SeededRNG } from '../../utils/rng';
+import scarecrowImg from '../images/characters/scarecrow.png';
+import scarecrowAttackImg from '../images/characters/scarecrow_attack.png';
+import scarecrowHitImg from '../images/characters/scarecrow_hit.png';
 
 type BaseEnemy = Omit<Enemy, 'id' | 'currentHp' | 'shield' | 'resist' | 'currentIntent'> & { chapter?: number; initialShield?: number };
 
@@ -11,6 +14,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '훈련용 허수아비',
     maxHp: 9999,
     chapter: 0,
+    spriteUrl: scarecrowImg,
+    spriteAttackUrl: scarecrowAttackImg,
+    spriteHitUrl: scarecrowHitImg,
   },
 
   // ===== 챕터 1: 오염된 외곽 도시 =====

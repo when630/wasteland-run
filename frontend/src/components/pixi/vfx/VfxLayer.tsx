@@ -61,7 +61,8 @@ export const VfxLayer: React.FC<VfxLayerProps> = ({ onShakeUpdate }) => {
               engineRef.current.spawnThermalAoe(target.x, target.y, profile);
               break;
             case 'ELECTROMAGNETIC':
-              engineRef.current.spawnElectromagnetic(cmd.sourceX, cmd.sourceY, target.x, target.y, profile);
+              // 총알은 발사 높이와 동일한 수평 직선으로 날아감
+              engineRef.current.spawnElectromagnetic(cmd.sourceX, cmd.sourceY, target.x, cmd.sourceY, profile);
               break;
             case 'SHIELD_BARRIER':
               engineRef.current.spawnShieldBarrier(target.x, target.y, profile);
