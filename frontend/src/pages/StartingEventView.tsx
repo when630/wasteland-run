@@ -4,7 +4,7 @@ import { useMapStore } from '../store/useMapStore';
 import { STARTING_EVENTS } from '../assets/data/events';
 import type { RandomEvent, EventOption } from '../types/eventTypes';
 import { useRngStore } from '../store/useRngStore';
-import eventBg from '../assets/images/event_map_background.png';
+import eventBg from '../assets/images/backgrounds/event_map_background.png';
 import { iconEvent } from '../assets/images/GUI';
 
 export const StartingEventView: React.FC = () => {

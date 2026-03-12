@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRunStore } from '../store/useRunStore';
 import { UpgradeCardModal } from '../components/ui/UpgradeCardModal';
 import { onRestOrEventEnter } from '../logic/relicEffects';
-import restBg from '../assets/images/campfire_map_background.png';
+import restBg from '../assets/images/backgrounds/campfire_map_background.png';
 import { iconRest, iconCardUpgrade, iconHeart } from '../assets/images/GUI';
 
 export const RestView: React.FC = () => {

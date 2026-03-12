@@ -17,7 +17,10 @@ import { createEnemy, getEnemyIdsByTier } from '../assets/data/enemies';
 import { useRunStore } from '../store/useRunStore';
 import { onBattleStart } from '../logic/relicEffects';
 import { useRngStore } from '../store/useRngStore';
-import battleBg from '../assets/images/stage1_battle_backgroung.png';
+import battleBg1 from '../assets/images/backgrounds/stage1_battle_backgroung.png';
+import battleBg2 from '../assets/images/backgrounds/stage2_battle_backgroung.png';
+
+const BATTLE_BGS: Record<number, string> = { 1: battleBg1, 2: battleBg2 };
 
 export const BattleView: React.FC = () => {
   const { initDeck, drawCards, masterDeck, setMasterDeck } = useDeckStore();
@@ -169,7 +172,7 @@ export const BattleView: React.FC = () => {
       style={{
         position: 'relative',
         width: '100vw', height: '100vh', overflow: 'hidden',
-        backgroundImage: `url(${battleBg})`,
+        backgroundImage: `url(${BATTLE_BGS[currentChapter] || battleBg1})`,
         backgroundSize: 'cover',
         backgroundPosition: 'bottom'
       }}>

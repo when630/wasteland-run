@@ -2,13 +2,13 @@ import React, { useEffect } from 'react';
 import Xarrow from 'react-xarrows';
 import { useRunStore } from '../store/useRunStore';
 import { useMapStore, type NodeType } from '../store/useMapStore';
-import mapBg from '../assets/images/map_background.png';
-import battleBadge from '../assets/images/battle_badge.png';
-import eliteBadge from '../assets/images/elite_badge.png';
-import restBadge from '../assets/images/campfire_badge.png';
-import shopBadge from '../assets/images/shop_badge.png';
-import eventBadge from '../assets/images/event_badge.png';
-import bossBadge from '../assets/images/boss_badge.png';
+import mapBg from '../assets/images/backgrounds/map_background.png';
+import battleBadge from '../assets/images/map/battle_badge.png';
+import eliteBadge from '../assets/images/map/elite_badge.png';
+import restBadge from '../assets/images/map/campfire_badge.png';
+import shopBadge from '../assets/images/map/shop_badge.png';
+import eventBadge from '../assets/images/map/event_badge.png';
+import bossBadge from '../assets/images/map/boss_badge.png';
 
 interface MapViewProps {
   viewOnly?: boolean;

@@ -8,8 +8,8 @@ import type { Relic } from '../types/relicTypes';
 import { customShuffle } from '../utils/rng';
 import { useRngStore } from '../store/useRngStore';
 import { RemoveCardModal } from '../components/ui/RemoveCardModal';
-import shopBg from '../assets/images/shop_map_background.png';
-import npcImg from '../assets/images/merchant.png';
+import shopBg from '../assets/images/backgrounds/shop_map_background.png';
+import npcImg from '../assets/images/characters/merchant.png';
 import { iconGoldReward, iconCardRemove } from '../assets/images/GUI';
 
 // 상점 판매용 카드 타입 확장 (가격, 품절 속성)

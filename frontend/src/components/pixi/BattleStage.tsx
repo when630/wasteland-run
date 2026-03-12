@@ -12,7 +12,7 @@ import { HpBar } from './HpBar';
 import { VfxLayer } from './vfx/VfxLayer';
 import { dispatchVfx } from './vfx/vfxDispatcher';
 import { PLAYER_POS } from './vfx/battleLayout';
-import playerImg from '../../assets/images/player.png';
+import playerImg from '../../assets/images/characters/player.png';
 
 export const BattleStage: React.FC = () => {
   // 스토어에서 런 상태 및 전투 상태 가져오기
