@@ -23,3 +23,7 @@ export { default as iconRest } from './rest.png';
 export { default as iconSettings } from './settings.png';
 export { default as iconToast } from './toast.png';
 export { default as iconLeaderboard } from './leaderboard.png';
+export { default as iconAp } from './ap.png';
+export { default as iconEmptyAp } from './empty_ap.png';
+export { default as iconAmmo } from './ammo.png';
+export { default as iconEmptyAmmo } from './empty_ammo.png';

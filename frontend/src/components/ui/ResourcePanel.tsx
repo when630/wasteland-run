@@ -1,14 +1,121 @@
-import React from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useBattleStore } from '../../store/useBattleStore';
 import { useDeckStore } from '../../store/useDeckStore';
 import { useAudioStore } from '../../store/useAudioStore';
 import { useResponsive } from '../../hooks/useResponsive';
-import { colors } from '../../styles/theme';
+import { iconAp, iconEmptyAp, iconAmmo, iconEmptyAmmo } from '../../assets/images/GUI';
+
+// ── 탄피 이젝션 파티클 ──
+interface ShellParticle {
+  id: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  rotation: number;
+  vr: number;
+  opacity: number;
+  startTime: number;
+}
+
+let shellIdCounter = 0;
+
+const ShellEjectionLayer: React.FC<{ particles: ShellParticle[] }> = ({ particles }) => (
+  <>
+    {particles.map((p) => {
+      const elapsed = (Date.now() - p.startTime) / 1000;
+      const gravity = 600;
+      const px = p.x + p.vx * elapsed;
+      const py = p.y + p.vy * elapsed + 0.5 * gravity * elapsed * elapsed;
+      const rot = p.rotation + p.vr * elapsed;
+      const opacity = Math.max(0, p.opacity - elapsed * 1.5);
+
+      if (opacity <= 0) return null;
+      return (
+        <img
+          key={p.id}
+          src={iconEmptyAmmo}
+          alt=""
+          style={{
+            position: 'fixed',
+            left: px,
+            top: py,
+            width: 28,
+            height: 28,
+            objectFit: 'contain',
+            transform: `rotate(${rot}deg)`,
+            opacity,
+            pointerEvents: 'none',
+            zIndex: 9999,
+            filter: 'brightness(1.3)',
+          }}
+        />
+      );
+    })}
+  </>
+);
 
 export const ResourcePanel: React.FC = () => {
   const { playerActionPoints, playerMaxAp, playerAmmo, endPlayerTurn, currentTurn } = useBattleStore();
   const { discardHand } = useDeckStore();
   const { isMobile } = useResponsive();
+
+  // 이전 ammo 값 추적 (탄피 이젝션용)
+  const prevAmmoRef = useRef(playerAmmo);
+  const [shellParticles, setShellParticles] = useState<ShellParticle[]>([]);
+  const ammoContainerRef = useRef<HTMLDivElement>(null);
+  const animFrameRef = useRef<number>(0);
+
+  // 탄피 이젝션 파티클 생성
+  const spawnShells = useCallback((count: number) => {
+    const container = ammoContainerRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    // 컨테이너 우측 상단에서 발사
+    const baseX = rect.right - 10;
+    const baseY = rect.top + rect.height * 0.3;
+
+    const newParticles: ShellParticle[] = [];
+    for (let i = 0; i < count; i++) {
+      newParticles.push({
+        id: shellIdCounter++,
+        x: baseX + Math.random() * 10,
+        y: baseY + Math.random() * 6 - 3,
+        vx: 60 + Math.random() * 100,
+        vy: -120 - Math.random() * 80,
+        rotation: Math.random() * 360,
+        vr: 300 + Math.random() * 400,
+        opacity: 1,
+        startTime: Date.now() + i * 60, // 약간씩 딜레이
+      });
+    }
+    setShellParticles(prev => [...prev, ...newParticles]);
+  }, []);
+
+  // ammo 감소 감지 → 탄피 이젝션
+  useEffect(() => {
+    const diff = prevAmmoRef.current - playerAmmo;
+    if (diff > 0) {
+      spawnShells(diff);
+    }
+    prevAmmoRef.current = playerAmmo;
+  }, [playerAmmo, spawnShells]);
+
+  // 파티클 애니메이션 루프
+  useEffect(() => {
+    if (shellParticles.length === 0) return;
+
+    const tick = () => {
+      setShellParticles(prev => {
+        const now = Date.now();
+        const alive = prev.filter(p => (now - p.startTime) / 1000 < 0.8);
+        return alive;
+      });
+      animFrameRef.current = requestAnimationFrame(tick);
+    };
+    animFrameRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animFrameRef.current);
+  }, [shellParticles.length > 0]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleTurnEnd = () => {
     useAudioStore.getState().playClick();
@@ -21,37 +128,84 @@ export const ResourcePanel: React.FC = () => {
     endPlayerTurn();
   };
 
+  const ammoSize = isMobile ? 22 : 28;
+
   return (
     <>
-      {/* 🌟 에너지(AP) 및 탄약 뱃지 (좌측 하단, 드로우 덱 우측 위쪽) */}
+      {/* AP + Ammo 패널 */}
       <div style={{
         position: 'absolute',
         bottom: isMobile ? '40px' : '60px',
-        left: isMobile ? '60px' : '120px',
-        width: isMobile ? '60px' : '80px',
-        height: isMobile ? '60px' : '80px',
-        borderRadius: '50%', // 둥근 구슬 모양
-        background: 'radial-gradient(circle at 30% 30%, #ff8c00, #b22222)',
-        border: `3px solid ${colors.accent.gold}`,
-        boxShadow: '0 0 15px rgba(255, 60, 0, 0.6)',
+        left: isMobile ? '60px' : '110px',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
         alignItems: 'center',
-        color: 'white',
+        gap: 6,
         zIndex: 10,
-        pointerEvents: 'none' // 클릭 이벤트 무시
+        pointerEvents: 'none',
       }}>
-        {/* Slay the Spire 에너지 텍스트 스타일 */}
-        <div style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: '900', textShadow: '2px 2px 2px black' }}>
-          {playerActionPoints}<span style={{ fontSize: isMobile ? '12px' : '16px' }}>/{playerMaxAp}</span>
+        {/* AP 아이콘 + 숫자 */}
+        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+          <img
+            src={playerActionPoints > 0 ? iconAp : iconEmptyAp}
+            alt=""
+            style={{
+              width: isMobile ? 44 : 56,
+              height: isMobile ? 44 : 56,
+              objectFit: 'contain',
+              filter: playerActionPoints > 0
+                ? 'drop-shadow(0 0 6px rgba(255,180,0,0.6))'
+                : 'brightness(0.5)',
+              transition: 'filter 0.3s',
+            }}
+          />
+          <span style={{
+            position: 'absolute',
+            fontSize: isMobile ? '14px' : '18px',
+            fontWeight: 'bold',
+            color: playerActionPoints > 0 ? '#fff' : '#888',
+            textShadow: '1px 1px 3px rgba(0,0,0,0.9), -1px -1px 3px rgba(0,0,0,0.9)',
+            letterSpacing: '-1px',
+            pointerEvents: 'none',
+          }}>
+            {playerActionPoints}/{playerMaxAp}
+          </span>
         </div>
-        <div style={{ fontSize: isMobile ? '10px' : '12px', fontWeight: 'bold', textShadow: '1px 1px 1px black' }}>
-          Ammo: {playerAmmo}
+
+        {/* Ammo 아이콘 행 */}
+        <div
+          ref={ammoContainerRef}
+          style={{ display: 'flex', alignItems: 'center', minHeight: ammoSize }}
+        >
+          {playerAmmo > 0 ? (
+            Array.from({ length: playerAmmo }).map((_, i) => (
+              <img
+                key={`ammo-${i}`}
+                src={iconAmmo}
+                alt=""
+                style={{
+                  width: ammoSize,
+                  height: ammoSize,
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0 0 3px rgba(200,150,50,0.5))',
+                  marginLeft: i > 0 ? (isMobile ? -6 : -8) : 0,
+                }}
+              />
+            ))
+          ) : (
+            <span style={{
+              fontSize: isMobile ? 10 : 12,
+              color: '#666',
+              fontWeight: 'bold',
+              letterSpacing: 1,
+            }}>
+              NO AMMO
+            </span>
+          )}
         </div>
       </div>
 
-      {/* 🌟 턴 종료 버튼 (우측 하단, 덱 위쪽) */}
+      {/* 턴 종료 버튼 */}
       <button
         onClick={handleTurnEnd}
         disabled={currentTurn !== 'PLAYER'}
@@ -72,7 +226,7 @@ export const ResourcePanel: React.FC = () => {
           cursor: currentTurn === 'PLAYER' ? 'pointer' : 'not-allowed',
           zIndex: 10,
           pointerEvents: 'auto',
-          transition: 'all 0.2s ease-in-out'
+          transition: 'all 0.2s ease-in-out',
         }}
         onMouseEnter={(e) => {
           if (currentTurn === 'PLAYER') {
@@ -91,6 +245,9 @@ export const ResourcePanel: React.FC = () => {
       >
         {currentTurn === 'PLAYER' ? '턴 종료' : '적 행동 중'}
       </button>
+
+      {/* 탄피 이젝션 파티클 레이어 */}
+      <ShellEjectionLayer particles={shellParticles} />
     </>
   );
 };
