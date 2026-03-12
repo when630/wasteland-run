@@ -11,6 +11,11 @@ RUN npm install
 
 # 소스 코드 복사 및 빌드
 COPY . .
+
+# Railway 환경변수를 빌드 타임에 주입 (Vite는 빌드 시 VITE_ 접두사 변수를 번들에 인라인)
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 RUN npm run build
 
 # Production stage
