@@ -96,8 +96,9 @@ export const EventView: React.FC = () => {
       backgroundBlendMode: 'overlay',
       backgroundColor: 'rgba(17, 14, 10, 0.75)',
       color: '#e8dcc8',
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      overflowY: 'auto', padding: isMobile ? '24px 0' : '0',
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: isMobile ? 'flex-start' : 'center',
+      overflowY: 'auto', padding: isMobile ? '32px 0 48px' : '0',
     }}>
       {/* 타이틀 */}
       <h1 style={{

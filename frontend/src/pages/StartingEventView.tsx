@@ -43,8 +43,9 @@ export const StartingEventView: React.FC = () => {
       backgroundBlendMode: 'overlay',
       backgroundColor: 'rgba(17, 14, 10, 0.75)',
       color: '#e8dcc8',
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      overflowY: 'auto', padding: isMobile ? '24px 0' : '0',
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: isMobile ? 'flex-start' : 'center',
+      overflowY: 'auto', padding: isMobile ? '32px 0 48px' : '0',
     }}>
       <h1 style={{
         fontSize: isShortScreen ? '20px' : isMobile ? '24px' : '44px', color: '#d4a854', marginBottom: isShortScreen ? '4px' : '8px',

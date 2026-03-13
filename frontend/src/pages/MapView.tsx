@@ -100,8 +100,8 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
       {/* 맵 노드 트리 렌더링 영역 — 양피지 느낌 */}
       <div style={{
         position: 'relative',
-        display: 'flex', flexDirection: 'column-reverse', gap: isMobile ? '40px' : '70px', alignItems: 'center',
-        padding: isMobile ? '24px 12px' : '60px 60px', borderRadius: '8px',
+        display: 'flex', flexDirection: 'column-reverse', gap: isMobile ? '28px' : '70px', alignItems: 'center',
+        padding: isMobile ? '20px 8px' : '60px 60px', borderRadius: '8px',
         background: 'linear-gradient(135deg, #d4b896 0%, #e8d5b0 25%, #d9c4a0 50%, #e0cba5 75%, #c8a882 100%)',
         border: isMobile ? '2px solid #8b6f47' : '3px solid #8b6f47',
         boxShadow: '0 0 30px rgba(0,0,0,0.5), inset 0 0 60px rgba(139, 111, 71, 0.3)',
@@ -123,12 +123,13 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
           if (floorNodes.length === 0) return null;
 
           return (
-            <div key={`floor-${floorNum}`} style={{ display: 'flex', gap: isMobile ? '6px' : '40px', justifyContent: 'center', width: '100%', position: 'relative', zIndex: 1 }}>
+            <div key={`floor-${floorNum}`} style={{ display: 'flex', justifyContent: 'center', width: '100%', position: 'relative', zIndex: 1 }}>
               {[0, 1, 2, 3, 4, 5, 6].map(pos => {
                 const node = floorNodes.find(n => n.positionX === pos);
+                const cellSize = isMobile ? `${(100 / 7)}%` : '56px';
 
                 if (!node) {
-                  return <div key={`empty-${floorNum}-${pos}`} style={{ width: isMobile ? '36px' : '56px', height: isMobile ? '36px' : '56px', flexShrink: 0 }} />;
+                  return <div key={`empty-${floorNum}-${pos}`} style={{ width: cellSize, maxWidth: isMobile ? undefined : '56px', height: isMobile ? '40px' : '56px', flexShrink: isMobile ? 1 : 0 }} />;
                 }
 
                 const isCurrent = node.id === currentNodeId;
@@ -145,13 +146,13 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
                       if (!viewOnly && isNextAvailable) handleNodeClick(node.id, node.type);
                     }}
                     style={{
-                      width: isMobile ? '36px' : '56px', height: isMobile ? '36px' : '56px',
+                      width: cellSize, maxWidth: isMobile ? undefined : '56px', height: isMobile ? '40px' : '56px',
                       display: 'flex', justifyContent: 'center', alignItems: 'center',
                       cursor: viewOnly ? 'default' : (isNextAvailable ? 'pointer' : 'default'),
                       opacity: (isCurrent || isVisited || isNextAvailable) ? 1 : 0.35,
                       transition: 'all 0.3s',
                       position: 'relative',
-                      flexShrink: 0,
+                      flexShrink: isMobile ? 1 : 0,
                       zIndex: 3,
                       transform: `translate(${node.offsetX}px, ${node.offsetY}px)`,
                       filter: isCurrent
