@@ -12,11 +12,11 @@ import { HpBar } from './HpBar';
 import { VfxLayer } from './vfx/VfxLayer';
 import { dispatchVfx } from './vfx/vfxDispatcher';
 import { PLAYER_POS, BATTLE_Y_RATIO, enemyPos } from './vfx/battleLayout';
-import playerImg from '../../assets/images/characters/player.png';
-import playerPhysicalAttackImg from '../../assets/images/characters/player_physical_attack.png';
-import playerSpecialAttackImg from '../../assets/images/characters/player_special_attack.png';
-import playerPhysicalHitImg from '../../assets/images/characters/player_physical_hit.png';
-import playerSpecialHitImg from '../../assets/images/characters/player_special_hit.png';
+import playerImg from '../../assets/images/characters/player.webp';
+import playerPhysicalAttackImg from '../../assets/images/characters/player_physical_attack.webp';
+import playerSpecialAttackImg from '../../assets/images/characters/player_special_attack.webp';
+import playerPhysicalHitImg from '../../assets/images/characters/player_physical_hit.webp';
+import playerSpecialHitImg from '../../assets/images/characters/player_special_hit.webp';
 import type { PlayerSpriteState } from '../../store/battle/types';
 
 export const BattleStage: React.FC = () => {

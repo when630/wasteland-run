@@ -1,21 +1,21 @@
 import type { Relic } from '../../types/relicTypes';
 
 // Existing Relic Images
-import ImgBloodyBandolier from '../images/relics/relic_bloody_bandolier.png';
-import ImgOldMedkit from '../images/relics/relic_old-world_medkit.png';
-import ImgGlowWatch from '../images/relics/relic_radioactive_glow_watch.png';
-import ImgAlloyPlating from '../images/relics/relic_dual-alloy_plating.png';
-import ImgArcHeart from '../images/relics/relic_unstable_arc_heart.png';
+import ImgBloodyBandolier from '../images/relics/relic_bloody_bandolier.webp';
+import ImgOldMedkit from '../images/relics/relic_old-world_medkit.webp';
+import ImgGlowWatch from '../images/relics/relic_radioactive_glow_watch.webp';
+import ImgAlloyPlating from '../images/relics/relic_dual-alloy_plating.webp';
+import ImgArcHeart from '../images/relics/relic_unstable_arc_heart.webp';
 
 // New Relic Images
-import ImgOldSheriffBadge from '../images/relics/relic_old_sheriff_badge.png';
-import ImgScrapPartsBracelet from '../images/relics/relic_scrap_parts_bracelet.png';
-import ImgCrackedBrassCompass from '../images/relics/relic_cracked_brass_compass.png';
-import ImgBurntOperationMap from '../images/relics/relic_burnt_operation_map.png';
-import ImgFadedFamilyPhoto from '../images/relics/relic_faded_family_photo.png';
-import ImgBionicCultureHeart from '../images/relics/relic_bionic_culture_heart.png';
-import ImgRedEyeSurveillanceModule from '../images/relics/relic_red_eye_surveillance_module.png';
-import ImgCrackedSunstoneReactor from '../images/relics/relic_cracked_sunstone_reactor.png';
+import ImgOldSheriffBadge from '../images/relics/relic_old_sheriff_badge.webp';
+import ImgScrapPartsBracelet from '../images/relics/relic_scrap_parts_bracelet.webp';
+import ImgCrackedBrassCompass from '../images/relics/relic_cracked_brass_compass.webp';
+import ImgBurntOperationMap from '../images/relics/relic_burnt_operation_map.webp';
+import ImgFadedFamilyPhoto from '../images/relics/relic_faded_family_photo.webp';
+import ImgBionicCultureHeart from '../images/relics/relic_bionic_culture_heart.webp';
+import ImgRedEyeSurveillanceModule from '../images/relics/relic_red_eye_surveillance_module.webp';
+import ImgCrackedSunstoneReactor from '../images/relics/relic_cracked_sunstone_reactor.webp';
 
 export const RELICS: Relic[] = [
   // ============================

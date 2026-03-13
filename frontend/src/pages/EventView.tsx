@@ -6,7 +6,7 @@ import { RemoveCardModal } from '../components/ui/RemoveCardModal';
 import { UpgradeCardModal } from '../components/ui/UpgradeCardModal';
 import { onRestOrEventEnter } from '../logic/relicEffects';
 import { useRngStore } from '../store/useRngStore';
-import eventBg from '../assets/images/backgrounds/event_map_background.png';
+import eventBg from '../assets/images/backgrounds/event_map_background.webp';
 import { iconEvent } from '../assets/images/GUI';
 import { useResponsive } from '../hooks/useResponsive';
 

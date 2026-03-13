@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRunStore } from '../store/useRunStore';
 import { UpgradeCardModal } from '../components/ui/UpgradeCardModal';
 import { onRestOrEventEnter } from '../logic/relicEffects';
-import restBg from '../assets/images/backgrounds/campfire_map_background.png';
+import restBg from '../assets/images/backgrounds/campfire_map_background.webp';
 import { iconCampfire, iconCardUpgrade, iconHeart, iconBurn } from '../assets/images/GUI';
 import { useResponsive } from '../hooks/useResponsive';
 

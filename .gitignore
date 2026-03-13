@@ -26,3 +26,6 @@ dist-ssr
 backend/bin/
 backend/.gradle/
 backend/build/
+
+# Image optimization originals backup
+frontend/src/assets/images-raw/

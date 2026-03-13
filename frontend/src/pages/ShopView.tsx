@@ -9,8 +9,8 @@ import { customShuffle } from '../utils/rng';
 import { useRngStore } from '../store/useRngStore';
 import { RemoveCardModal } from '../components/ui/RemoveCardModal';
 import { CardFrame } from '../components/ui/CardFrame';
-import shopBg from '../assets/images/backgrounds/shop_map_background.png';
-import npcImg from '../assets/images/characters/merchant.png';
+import shopBg from '../assets/images/backgrounds/shop_map_background.webp';
+import npcImg from '../assets/images/characters/merchant.webp';
 import { iconGoldReward, iconCardRemove } from '../assets/images/GUI';
 import { useResponsive } from '../hooks/useResponsive';
 

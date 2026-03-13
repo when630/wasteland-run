@@ -18,8 +18,8 @@ import { useRunStore } from '../store/useRunStore';
 import { onBattleStart } from '../logic/relicEffects';
 import { useRngStore } from '../store/useRngStore';
 import { enemyPos } from '../components/pixi/vfx/battleLayout';
-import battleBg1 from '../assets/images/backgrounds/stage1_battle_backgroung.png';
-import battleBg2 from '../assets/images/backgrounds/stage2_battle_backgroung.png';
+import battleBg1 from '../assets/images/backgrounds/stage1_battle_backgroung.webp';
+import battleBg2 from '../assets/images/backgrounds/stage2_battle_backgroung.webp';
 
 const BATTLE_BGS: Record<number, string> = { 1: battleBg1, 2: battleBg2 };
 

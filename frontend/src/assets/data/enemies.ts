@@ -1,8 +1,8 @@
 import type { Enemy, Intent, EnemyTier } from '../../types/enemyTypes';
 import { generateUniqueId, type SeededRNG } from '../../utils/rng';
-import scarecrowImg from '../images/characters/scarecrow.png';
-import scarecrowAttackImg from '../images/characters/scarecrow_attack.png';
-import scarecrowHitImg from '../images/characters/scarecrow_hit.png';
+import scarecrowImg from '../images/characters/scarecrow.webp';
+import scarecrowAttackImg from '../images/characters/scarecrow_attack.webp';
+import scarecrowHitImg from '../images/characters/scarecrow_hit.webp';
 
 type BaseEnemy = Omit<Enemy, 'id' | 'currentHp' | 'shield' | 'resist' | 'currentIntent'> & { chapter?: number; initialShield?: number };
 

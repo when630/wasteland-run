@@ -3,13 +3,13 @@ import Xarrow from 'react-xarrows';
 import { useRunStore } from '../store/useRunStore';
 import { useMapStore, type NodeType } from '../store/useMapStore';
 import { useResponsive } from '../hooks/useResponsive';
-import mapBg from '../assets/images/backgrounds/map_background.png';
-import battleBadge from '../assets/images/map/battle_badge.png';
-import eliteBadge from '../assets/images/map/elite_badge.png';
-import restBadge from '../assets/images/map/campfire_badge.png';
-import shopBadge from '../assets/images/map/shop_badge.png';
-import eventBadge from '../assets/images/map/event_badge.png';
-import bossBadge from '../assets/images/map/boss_badge.png';
+import mapBg from '../assets/images/backgrounds/map_background.webp';
+import battleBadge from '../assets/images/map/battle_badge.webp';
+import eliteBadge from '../assets/images/map/elite_badge.webp';
+import restBadge from '../assets/images/map/campfire_badge.webp';
+import shopBadge from '../assets/images/map/shop_badge.webp';
+import eventBadge from '../assets/images/map/event_badge.webp';
+import bossBadge from '../assets/images/map/boss_badge.webp';
 import { iconClose } from '../assets/images/GUI';
 
 interface MapViewProps {
