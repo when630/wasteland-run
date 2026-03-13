@@ -93,9 +93,12 @@ export const RemoveCardModal: React.FC<RemoveCardModalProps> = ({
           onClick={onClose}
           style={{
             padding: isShortScreen ? '6px 14px' : '12px 30px', fontSize: isShortScreen ? '13px' : '18px',
-            backgroundColor: '#444', color: '#fff', border: '1px solid #666',
-            borderRadius: '8px', cursor: 'pointer',
+            background: 'none', color: '#a09078', border: '1px solid rgba(120, 100, 70, 0.4)',
+            borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
+            textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
           }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(180, 150, 100, 0.6)'; e.currentTarget.style.color = '#c8b898'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(120, 100, 70, 0.4)'; e.currentTarget.style.color = '#a09078'; }}
         >
           취소
         </button>
@@ -133,9 +136,12 @@ export const RemoveCardModal: React.FC<RemoveCardModalProps> = ({
                 onClick={() => setSelectedCardId(null)}
                 style={{
                   padding: isShortScreen ? '8px 18px' : '12px 30px', fontSize: isShortScreen ? '14px' : '18px',
-                  backgroundColor: '#444', color: '#fff', border: '1px solid #666',
-                  borderRadius: '8px', cursor: 'pointer',
+                  background: 'none', color: '#a09078', border: '1px solid rgba(120, 100, 70, 0.4)',
+                  borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
+                  textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
                 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(180, 150, 100, 0.6)'; e.currentTarget.style.color = '#c8b898'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(120, 100, 70, 0.4)'; e.currentTarget.style.color = '#a09078'; }}
               >
                 닫기
               </button>
@@ -143,14 +149,14 @@ export const RemoveCardModal: React.FC<RemoveCardModalProps> = ({
                 onClick={handleConfirmRemove}
                 style={{
                   padding: isShortScreen ? '8px 20px' : '12px 40px', fontSize: isShortScreen ? '14px' : '20px', fontWeight: 'bold',
-                  backgroundColor: '#8b2020', color: '#fff',
-                  border: '2px solid #ff6666',
-                  borderRadius: '8px', cursor: 'pointer',
-                  transition: 'background-color 0.2s',
-                  textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+                  background: 'none', color: '#ff6666',
+                  border: '1px solid rgba(255, 80, 80, 0.4)',
+                  borderRadius: '6px', cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#a52a2a'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#8b2020'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255, 100, 100, 0.7)'; e.currentTarget.style.color = '#ff8888'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255, 80, 80, 0.4)'; e.currentTarget.style.color = '#ff6666'; }}
               >
                 제거
               </button>

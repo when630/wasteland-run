@@ -107,16 +107,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showQuitB
     marginTop: isShortScreen ? '4px' : '20px'
   };
 
-  const btnStyle = (bg: string, color: string = '#fff'): React.CSSProperties => ({
+  const btnStyle = (_bg: string, color: string = '#ff6666'): React.CSSProperties => ({
     padding: isShortScreen ? '8px 12px' : '12px',
     fontSize: isShortScreen ? '14px' : '18px',
     fontWeight: 'bold',
-    backgroundColor: bg,
+    background: 'none',
     color,
-    border: 'none',
-    borderRadius: '8px',
+    border: '1px solid rgba(255, 80, 80, 0.4)',
+    borderRadius: '6px',
     cursor: 'pointer',
-    transition: 'background-color 0.2s',
+    transition: 'all 0.2s',
+    textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
     flex: isShortScreen ? 1 : undefined,
   });
 
@@ -179,9 +180,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showQuitB
                 onClick={() => playHit()}
                 style={{
                   marginTop: isShortScreen ? '2px' : '5px', padding: '5px', fontSize: isShortScreen ? '12px' : '14px',
-                  backgroundColor: '#333', color: '#ccc', border: '1px solid #555',
-                  borderRadius: '4px', cursor: 'pointer'
+                  background: 'none', color: '#a09078', border: '1px solid rgba(120, 100, 70, 0.4)',
+                  borderRadius: '4px', cursor: 'pointer', transition: 'all 0.2s',
+                  textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
                 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(180, 150, 100, 0.6)'; e.currentTarget.style.color = '#c8b898'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(120, 100, 70, 0.4)'; e.currentTarget.style.color = '#a09078'; }}
               >
                 <img src={iconSoundTest} alt="" style={{ width: 16, height: 16, objectFit: 'contain', verticalAlign: 'middle', marginRight: '4px' }} /> 타격음 테스트
               </button>
@@ -194,8 +198,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showQuitB
             <button
               onClick={handleQuitToMain}
               style={btnStyle('#991b1b')}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#b91c1c'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#991b1b'}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255, 100, 100, 0.7)'; e.currentTarget.style.color = '#ff8888'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255, 80, 80, 0.4)'; e.currentTarget.style.color = '#ff6666'; }}
             >
               {quitConfirm ? '정말 나가시겠습니까?' : '메인 메뉴로 나가기 (저장됨)'}
             </button>

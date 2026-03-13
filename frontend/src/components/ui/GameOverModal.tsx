@@ -223,13 +223,15 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
         onClick={handleReturnToTitle}
         style={{
           padding: '18px 50px', fontSize: '22px', fontWeight: 'bold',
-          backgroundColor: isVictory ? '#b45309' : '#4b5563', color: '#fff',
-          border: 'none', borderRadius: '12px', cursor: 'pointer',
-          boxShadow: `0 0 15px ${isVictory ? 'rgba(180,83,9,0.5)' : 'rgba(75,85,99,0.5)'}`,
-          transition: 'transform 0.2s'
+          background: 'none',
+          color: isVictory ? '#d4a854' : '#a09078',
+          border: `1px solid ${isVictory ? 'rgba(212, 168, 84, 0.5)' : 'rgba(120, 100, 70, 0.4)'}`,
+          borderRadius: '6px', cursor: 'pointer',
+          textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
+          transition: 'all 0.2s'
         }}
-        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        onMouseEnter={(e) => { e.currentTarget.style.borderColor = isVictory ? 'rgba(212, 168, 84, 0.8)' : 'rgba(180, 150, 100, 0.6)'; e.currentTarget.style.color = isVictory ? '#e8c878' : '#c8b898'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.borderColor = isVictory ? 'rgba(212, 168, 84, 0.5)' : 'rgba(120, 100, 70, 0.4)'; e.currentTarget.style.color = isVictory ? '#d4a854' : '#a09078'; }}
       >
         타이틀로 돌아가기
       </button>

@@ -398,15 +398,15 @@ export const ResourcePanel: React.FC = () => {
           right: isMobile ? '15px' : '50px',
           bottom: isMobile ? '100px' : '150px',
           padding: isMobile ? '8px 18px' : '12px 30px',
-          backgroundColor: currentTurn === 'PLAYER' ? '#2c5364' : '#555',
-          color: currentTurn === 'PLAYER' ? '#a2f5df' : '#bbb',
-          border: '2px solid',
-          borderColor: currentTurn === 'PLAYER' ? '#4dc3a3' : '#333',
-          borderRadius: '30px',
+          background: 'none',
+          color: currentTurn === 'PLAYER' ? '#a2f5df' : '#666',
+          border: '1px solid',
+          borderColor: currentTurn === 'PLAYER' ? 'rgba(77, 195, 163, 0.5)' : 'rgba(100, 100, 100, 0.3)',
+          borderRadius: '6px',
           fontSize: isMobile ? '14px' : '20px',
           fontWeight: 'bold',
           letterSpacing: '2px',
-          boxShadow: currentTurn === 'PLAYER' ? '0 0 10px rgba(77, 195, 163, 0.4)' : 'none',
+          textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
           cursor: currentTurn === 'PLAYER' ? 'pointer' : 'not-allowed',
           zIndex: 10,
           pointerEvents: 'auto',
@@ -414,16 +414,14 @@ export const ResourcePanel: React.FC = () => {
         }}
         onMouseEnter={(e) => {
           if (currentTurn === 'PLAYER') {
-            e.currentTarget.style.backgroundColor = '#203a43';
-            e.currentTarget.style.boxShadow = '0 0 15px rgba(77, 195, 163, 0.8)';
-            e.currentTarget.style.transform = 'scale(1.05)';
+            e.currentTarget.style.borderColor = 'rgba(77, 195, 163, 0.8)';
+            e.currentTarget.style.color = '#c8fff0';
           }
         }}
         onMouseLeave={(e) => {
           if (currentTurn === 'PLAYER') {
-            e.currentTarget.style.backgroundColor = '#2c5364';
-            e.currentTarget.style.boxShadow = '0 0 10px rgba(77, 195, 163, 0.4)';
-            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.borderColor = 'rgba(77, 195, 163, 0.5)';
+            e.currentTarget.style.color = '#a2f5df';
           }
         }}
       >

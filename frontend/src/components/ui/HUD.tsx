@@ -9,12 +9,13 @@ import { RelicBar } from './RelicBar';
 import { MapView } from '../../pages/MapView';
 import { useMapStore } from '../../store/useMapStore';
 import { colors } from '../../styles/theme';
-import { iconHeart, iconGold, iconSettings, iconCardCount, iconMap } from '../../assets/images/GUI';
+import { iconHeart, iconGold, iconSettings, iconCardCount, iconMap, iconRelicReward } from '../../assets/images/GUI';
 
 export const HUD: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isMapOverlayOpen, setIsMapOverlayOpen] = useState(false);
-  const { playerHp, playerMaxHp, gold, currentScene, currentChapter } = useRunStore();
+  const [isRelicBagOpen, setIsRelicBagOpen] = useState(false);
+  const { playerHp, playerMaxHp, gold, currentScene, currentChapter, relics } = useRunStore();
 
   const CHAPTER_NAMES: Record<number, string> = {
     1: '오염된 외곽 도시',
@@ -70,6 +71,21 @@ export const HUD: React.FC = () => {
 
         <div style={{ flex: 1 }} />
 
+        {/* 유물 가방 버튼 */}
+        <div
+          onClick={() => { useAudioStore.getState().playClick(); setIsRelicBagOpen(true); }}
+          style={{ ...iconStyle, display: 'flex', alignItems: 'center', gap: '4px' }}
+          onMouseEnter={handleIconHover} onMouseLeave={handleIconLeave}
+          title="유물 가방"
+        >
+          {iconImg(iconRelicReward)}
+          {relics.length > 0 && (
+            <span style={{ fontSize: isMobile ? '13px' : '16px', fontWeight: 'bold', color: '#cc8888' }}>
+              {relics.length}
+            </span>
+          )}
+        </div>
+
         {/* 지도 버튼 */}
         {!isMap && (
           <div onClick={() => { useAudioStore.getState().playClick(); setIsMapOverlayOpen(true); }}
@@ -105,8 +121,8 @@ export const HUD: React.FC = () => {
         </div>
       </div>
 
-      {/* 유물 바 */}
-      <RelicBar />
+      {/* 유물 가방 모달 */}
+      <RelicBar isOpen={isRelicBagOpen} onClose={() => setIsRelicBagOpen(false)} />
 
       {/* 모달들 */}
       {isSettingsOpen && <SettingsModal onClose={() => setIsSettingsOpen(false)} showQuitButton={true} />}

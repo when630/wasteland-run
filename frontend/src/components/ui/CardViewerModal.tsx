@@ -75,9 +75,12 @@ export const CardViewerModal: React.FC = () => {
           onClick={() => setViewingPile('NONE')}
           style={{
             marginTop: isMobile ? '16px' : '30px', padding: '10px 40px', fontSize: '18px', fontWeight: 'bold',
-            backgroundColor: '#444', color: 'white', border: '2px solid #666',
-            borderRadius: '8px', cursor: 'pointer', flexShrink: 0,
+            background: 'none', color: '#a09078', border: '1px solid rgba(120, 100, 70, 0.4)',
+            borderRadius: '6px', cursor: 'pointer', flexShrink: 0, transition: 'all 0.2s',
+            textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
           }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(180, 150, 100, 0.6)'; e.currentTarget.style.color = '#c8b898'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(120, 100, 70, 0.4)'; e.currentTarget.style.color = '#a09078'; }}
         >
           돌아가기
         </button>

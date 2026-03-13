@@ -86,12 +86,13 @@ export const CardRewardModal: React.FC<CardRewardModalProps> = ({ rewardCards, o
           marginTop: isShortScreen ? '20px' : isMobile ? '32px' : '50px',
           padding: isShortScreen ? '8px 20px' : '10px 30px',
           fontSize: isShortScreen ? '13px' : '16px',
-          backgroundColor: 'rgba(40, 35, 28, 0.9)', color: '#8a7e6a',
-          border: '1px solid rgba(100, 80, 50, 0.4)',
+          background: 'none', color: '#a09078',
+          border: '1px solid rgba(120, 100, 70, 0.4)',
           borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
+          textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
         }}
-        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(55, 48, 35, 0.95)'; e.currentTarget.style.color = '#a09078'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(40, 35, 28, 0.9)'; e.currentTarget.style.color = '#8a7e6a'; }}
+        onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(180, 150, 100, 0.6)'; e.currentTarget.style.color = '#c8b898'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(120, 100, 70, 0.4)'; e.currentTarget.style.color = '#a09078'; }}
       >
         건너뛰기
       </button>
@@ -127,9 +128,12 @@ export const CardRewardModal: React.FC<CardRewardModalProps> = ({ rewardCards, o
               style={{
                 padding: isShortScreen ? '8px 18px' : '12px 30px',
                 fontSize: isShortScreen ? '14px' : '18px',
-                backgroundColor: '#444', color: '#fff', border: '1px solid #666',
-                borderRadius: '8px', cursor: 'pointer',
+                background: 'none', color: '#a09078', border: '1px solid rgba(120, 100, 70, 0.4)',
+                borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
+                textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
               }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(180, 150, 100, 0.6)'; e.currentTarget.style.color = '#c8b898'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(120, 100, 70, 0.4)'; e.currentTarget.style.color = '#a09078'; }}
             >
               닫기
             </button>
@@ -138,14 +142,14 @@ export const CardRewardModal: React.FC<CardRewardModalProps> = ({ rewardCards, o
               style={{
                 padding: isShortScreen ? '8px 20px' : '12px 40px',
                 fontSize: isShortScreen ? '14px' : '20px', fontWeight: 'bold',
-                backgroundColor: '#8b6914', color: '#fff',
-                border: '2px solid #d4a854',
-                borderRadius: '8px', cursor: 'pointer',
-                transition: 'background-color 0.2s',
-                textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+                background: 'none', color: '#d4a854',
+                border: '1px solid rgba(212, 168, 84, 0.5)',
+                borderRadius: '6px', cursor: 'pointer',
+                transition: 'all 0.2s',
+                textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#a67c1a'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#8b6914'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(212, 168, 84, 0.8)'; e.currentTarget.style.color = '#e8c878'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(212, 168, 84, 0.5)'; e.currentTarget.style.color = '#d4a854'; }}
             >
               가져간다
             </button>

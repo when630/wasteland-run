@@ -2,136 +2,168 @@ import React, { useState } from 'react';
 import { useRunStore } from '../../store/useRunStore';
 import { RELICS } from '../../assets/data/relics';
 import { useAudioStore } from '../../store/useAudioStore';
-import { colors } from '../../styles/theme';
 import { iconClose } from '../../assets/images/GUI';
+import { useResponsive } from '../../hooks/useResponsive';
 
-export const RelicBar: React.FC = () => {
+interface RelicBarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const RelicBar: React.FC<RelicBarProps> = ({ isOpen, onClose }) => {
   const relicsList = useRunStore(state => state.relics);
-  const [hoveredRelic, setHoveredRelic] = useState<any | null>(null);
-  const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
   const [selectedRelic, setSelectedRelic] = useState<any | null>(null);
+  const { isMobile, height } = useResponsive();
+  const isShortScreen = height < 500;
+
+  if (!isOpen) return null;
+
+  const txtShadow = '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)';
+  const relicSize = isShortScreen ? 48 : isMobile ? 56 : 64;
 
   return (
     <>
-      {/* 유물 목록 (헤더 바로 아래 좌측 정렬) */}
-      <div style={{
-        position: 'absolute',
-        top: '65px',
-        left: '20px',
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '8px',
-        maxWidth: '60%',
-        zIndex: 10
-      }}>
-        {relicsList.map((relicId) => {
-          const relicData = RELICS.find((r: any) => r.id === relicId);
-          if (!relicData) return null;
-          return (
-            <div
-              key={relicId}
-              onClick={() => {
-                useAudioStore.getState().playClick();
-                setSelectedRelic(relicData);
-                setHoveredRelic(null);
-              }}
-              onMouseEnter={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                setHoverPosition({ x: rect.left, y: rect.bottom + 10 });
-                setHoveredRelic(relicData);
-                e.currentTarget.style.transform = 'scale(1.2)';
-              }}
-              onMouseLeave={(e) => {
-                setHoveredRelic(null);
-                e.currentTarget.style.transform = 'scale(1)';
-              }}
-              style={{
-                width: '36px', height: '36px',
-                backgroundColor: 'rgba(30, 30, 30, 0.8)',
-                border: `1px solid ${colors.border.medium}`,
-                borderRadius: '50%',
-                display: 'flex', justifyContent: 'center', alignItems: 'center',
-                fontSize: '20px', cursor: 'pointer', userSelect: 'none',
-                boxShadow: '0 2px 5px rgba(0,0,0,0.5)',
-                transition: 'transform 0.1s'
-              }}
-            >
-              {relicData.image ? <img src={relicData.image} alt={relicData.name} style={{ width: '80%', height: '80%', objectFit: 'contain' }} /> : relicData.icon}
+      {/* 가방 모달 오버레이 */}
+      <div
+        onClick={onClose}
+        style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(5, 5, 3, 0.92)', zIndex: 9999,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          animation: 'fadeIn 0.2s ease-out',
+        }}
+      >
+        <div onClick={e => e.stopPropagation()} style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          maxWidth: isMobile ? '95vw' : '500px', width: '100%',
+        }}>
+          <h2 style={{
+            fontSize: isShortScreen ? '20px' : isMobile ? '24px' : '32px',
+            color: '#cc8888', margin: '0 0 8px 0',
+            textShadow: txtShadow,
+          }}>
+            유물 가방
+          </h2>
+          <p style={{
+            fontSize: isShortScreen ? '12px' : '14px', color: '#8a7e6a',
+            marginBottom: isShortScreen ? '16px' : '28px',
+            textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
+          }}>
+            수집한 유물 {relicsList.length}개
+          </p>
+
+          {/* 구분선 */}
+          <div style={{
+            width: isMobile ? '80vw' : '400px', height: '1px',
+            background: 'linear-gradient(90deg, transparent, rgba(200, 100, 100, 0.3), transparent)',
+            marginBottom: isShortScreen ? '16px' : '24px',
+          }} />
+
+          {relicsList.length === 0 ? (
+            <p style={{ color: '#6a5e4a', fontSize: isShortScreen ? '13px' : '16px', textShadow: txtShadow }}>
+              아직 획득한 유물이 없습니다.
+            </p>
+          ) : (
+            <div style={{
+              display: 'flex', flexWrap: 'wrap', gap: isShortScreen ? '12px' : '16px',
+              justifyContent: 'center', padding: '0 16px',
+              maxHeight: isShortScreen ? '200px' : '400px', overflowY: 'auto',
+            }}>
+              {relicsList.map((relicId) => {
+                const relicData = RELICS.find((r: any) => r.id === relicId);
+                if (!relicData) return null;
+                return (
+                  <div
+                    key={relicId}
+                    onClick={() => {
+                      useAudioStore.getState().playClick();
+                      setSelectedRelic(relicData);
+                    }}
+                    style={{
+                      width: relicSize, height: relicSize,
+                      border: '1px solid rgba(180, 80, 80, 0.4)',
+                      borderRadius: '50%',
+                      display: 'flex', justifyContent: 'center', alignItems: 'center',
+                      cursor: 'pointer', transition: 'all 0.2s',
+                      background: 'none',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.transform = 'scale(1.15)';
+                      e.currentTarget.style.borderColor = 'rgba(220, 120, 120, 0.6)';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.borderColor = 'rgba(180, 80, 80, 0.4)';
+                    }}
+                  >
+                    {relicData.image
+                      ? <img src={relicData.image} alt={relicData.name} style={{ width: '75%', height: '75%', objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(200, 100, 100, 0.3))' }} />
+                      : <span style={{ fontSize: relicSize * 0.5 }}>{relicData.icon}</span>
+                    }
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
+          )}
+
+          {/* 닫기 버튼 */}
+          <button
+            onClick={onClose}
+            style={{
+              marginTop: isShortScreen ? '20px' : '32px',
+              padding: isShortScreen ? '8px 20px' : '10px 30px',
+              fontSize: isShortScreen ? '13px' : '16px',
+              background: 'none', color: '#a09078',
+              border: '1px solid rgba(120, 100, 70, 0.4)',
+              borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
+              textShadow: txtShadow,
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(180, 150, 100, 0.6)'; e.currentTarget.style.color = '#c8b898'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(120, 100, 70, 0.4)'; e.currentTarget.style.color = '#a09078'; }}
+          >
+            닫기
+          </button>
+        </div>
       </div>
 
-      {/* 유물 호버 툴팁 */}
-      {hoveredRelic && (
-        <div style={{
-          position: 'absolute',
-          left: `${hoverPosition.x}px`,
-          top: `${hoverPosition.y}px`,
-          backgroundColor: 'rgba(20, 20, 20, 0.95)',
-          border: `1px solid ${colors.border.medium}`,
-          borderRadius: '6px',
-          padding: '10px 15px',
-          color: '#eee',
-          maxWidth: '300px',
-          zIndex: 500,
-          pointerEvents: 'none',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.8)'
-        }}>
-          <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#ffaaaa', marginBottom: '4px' }}>
-            {hoveredRelic.name} <span style={{ fontSize: '11px', color: '#aaa', fontWeight: 'normal' }}>[{hoveredRelic.tier}]</span>
-          </div>
-          <div style={{ fontSize: '13px', lineHeight: '1.4' }}>
-            {hoveredRelic.description}
-          </div>
-          <div style={{ fontSize: '10px', color: '#777', marginTop: '6px', fontStyle: 'italic' }}>
-            클릭하여 자세히 보기
-          </div>
-        </div>
-      )}
-
-      {/* 유물 상세 정보 클릭 모달 */}
+      {/* 유물 상세 정보 모달 */}
       {selectedRelic && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, width: '100vw', height: '100vh',
-          backgroundColor: 'rgba(0,0,0,0.85)',
-          zIndex: 9999,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <div style={{ position: 'absolute', width: '100%', height: '100%', cursor: 'pointer' }} onClick={() => setSelectedRelic(null)} />
-
-          <div style={{
-            position: 'relative',
-            width: '320px',
-            backgroundColor: colors.bg.medium,
-            border: '2px solid #ffaaaa',
-            borderRadius: '12px',
-            padding: '30px',
+        <div
+          onClick={() => setSelectedRelic(null)}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10000,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            animation: 'fadeIn 0.15s ease-out',
+          }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center',
-            boxShadow: '0 0 30px rgba(0,0,0,0.8)',
-            zIndex: 10000
+            maxWidth: '320px', padding: '20px',
           }}>
             <button
               onClick={() => setSelectedRelic(null)}
               style={{
-                position: 'absolute', top: '10px', right: '15px',
-                background: 'none', border: 'none', color: '#888',
-                fontSize: '24px', cursor: 'pointer', fontWeight: 'bold'
+                position: 'absolute', top: '20px', right: '20px',
+                background: 'none', border: 'none', cursor: 'pointer',
               }}
             >
-              <img src={iconClose} alt="닫기" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+              <img src={iconClose} alt="닫기" style={{ width: 22, height: 22, objectFit: 'contain' }} />
             </button>
-            <div style={{ width: '100px', height: '100px', marginBottom: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              {selectedRelic.image ? <img src={selectedRelic.image} alt={selectedRelic.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <span style={{ fontSize: '80px' }}>{selectedRelic.icon}</span>}
+
+            <div style={{ width: isShortScreen ? 72 : 100, height: isShortScreen ? 72 : 100, marginBottom: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              {selectedRelic.image
+                ? <img src={selectedRelic.image} alt={selectedRelic.name} style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 12px rgba(200, 100, 100, 0.4))' }} />
+                : <span style={{ fontSize: isShortScreen ? 56 : 80 }}>{selectedRelic.icon}</span>
+              }
             </div>
-            <h2 style={{ color: '#fff', fontSize: '24px', margin: '0 0 5px 0', textAlign: 'center' }}>
+            <h2 style={{ color: '#e8dcc8', fontSize: isShortScreen ? '20px' : '24px', margin: '0 0 4px 0', textAlign: 'center', textShadow: txtShadow }}>
               {selectedRelic.name}
             </h2>
-            <div style={{ color: '#ffaaaa', fontSize: '14px', marginBottom: '20px' }}>
-              등급: {selectedRelic.tier}
+            <div style={{ color: '#cc8888', fontSize: isShortScreen ? '11px' : '13px', marginBottom: '16px', textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}>
+              [{selectedRelic.tier}]
             </div>
-            <p style={{ color: '#ddd', fontSize: '16px', lineHeight: '1.5', textAlign: 'center', margin: 0 }}>
+            <p style={{ color: '#b8a888', fontSize: isShortScreen ? '13px' : '15px', lineHeight: '1.5', textAlign: 'center', margin: 0, textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}>
               {selectedRelic.description}
             </p>
           </div>

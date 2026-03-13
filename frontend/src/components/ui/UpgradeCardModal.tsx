@@ -103,9 +103,12 @@ export const UpgradeCardModal: React.FC<UpgradeCardModalProps> = ({ onClose, onU
           onClick={onClose}
           style={{
             padding: isShortScreen ? '6px 14px' : '12px 30px', fontSize: isShortScreen ? '13px' : '18px',
-            backgroundColor: '#444', color: '#fff', border: '1px solid #666',
-            borderRadius: '8px', cursor: 'pointer',
+            background: 'none', color: '#a09078', border: '1px solid rgba(120, 100, 70, 0.4)',
+            borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
+            textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
           }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(180, 150, 100, 0.6)'; e.currentTarget.style.color = '#c8b898'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(120, 100, 70, 0.4)'; e.currentTarget.style.color = '#a09078'; }}
         >
           취소
         </button>
@@ -162,9 +165,12 @@ export const UpgradeCardModal: React.FC<UpgradeCardModalProps> = ({ onClose, onU
               onClick={() => setSelectedCardId(null)}
               style={{
                 padding: isShortScreen ? '8px 18px' : '12px 30px', fontSize: isShortScreen ? '14px' : '18px',
-                backgroundColor: '#444', color: '#fff', border: '1px solid #666',
-                borderRadius: '8px', cursor: 'pointer',
+                background: 'none', color: '#a09078', border: '1px solid rgba(120, 100, 70, 0.4)',
+                borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
+                textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
               }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(180, 150, 100, 0.6)'; e.currentTarget.style.color = '#c8b898'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(120, 100, 70, 0.4)'; e.currentTarget.style.color = '#a09078'; }}
             >
               돌아가기
             </button>
@@ -172,14 +178,14 @@ export const UpgradeCardModal: React.FC<UpgradeCardModalProps> = ({ onClose, onU
               onClick={handleConfirmUpgrade}
               style={{
                 padding: isShortScreen ? '8px 20px' : '12px 40px', fontSize: isShortScreen ? '14px' : '20px', fontWeight: 'bold',
-                backgroundColor: '#2a7a2a', color: '#fff',
-                border: '2px solid #88ff88',
-                borderRadius: '8px', cursor: 'pointer',
-                transition: 'background-color 0.2s',
-                textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+                background: 'none', color: '#66cc88',
+                border: '1px solid rgba(60, 180, 100, 0.4)',
+                borderRadius: '6px', cursor: 'pointer',
+                transition: 'all 0.2s',
+                textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#3a9a3a'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#2a7a2a'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(100, 220, 140, 0.6)'; e.currentTarget.style.color = '#88eebb'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(60, 180, 100, 0.4)'; e.currentTarget.style.color = '#66cc88'; }}
             >
               강화하기
             </button>

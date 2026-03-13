@@ -73,14 +73,13 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
           onClick={onClose}
           style={{
             position: 'fixed', top: '16px', right: '20px',
-            background: 'rgba(62, 42, 20, 0.7)', border: '2px solid #8b6f47', borderRadius: '50%',
-            color: '#e8d5b0', fontSize: '28px', width: '44px', height: '44px',
+            background: 'none', border: 'none',
             cursor: 'pointer', transition: 'all 0.2s', zIndex: 10000,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            lineHeight: 1, padding: 0
+            padding: 0
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(62, 42, 20, 0.9)'; e.currentTarget.style.borderColor = '#c4a96a'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(62, 42, 20, 0.7)'; e.currentTarget.style.borderColor = '#8b6f47'; }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.7'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
         >
           <img src={iconClose} alt="닫기" style={{ width: 22, height: 22, objectFit: 'contain' }} />
         </button>

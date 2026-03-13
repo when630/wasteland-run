@@ -71,24 +71,21 @@ export const RelicRewardModal: React.FC<RelicRewardModalProps> = ({ onClose, onR
               width: isShortScreen ? '280px' : isMobile ? '85vw' : '280px',
               maxWidth: '280px',
               minHeight: isShortScreen ? '120px' : isMobile ? '140px' : '200px',
-              backgroundColor: 'rgba(40, 20, 20, 0.85)',
+              background: 'none',
               border: '1px solid rgba(180, 80, 80, 0.4)',
-              borderRadius: isShortScreen ? '8px' : '10px',
+              borderRadius: '6px',
               padding: isShortScreen ? '14px 16px' : isMobile ? '18px 20px' : '24px',
               cursor: 'pointer',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               transition: 'all 0.25s',
-              boxShadow: '0 4px 25px rgba(0,0,0,0.5)',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-10px) scale(1.03)';
               e.currentTarget.style.borderColor = 'rgba(220, 120, 120, 0.6)';
-              e.currentTarget.style.boxShadow = '0 0 30px rgba(200, 80, 80, 0.25)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0) scale(1)';
               e.currentTarget.style.borderColor = 'rgba(180, 80, 80, 0.4)';
-              e.currentTarget.style.boxShadow = '0 4px 25px rgba(0,0,0,0.5)';
             }}
           >
             <span style={{ width: `${iconW}px`, height: `${iconW}px`, marginBottom: isShortScreen ? '8px' : '15px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -126,12 +123,13 @@ export const RelicRewardModal: React.FC<RelicRewardModalProps> = ({ onClose, onR
           marginTop: isShortScreen ? '16px' : isMobile ? '28px' : '45px',
           padding: isShortScreen ? '6px 20px' : '10px 30px',
           fontSize: isShortScreen ? '13px' : '16px',
-          backgroundColor: 'rgba(40, 35, 28, 0.9)', color: '#8a7e6a',
-          border: '1px solid rgba(100, 80, 50, 0.4)',
+          background: 'none', color: '#a09078',
+          border: '1px solid rgba(120, 100, 70, 0.4)',
           borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
+          textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
         }}
-        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(55, 48, 35, 0.95)'; e.currentTarget.style.color = '#a09078'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(40, 35, 28, 0.9)'; e.currentTarget.style.color = '#8a7e6a'; }}
+        onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(180, 150, 100, 0.6)'; e.currentTarget.style.color = '#c8b898'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(120, 100, 70, 0.4)'; e.currentTarget.style.color = '#a09078'; }}
       >
         건너뛰기
       </button>

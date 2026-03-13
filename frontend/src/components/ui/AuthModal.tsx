@@ -105,14 +105,15 @@ export const AuthModal: React.FC = () => {
               padding: isShortScreen ? '10px' : '16px',
               marginTop: isShortScreen ? '4px' : '10px',
               fontSize: isShortScreen ? '15px' : '18px', fontWeight: 'bold',
-              backgroundColor: isLoading ? '#555' : '#4a3a10',
-              color: isLoading ? '#999' : '#ffd700',
-              border: isLoading ? '2px solid #555' : '2px solid #cca500',
-              borderRadius: '8px', cursor: isLoading ? 'not-allowed' : 'pointer',
-              transition: 'all 0.2s'
+              background: 'none',
+              color: isLoading ? '#666' : '#d4a854',
+              border: isLoading ? '1px solid rgba(100, 100, 100, 0.3)' : '1px solid rgba(212, 168, 84, 0.5)',
+              borderRadius: '6px', cursor: isLoading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+              textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
             }}
-            onMouseEnter={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#5a4a20'; }}
-            onMouseLeave={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#4a3a10'; }}
+            onMouseEnter={(e) => { if (!isLoading) { e.currentTarget.style.borderColor = 'rgba(212, 168, 84, 0.8)'; e.currentTarget.style.color = '#e8c878'; } }}
+            onMouseLeave={(e) => { if (!isLoading) { e.currentTarget.style.borderColor = 'rgba(212, 168, 84, 0.5)'; e.currentTarget.style.color = '#d4a854'; } }}
           >
             {isLoading ? '통신 중...' : (isLoginMode ? '로그인' : '회원가입')}
           </button>

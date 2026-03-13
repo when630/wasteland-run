@@ -290,12 +290,13 @@ export const ShopView: React.FC = () => {
             style={{
               padding: isShortScreen ? '5px 14px' : '8px 24px',
               fontSize: isShortScreen ? '11px' : '14px', fontWeight: 'bold',
-              backgroundColor: 'rgba(40, 35, 28, 0.9)', color: '#a09078',
+              background: 'none', color: '#a09078',
               border: '1px solid rgba(120, 100, 70, 0.4)',
               borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
+              textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
             }}
-            onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(55, 48, 35, 0.95)'; e.currentTarget.style.color = '#c8b898'; }}
-            onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(40, 35, 28, 0.9)'; e.currentTarget.style.color = '#a09078'; }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(180, 150, 100, 0.6)'; e.currentTarget.style.color = '#c8b898'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(120, 100, 70, 0.4)'; e.currentTarget.style.color = '#a09078'; }}
           >
             떠나기
           </button>
@@ -327,9 +328,12 @@ export const ShopView: React.FC = () => {
                 onClick={() => setPreviewCardIdx(null)}
                 style={{
                   padding: isShortScreen ? '8px 16px' : '10px 24px', fontSize: isShortScreen ? '13px' : '16px',
-                  backgroundColor: '#444', color: '#fff', border: '1px solid #666',
-                  borderRadius: '8px', cursor: 'pointer',
+                  background: 'none', color: '#a09078', border: '1px solid rgba(120, 100, 70, 0.4)',
+                  borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
+                  textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
                 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(180, 150, 100, 0.6)'; e.currentTarget.style.color = '#c8b898'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(120, 100, 70, 0.4)'; e.currentTarget.style.color = '#a09078'; }}
               >
                 닫기
               </button>
@@ -338,15 +342,16 @@ export const ShopView: React.FC = () => {
                 disabled={gold < previewCard.price}
                 style={{
                   padding: isShortScreen ? '8px 18px' : '10px 30px', fontSize: isShortScreen ? '14px' : '18px', fontWeight: 'bold',
-                  backgroundColor: gold >= previewCard.price ? '#8b6914' : '#555',
-                  color: gold >= previewCard.price ? '#fff' : '#888',
-                  border: `2px solid ${gold >= previewCard.price ? '#d4a854' : '#444'}`,
-                  borderRadius: '8px',
+                  background: 'none',
+                  color: gold >= previewCard.price ? '#d4a854' : '#888',
+                  border: `1px solid ${gold >= previewCard.price ? 'rgba(212, 168, 84, 0.5)' : 'rgba(100, 100, 100, 0.3)'}`,
+                  borderRadius: '6px',
                   cursor: gold >= previewCard.price ? 'pointer' : 'not-allowed',
-                  transition: 'background-color 0.2s',
+                  transition: 'all 0.2s',
+                  textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
                 }}
-                onMouseEnter={e => { if (gold >= previewCard.price) e.currentTarget.style.backgroundColor = '#a67c1a'; }}
-                onMouseLeave={e => { if (gold >= previewCard.price) e.currentTarget.style.backgroundColor = '#8b6914'; }}
+                onMouseEnter={e => { if (gold >= previewCard.price) { e.currentTarget.style.borderColor = 'rgba(212, 168, 84, 0.8)'; e.currentTarget.style.color = '#e8c878'; } }}
+                onMouseLeave={e => { if (gold >= previewCard.price) { e.currentTarget.style.borderColor = 'rgba(212, 168, 84, 0.5)'; e.currentTarget.style.color = '#d4a854'; } }}
               >
                 구입
               </button>
@@ -403,9 +408,12 @@ export const ShopView: React.FC = () => {
                 onClick={() => setPreviewRelicIdx(null)}
                 style={{
                   padding: isShortScreen ? '8px 16px' : '10px 24px', fontSize: isShortScreen ? '13px' : '16px',
-                  backgroundColor: '#444', color: '#fff', border: '1px solid #666',
-                  borderRadius: '8px', cursor: 'pointer',
+                  background: 'none', color: '#a09078', border: '1px solid rgba(120, 100, 70, 0.4)',
+                  borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
+                  textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
                 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(180, 150, 100, 0.6)'; e.currentTarget.style.color = '#c8b898'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(120, 100, 70, 0.4)'; e.currentTarget.style.color = '#a09078'; }}
               >
                 닫기
               </button>
@@ -414,15 +422,16 @@ export const ShopView: React.FC = () => {
                 disabled={gold < previewRelic.price}
                 style={{
                   padding: isShortScreen ? '8px 18px' : '10px 30px', fontSize: isShortScreen ? '14px' : '18px', fontWeight: 'bold',
-                  backgroundColor: gold >= previewRelic.price ? '#8b6914' : '#555',
-                  color: gold >= previewRelic.price ? '#fff' : '#888',
-                  border: `2px solid ${gold >= previewRelic.price ? '#d4a854' : '#444'}`,
-                  borderRadius: '8px',
+                  background: 'none',
+                  color: gold >= previewRelic.price ? '#d4a854' : '#888',
+                  border: `1px solid ${gold >= previewRelic.price ? 'rgba(212, 168, 84, 0.5)' : 'rgba(100, 100, 100, 0.3)'}`,
+                  borderRadius: '6px',
                   cursor: gold >= previewRelic.price ? 'pointer' : 'not-allowed',
-                  transition: 'background-color 0.2s',
+                  transition: 'all 0.2s',
+                  textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
                 }}
-                onMouseEnter={e => { if (gold >= previewRelic.price) e.currentTarget.style.backgroundColor = '#a67c1a'; }}
-                onMouseLeave={e => { if (gold >= previewRelic.price) e.currentTarget.style.backgroundColor = '#8b6914'; }}
+                onMouseEnter={e => { if (gold >= previewRelic.price) { e.currentTarget.style.borderColor = 'rgba(212, 168, 84, 0.8)'; e.currentTarget.style.color = '#e8c878'; } }}
+                onMouseLeave={e => { if (gold >= previewRelic.price) { e.currentTarget.style.borderColor = 'rgba(212, 168, 84, 0.5)'; e.currentTarget.style.color = '#d4a854'; } }}
               >
                 구입
               </button>

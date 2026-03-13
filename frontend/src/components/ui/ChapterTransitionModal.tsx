@@ -76,13 +76,13 @@ export const ChapterTransitionModal: React.FC = () => {
         style={{
           padding: isShortScreen ? '8px 24px' : isMobile ? '12px 40px' : '18px 60px',
           fontSize: isShortScreen ? '14px' : isMobile ? '16px' : '22px', fontWeight: 'bold',
-          backgroundColor: '#1e40af', color: '#fff',
-          border: `2px solid ${data.color}`, borderRadius: '12px', cursor: 'pointer',
-          boxShadow: `0 0 15px ${data.color}40`,
-          transition: 'transform 0.2s, box-shadow 0.2s'
+          background: 'none', color: data.color,
+          border: `1px solid ${data.color}60`, borderRadius: '6px', cursor: 'pointer',
+          textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
+          transition: 'all 0.2s'
         }}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = `0 0 25px ${data.color}60`; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = `0 0 15px ${data.color}40`; }}
+        onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${data.color}99`; }}
+        onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${data.color}60`; }}
       >
         다음 구역으로 진입
       </button>
