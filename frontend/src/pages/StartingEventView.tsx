@@ -78,7 +78,7 @@ export const StartingEventView: React.FC = () => {
 
       {!resultText ? (
         <div style={{
-          display: 'flex', gap: '12px', flexDirection: 'column',
+          display: 'flex', gap: isMobile ? '4px' : '12px', flexDirection: 'column',
           width: isMobile ? '90vw' : '600px',
           animation: 'slideUp 0.6s ease-out',
         }}>
@@ -90,8 +90,17 @@ export const StartingEventView: React.FC = () => {
                 key={idx}
                 disabled={isDisabled}
                 onClick={() => handleOptionSelect(option)}
-                style={{
-                  padding: isShortScreen ? '10px 16px' : '18px 20px',
+                style={isMobile ? {
+                  padding: '6px 4px',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: '1px solid rgba(160, 120, 60, 0.15)',
+                  cursor: isDisabled ? 'not-allowed' : 'pointer',
+                  color: isDisabled ? '#6b6050' : '#e0d4bc', textAlign: 'left',
+                  transition: 'all 0.2s',
+                  opacity: isDisabled ? 0.5 : 1,
+                } : {
+                  padding: '18px 20px',
                   backgroundColor: isDisabled ? 'rgba(30, 25, 20, 0.6)' : 'rgba(40, 32, 22, 0.85)',
                   border: `1px solid ${isDisabled ? 'rgba(80, 60, 40, 0.3)' : 'rgba(160, 120, 60, 0.4)'}`,
                   borderLeft: `3px solid ${isDisabled ? 'rgba(80, 60, 40, 0.3)' : '#b8892e'}`,
@@ -102,24 +111,24 @@ export const StartingEventView: React.FC = () => {
                   opacity: isDisabled ? 0.5 : 1,
                 }}
                 onMouseEnter={(e) => {
-                  if (!isDisabled) {
+                  if (!isDisabled && !isMobile) {
                     e.currentTarget.style.backgroundColor = 'rgba(60, 48, 30, 0.9)';
                     e.currentTarget.style.borderLeftColor = '#d4a854';
                     e.currentTarget.style.boxShadow = '0 0 15px rgba(180, 140, 60, 0.15)';
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (!isDisabled) {
+                  if (!isDisabled && !isMobile) {
                     e.currentTarget.style.backgroundColor = 'rgba(40, 32, 22, 0.85)';
                     e.currentTarget.style.borderLeftColor = '#b8892e';
                     e.currentTarget.style.boxShadow = 'none';
                   }
                 }}
               >
-                <div style={{ color: isDisabled ? '#6b6050' : '#d4a854', fontWeight: 'bold', marginBottom: '6px', fontSize: '17px' }}>
+                <div style={{ color: isDisabled ? '#6b6050' : '#d4a854', fontWeight: 'bold', marginBottom: isMobile ? '1px' : '6px', fontSize: isMobile ? '13px' : '17px', textShadow: isMobile ? '1px 1px 3px rgba(0,0,0,0.9)' : undefined }}>
                   {option.label}
                 </div>
-                <div style={{ fontSize: '14px', color: isDisabled ? '#5a5040' : '#a09880', lineHeight: '1.4' }}>{option.description}</div>
+                <div style={{ fontSize: isMobile ? '11px' : '14px', color: isDisabled ? '#5a5040' : '#a09880', lineHeight: '1.3', textShadow: isMobile ? '1px 1px 2px rgba(0,0,0,0.8)' : undefined }}>{option.description}</div>
               </button>
             );
           })}
