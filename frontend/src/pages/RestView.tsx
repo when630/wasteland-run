@@ -36,6 +36,9 @@ export const RestView: React.FC = () => {
     setIsUpgradeModalOpen(true);
   };
 
+  const txtShadow = '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)';
+  const txtShadowSub = '1px 1px 3px rgba(0,0,0,0.8)';
+
   return (
     <div style={{
       width: '100vw', minHeight: '100vh',
@@ -49,123 +52,109 @@ export const RestView: React.FC = () => {
       overflowY: 'auto', padding: isMobile ? '24px 0' : '0',
     }}>
       <h1 style={{
-        fontSize: isShortScreen ? '22px' : isMobile ? '28px' : '44px', color: '#e8a444', marginBottom: isShortScreen ? '4px' : '8px',
+        fontSize: isShortScreen ? '22px' : isMobile ? '28px' : '40px', color: '#e8a444',
+        marginBottom: isShortScreen ? '4px' : '8px',
         textAlign: 'center', padding: '0 16px',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
-        textShadow: '2px 3px 6px rgba(0,0,0,0.8), 0 0 20px rgba(232, 164, 68, 0.3)',
+        textShadow: txtShadow,
         animation: 'fadeIn 0.6s ease-out',
       }}>
-        <img src={iconBurn} alt="" style={{ width: isMobile ? 32 : 44, height: isMobile ? 32 : 44, objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(232, 164, 68, 0.6))' }} />
+        <img src={iconBurn} alt="" style={{ width: isMobile ? 32 : 40, height: isMobile ? 32 : 40, objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(232, 164, 68, 0.6))' }} />
         타오르는 모닥불
       </h1>
       <p style={{
-        fontSize: isMobile ? '14px' : '18px', color: '#a09078',
-        marginBottom: isShortScreen ? '12px' : isMobile ? '24px' : '45px', textAlign: 'center', padding: '0 16px',
+        fontSize: isMobile ? '14px' : '17px', color: '#a09078',
+        marginBottom: isShortScreen ? '12px' : isMobile ? '24px' : '36px',
+        textAlign: 'center', padding: '0 16px',
+        textShadow: txtShadowSub,
       }}>
         잠시 몸을 녹이고 정비할 시간입니다. 현재 HP: {playerHp}/{playerMaxHp}
       </p>
 
+      {/* 구분선 */}
+      <div style={{ width: isMobile ? '80vw' : '400px', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(232, 164, 68, 0.3), transparent)', marginBottom: isShortScreen ? '12px' : '24px' }} />
+
       <div style={{
-        display: 'flex', gap: isShortScreen ? '12px' : isMobile ? '16px' : '28px',
+        display: 'flex', gap: isShortScreen ? '16px' : isMobile ? '12px' : '40px',
         flexDirection: isShortScreen ? 'row' : isMobile ? 'column' : 'row',
         alignItems: 'center', padding: '0 16px',
         animation: 'slideUp 0.5s ease-out',
       }}>
         {healResult === null ? (
           <>
-            {/* 휴식 버튼 */}
+            {/* 휴식 */}
             <button
               onClick={handleHeal}
               style={{
-                width: isShortScreen ? '40vw' : isMobile ? '80vw' : '220px', height: isShortScreen ? '140px' : isMobile ? '180px' : '280px',
-                backgroundColor: 'rgba(25, 40, 25, 0.85)',
-                border: '1px solid rgba(80, 180, 80, 0.3)',
-                borderRadius: '10px', cursor: 'pointer',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                transition: 'all 0.25s',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+                background: 'none', border: 'none',
+                cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center',
+                padding: isShortScreen ? '12px' : isMobile ? '12px 20px' : '16px 28px',
+                transition: 'all 0.25s', opacity: 1,
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(35, 55, 35, 0.9)';
-                e.currentTarget.style.borderColor = 'rgba(100, 220, 100, 0.5)';
-                e.currentTarget.style.boxShadow = '0 0 25px rgba(80, 180, 80, 0.2)';
-                e.currentTarget.style.transform = 'translateY(-4px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(25, 40, 25, 0.85)';
-                e.currentTarget.style.borderColor = 'rgba(80, 180, 80, 0.3)';
-                e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.4)';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
             >
-              <img src={iconCampfire} alt="" style={{ width: isShortScreen ? 36 : 56, height: isShortScreen ? 36 : 56, objectFit: 'contain', marginBottom: isShortScreen ? '8px' : '16px', filter: 'drop-shadow(0 0 8px rgba(232, 164, 68, 0.5))' }} />
-              <h2 style={{ margin: '0 0 8px 0', color: '#88dd88', fontSize: '20px', textShadow: '1px 1px 3px rgba(0,0,0,0.6)' }}>휴식</h2>
-              <p style={{ margin: 0, color: '#8a9a8a', padding: '0 16px', textAlign: 'center', fontSize: '14px', lineHeight: '1.4' }}>
+              <img src={iconCampfire} alt="" style={{ width: isShortScreen ? 40 : isMobile ? 48 : 56, height: isShortScreen ? 40 : isMobile ? 48 : 56, objectFit: 'contain', marginBottom: isShortScreen ? '8px' : '12px', filter: 'drop-shadow(0 0 10px rgba(232, 164, 68, 0.6))' }} />
+              <h2 style={{ margin: '0 0 6px 0', color: '#88dd88', fontSize: isShortScreen ? '18px' : '20px', textShadow: txtShadow }}>휴식</h2>
+              <p style={{ margin: 0, color: '#8a9a8a', textAlign: 'center', fontSize: isShortScreen ? '12px' : '14px', lineHeight: '1.4', textShadow: txtShadowSub }}>
                 최대 체력의 30%({Math.ceil(playerMaxHp * 0.3)})를 회복합니다.
               </p>
             </button>
 
-            {/* 강화 버튼 */}
+            {/* 구분 */}
+            <div style={{
+              width: isShortScreen ? '1px' : isMobile ? '60%' : '1px',
+              height: isShortScreen ? '80px' : isMobile ? '1px' : '80px',
+              background: isShortScreen || !isMobile
+                ? 'linear-gradient(180deg, transparent, rgba(160, 120, 60, 0.3), transparent)'
+                : 'linear-gradient(90deg, transparent, rgba(160, 120, 60, 0.3), transparent)',
+            }} />
+
+            {/* 강화 */}
             <button
               onClick={handleUpgrade}
               disabled={!canUpgrade}
               style={{
-                width: isShortScreen ? '40vw' : isMobile ? '80vw' : '220px', height: isShortScreen ? '140px' : isMobile ? '180px' : '280px',
-                backgroundColor: canUpgrade ? 'rgba(35, 20, 45, 0.85)' : 'rgba(20, 18, 16, 0.6)',
-                border: `1px solid ${canUpgrade ? 'rgba(160, 100, 220, 0.3)' : 'rgba(60, 50, 40, 0.3)'}`,
-                borderRadius: '10px',
+                background: 'none', border: 'none',
                 cursor: canUpgrade ? 'pointer' : 'not-allowed',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                transition: 'all 0.25s', opacity: canUpgrade ? 1 : 0.5,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                padding: isShortScreen ? '12px' : isMobile ? '12px 20px' : '16px 28px',
+                transition: 'all 0.25s', opacity: canUpgrade ? 1 : 0.4,
               }}
-              onMouseEnter={(e) => {
-                if (canUpgrade) {
-                  e.currentTarget.style.backgroundColor = 'rgba(50, 30, 65, 0.9)';
-                  e.currentTarget.style.borderColor = 'rgba(180, 120, 255, 0.5)';
-                  e.currentTarget.style.boxShadow = '0 0 25px rgba(160, 100, 220, 0.2)';
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (canUpgrade) {
-                  e.currentTarget.style.backgroundColor = 'rgba(35, 20, 45, 0.85)';
-                  e.currentTarget.style.borderColor = 'rgba(160, 100, 220, 0.3)';
-                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.4)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }
-              }}
+              onMouseEnter={(e) => { if (canUpgrade) e.currentTarget.style.transform = 'translateY(-4px)'; }}
+              onMouseLeave={(e) => { if (canUpgrade) e.currentTarget.style.transform = 'translateY(0)'; }}
             >
-              <img src={iconCardUpgrade} alt="" style={{ width: isShortScreen ? 36 : 56, height: isShortScreen ? 36 : 56, objectFit: 'contain', marginBottom: isShortScreen ? '8px' : '16px', filter: canUpgrade ? 'drop-shadow(0 0 8px rgba(160, 100, 220, 0.5))' : 'brightness(0.4)' }} />
-              <h2 style={{ margin: '0 0 8px 0', color: canUpgrade ? '#cc88ff' : '#555', fontSize: '20px', textShadow: '1px 1px 3px rgba(0,0,0,0.6)' }}>강화</h2>
-              <p style={{ margin: 0, color: canUpgrade ? '#9a8aaa' : '#555', padding: '0 16px', textAlign: 'center', fontSize: '14px', lineHeight: '1.4' }}>
+              <img src={iconCardUpgrade} alt="" style={{ width: isShortScreen ? 40 : isMobile ? 48 : 56, height: isShortScreen ? 40 : isMobile ? 48 : 56, objectFit: 'contain', marginBottom: isShortScreen ? '8px' : '12px', filter: canUpgrade ? 'drop-shadow(0 0 10px rgba(160, 100, 220, 0.6))' : 'brightness(0.4)' }} />
+              <h2 style={{ margin: '0 0 6px 0', color: canUpgrade ? '#cc88ff' : '#555', fontSize: isShortScreen ? '18px' : '20px', textShadow: txtShadow }}>강화</h2>
+              <p style={{ margin: 0, color: canUpgrade ? '#9a8aaa' : '#555', textAlign: 'center', fontSize: isShortScreen ? '12px' : '14px', lineHeight: '1.4', textShadow: txtShadowSub }}>
                 {canUpgrade ? '덱의 카드 한 장을 선택하여 업그레이드 합니다.' : '균열된 태양석 반응로에 의해 강화할 수 없습니다.'}
               </p>
             </button>
           </>
         ) : (
           <div style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isShortScreen ? '12px' : '24px',
-            backgroundColor: 'rgba(15, 50, 30, 0.85)', padding: isShortScreen ? '16px 40px' : isMobile ? '24px' : '45px 70px', borderRadius: '10px',
-            border: '1px solid rgba(60, 180, 100, 0.4)',
-            boxShadow: '0 0 30px rgba(60, 180, 100, 0.15)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isShortScreen ? '10px' : '20px',
+            padding: isShortScreen ? '12px' : isMobile ? '16px' : '24px',
             animation: 'slideUp 0.4s ease-out',
           }}>
-            <img src={iconHeart} alt="" style={{ width: isShortScreen ? 40 : 64, height: isShortScreen ? 40 : 64, objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(80, 220, 120, 0.5))' }} />
-            <h2 style={{ fontSize: isShortScreen ? '24px' : '32px', color: '#66cc88', margin: 0, textShadow: '1px 2px 4px rgba(0,0,0,0.6)' }}>회복 완료</h2>
-            <p style={{ fontSize: isShortScreen ? '18px' : '24px', color: '#b8e8c8', margin: 0 }}>
+            <img src={iconHeart} alt="" style={{ width: isShortScreen ? 40 : 56, height: isShortScreen ? 40 : 56, objectFit: 'contain', filter: 'drop-shadow(0 0 12px rgba(80, 220, 120, 0.6))' }} />
+            <h2 style={{ fontSize: isShortScreen ? '24px' : '30px', color: '#66cc88', margin: 0, textShadow: txtShadow }}>회복 완료</h2>
+            <p style={{ fontSize: isShortScreen ? '18px' : '22px', color: '#b8e8c8', margin: 0, textShadow: txtShadowSub }}>
               +{healResult} HP (현재 {useRunStore.getState().playerHp}/{playerMaxHp})
             </p>
             <button
               onClick={() => setScene('MAP')}
               style={{
-                marginTop: '8px', padding: '14px 45px', fontSize: '18px', fontWeight: 'bold',
-                backgroundColor: 'rgba(25, 70, 40, 0.9)', color: '#c8e8d4',
+                marginTop: '8px',
+                padding: isShortScreen ? '10px 28px' : '12px 40px',
+                fontSize: isShortScreen ? '15px' : '18px', fontWeight: 'bold',
+                background: 'none', color: '#66cc88',
                 border: '1px solid rgba(60, 180, 100, 0.4)',
                 borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
+                textShadow: txtShadow,
               }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(35, 90, 55, 0.95)'; e.currentTarget.style.boxShadow = '0 0 15px rgba(60, 180, 100, 0.3)'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(25, 70, 40, 0.9)'; e.currentTarget.style.boxShadow = 'none'; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(100, 220, 140, 0.6)'; e.currentTarget.style.color = '#88eebb'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(60, 180, 100, 0.4)'; e.currentTarget.style.color = '#66cc88'; }}
             >
               길을 떠난다
             </button>
