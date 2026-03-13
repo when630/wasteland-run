@@ -3,7 +3,16 @@ import Xarrow from 'react-xarrows';
 import { useRunStore } from '../store/useRunStore';
 import { useMapStore, type NodeType } from '../store/useMapStore';
 import { useResponsive } from '../hooks/useResponsive';
-import mapBg from '../assets/images/backgrounds/map_background.webp';
+import mapBg1 from '../assets/images/backgrounds/map_background_zone1.webp';
+import mapBg2 from '../assets/images/backgrounds/map_background_zone2.webp';
+import mapBg3 from '../assets/images/backgrounds/map_background_zone3.webp';
+
+const MAP_BGS: Record<number, string> = { 1: mapBg1, 2: mapBg2, 3: mapBg3 };
+const ZONE_NAMES: Record<number, string> = {
+  1: '오염된 외곽 도시',
+  2: '무너진 지하철도',
+  3: '거대 기업의 방주',
+};
 import battleBadge from '../assets/images/map/battle_badge.webp';
 import eliteBadge from '../assets/images/map/elite_badge.webp';
 import restBadge from '../assets/images/map/campfire_badge.webp';
@@ -58,9 +67,7 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
     <div style={{
       width: '100vw',
       height: '100vh',
-      backgroundImage: `url(${mapBg})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
+      background: '#2a2a2e',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -84,18 +91,6 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
           <img src={iconClose} alt="닫기" style={{ width: 22, height: 22, objectFit: 'contain' }} />
         </button>
       )}
-      <h1 style={{
-        fontSize: isMobile ? '28px' : '48px', marginBottom: isMobile ? '12px' : '20px', flexShrink: 0,
-        color: '#3e2a14',
-        textShadow: '1px 1px 0 #c4a96a',
-        fontFamily: 'serif'
-      }}>
-        황무지 지도
-      </h1>
-      <p style={{ fontSize: isMobile ? '14px' : '20px', color: '#5a3e28', marginBottom: isMobile ? '20px' : '40px', flexShrink: 0, fontFamily: 'serif', textShadow: '0 1px 0 rgba(196, 169, 106, 0.5)' }}>
-        {viewOnly ? '현재 진행 상황을 확인하세요.' : '여정을 이어갈 다음 노드를 선택하세요.'}
-      </p>
-
       {/* 맵 노드 트리 렌더링 영역 — 양피지 느낌 */}
       <div style={{
         position: 'relative',
@@ -108,6 +103,16 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
         width: isMobile ? '95vw' : undefined,
         marginBottom: isMobile ? '40px' : '100px'
       }}>
+        {/* Zone 배경 이미지 오버레이 (아주 연하게) */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+          borderRadius: '8px',
+          backgroundImage: `url(${MAP_BGS[currentChapter] || mapBg1})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.12,
+          pointerEvents: 'none', zIndex: 0
+        }} />
         {/* 양피지 질감 오버레이 */}
         <div style={{
           position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
@@ -115,6 +120,32 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
           background: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(139, 111, 71, 0.03) 3px, rgba(139, 111, 71, 0.03) 4px)',
           pointerEvents: 'none', zIndex: 0
         }} />
+
+        {/* 지도 제목 — 맵 패널 최상단 */}
+        <div style={{
+          width: '100%', textAlign: 'center', position: 'relative', zIndex: 4,
+          borderBottom: '1px solid rgba(139, 111, 71, 0.3)',
+          paddingBottom: isMobile ? '12px' : '20px',
+          marginBottom: isMobile ? '-12px' : '-30px',
+        }}>
+          <div style={{
+            fontSize: isMobile ? '20px' : '32px',
+            fontFamily: 'serif', fontWeight: 700,
+            color: '#3e2a14',
+            textShadow: '1px 1px 0 rgba(196, 169, 106, 0.5)',
+            letterSpacing: '0.08em',
+          }}>
+            {ZONE_NAMES[currentChapter] || ZONE_NAMES[1]}
+          </div>
+          <div style={{
+            fontSize: isMobile ? '11px' : '14px',
+            fontFamily: 'serif',
+            color: '#8b6f47',
+            marginTop: '4px',
+          }}>
+            Chapter {currentChapter}
+          </div>
+        </div>
 
         {/* 층(Floor) 단위로 렌더링 — 7열 그리드 */}
         {Array.from({ length: 15 }, (_, i) => i + 1).map(floorNum => {
@@ -125,10 +156,10 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
             <div key={`floor-${floorNum}`} style={{ display: 'flex', justifyContent: 'center', width: '100%', position: 'relative', zIndex: 1 }}>
               {[0, 1, 2, 3, 4, 5, 6].map(pos => {
                 const node = floorNodes.find(n => n.positionX === pos);
-                const cellSize = isMobile ? `${(100 / 7)}%` : '56px';
+                const cellSize = isMobile ? `${(100 / 7)}%` : '40px';
 
                 if (!node) {
-                  return <div key={`empty-${floorNum}-${pos}`} style={{ width: cellSize, maxWidth: isMobile ? undefined : '56px', height: isMobile ? '40px' : '56px', flexShrink: isMobile ? 1 : 0 }} />;
+                  return <div key={`empty-${floorNum}-${pos}`} style={{ width: cellSize, maxWidth: isMobile ? undefined : '40px', height: isMobile ? '30px' : '40px', flexShrink: isMobile ? 1 : 0 }} />;
                 }
 
                 const isCurrent = node.id === currentNodeId;
@@ -145,7 +176,7 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
                       if (!viewOnly && isNextAvailable) handleNodeClick(node.id, node.type);
                     }}
                     style={{
-                      width: cellSize, maxWidth: isMobile ? undefined : '56px', height: isMobile ? '40px' : '56px',
+                      width: cellSize, maxWidth: isMobile ? undefined : '40px', height: isMobile ? '30px' : '40px',
                       display: 'flex', justifyContent: 'center', alignItems: 'center',
                       cursor: viewOnly ? 'default' : (isNextAvailable ? 'pointer' : 'default'),
                       opacity: (isCurrent || isVisited || isNextAvailable) ? 1 : 0.35,
@@ -181,26 +212,27 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
           );
         })}
 
-        {/* 맵 트리 엣지(Line) 렌더링 영역 */}
+        {/* 맵 트리 엣지(Line) 렌더링 — 삐뚤빼뚤 점선 */}
         {nodes.map(node => (
           node.nextNodeIds.map(nextId => {
             const isPastPath = visitedNodeIds.includes(node.id) && visitedNodeIds.includes(nextId);
-
-            // 현재 활성화된 노드에서 출발하는 선발 길들
             const isAvailablePath = (node.id === currentNodeId) && nodes.find(n => n.id === currentNodeId)?.nextNodeIds.includes(nextId);
 
-            let lineColor = 'rgba(139, 111, 71, 0.3)';
-            let strokeWidth = 2;
+            let lineColor = 'rgba(90, 62, 40, 0.5)';
+            let strokeWidth = 1.5;
             let edgeZIndex = 1;
+            let dashStr = '6 5';
 
             if (isPastPath) {
-              lineColor = '#5a3e28';
-              strokeWidth = 4;
+              lineColor = '#3e2a14';
+              strokeWidth = 2.5;
               edgeZIndex = 2;
+              dashStr = '8 4';
             } else if (isAvailablePath) {
-              lineColor = '#8b6f47';
-              strokeWidth = 3;
+              lineColor = '#5a3e28';
+              strokeWidth = 2;
               edgeZIndex = 2;
+              dashStr = '7 4';
             }
 
             return (
@@ -213,12 +245,24 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
                 color={lineColor}
                 strokeWidth={strokeWidth}
                 path="smooth"
+                curveness={0.6}
                 showHead={false}
                 zIndex={edgeZIndex}
+                dashness={{ strokeLen: parseInt(dashStr), nonStrokeLen: parseInt(dashStr.split(' ')[1]) }}
+                SVGcanvasStyle={{ filter: 'url(#wobbly)' }}
               />
             );
           })
         ))}
+        {/* 삐뚤빼뚤 효과용 SVG 필터 */}
+        <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+          <defs>
+            <filter id="wobbly">
+              <feTurbulence type="turbulence" baseFrequency="0.03" numOctaves="2" result="turbulence" seed="2" />
+              <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="3" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+          </defs>
+        </svg>
       </div>
     </div>
   );

@@ -20,8 +20,9 @@ import { useRngStore } from '../store/useRngStore';
 import { enemyPos } from '../components/pixi/vfx/battleLayout';
 import battleBg1 from '../assets/images/backgrounds/stage1_battle_backgroung.webp';
 import battleBg2 from '../assets/images/backgrounds/stage2_battle_backgroung.webp';
+import battleBg3 from '../assets/images/backgrounds/stage3_battle_backgroung.webp';
 
-const BATTLE_BGS: Record<number, string> = { 1: battleBg1, 2: battleBg2 };
+const BATTLE_BGS: Record<number, string> = { 1: battleBg1, 2: battleBg2, 3: battleBg3 };
 
 export const BattleView: React.FC = () => {
   const { initDeck, drawCards, masterDeck, setMasterDeck } = useDeckStore();
