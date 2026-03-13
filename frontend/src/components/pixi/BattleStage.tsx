@@ -22,7 +22,7 @@ import type { PlayerSpriteState } from '../../store/battle/types';
 export const BattleStage: React.FC = () => {
   // 스토어에서 런 상태 및 전투 상태 가져오기
   const { playerHp, playerMaxHp } = useRunStore();
-  const { currentTurn, enemies, targetingCardId, playerAmmo, playerHitQueue, consumePlayerHitQueue, activeEnemyIndex, damageNumbers, clearExpiredDamageNumbers, powerPhysicalScalingBonus, playerSpriteState, setPlayerSpriteState } = useBattleStore();
+  const { currentTurn, enemies, targetingCardId, dragPreviewCardId, playerAmmo, playerHitQueue, consumePlayerHitQueue, activeEnemyIndex, damageNumbers, clearExpiredDamageNumbers, powerPhysicalScalingBonus, playerSpriteState, setPlayerSpriteState } = useBattleStore();
   const { hand } = useDeckStore();
   const { playCard } = useCardPlay();
 
@@ -84,9 +84,9 @@ export const BattleStage: React.FC = () => {
 
   // 타겟팅 모드 시 어떤 카드를 선택했는지 안내 문구 작성
   const targetingCard = targetingCardId ? hand.find(c => c.id === targetingCardId) : null;
-  const targetGuideText = targetingCard
-    ? `선택된 카드: [${targetingCard.name}]\n공격 대상을 클릭하세요!`
-    : (currentTurn === 'PLAYER' ? "Your Turn" : "Enemy Turn");
+  // 드래그 프리뷰 카드 (클릭 선택 or 드래그 중)
+  const previewCard = targetingCard || (dragPreviewCardId ? hand.find(c => c.id === dragPreviewCardId) : null);
+  const targetGuideText = currentTurn === 'PLAYER' ? "Your Turn" : "Enemy Turn";
 
   // 🌟 다단 히트 피격 효과 순차 제어용
   const [playerHitOffset, setPlayerHitOffset] = useState(0);
@@ -305,9 +305,10 @@ export const BattleStage: React.FC = () => {
           const baseX = ePos.x;
           const baseY = ePos.y;
           const isTargeting = targetingCardId !== null;
+          const hasPreview = previewCard !== null;
 
           // 단일 공격 카드 선택 시 살아있는 적에게 타겟 가능 이펙트 표시
-          const needsEnemyTarget = targetingCard?.effects.some(e =>
+          const needsEnemyTarget = previewCard?.effects.some(e =>
             (e.type === 'DAMAGE' || e.type === 'DEBUFF') &&
             e.target !== 'ALL_ENEMIES' &&
             e.target !== 'PLAYER'
@@ -320,8 +321,8 @@ export const BattleStage: React.FC = () => {
               enemies={enemies}
               baseX={baseX}
               baseY={baseY}
-              isTargeting={isTargeting}
-              canBeTargeted={isTargeting && needsEnemyTarget && enemyObj.currentHp > 0}
+              isTargeting={isTargeting || hasPreview}
+              canBeTargeted={(isTargeting || hasPreview) && needsEnemyTarget && enemyObj.currentHp > 0}
               onPointerDown={() => {
                 if (targetingCardId) {
                   playCard(targetingCardId, enemyObj.id);
@@ -330,7 +331,7 @@ export const BattleStage: React.FC = () => {
               defaultTextStyle={defaultTextStyle}
               texture={placeholderTexture}
               isActive={activeEnemyIndex === index}
-              targetingCard={targetingCard || undefined}
+              targetingCard={previewCard || undefined}
               physicalScalingBonus={powerPhysicalScalingBonus}
               playerAmmo={playerAmmo}
             />

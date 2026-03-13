@@ -6,7 +6,6 @@ import { DeckPiles } from '../components/ui/DeckPiles';
 import { VictoryRewardPanel } from '../components/ui/VictoryRewardPanel';
 import { CardViewerModal } from '../components/ui/CardViewerModal';
 import { CardAnimationLayer } from '../components/ui/CardAnimationLayer';
-import { TargetingLine } from '../components/ui/TargetingLine';
 import { GameOverModal } from '../components/ui/GameOverModal';
 import { ChapterTransitionModal } from '../components/ui/ChapterTransitionModal';
 import { StatusOverlay } from '../components/ui/StatusOverlay';
@@ -18,6 +17,7 @@ import { createEnemy, getEnemyIdsByTier } from '../assets/data/enemies';
 import { useRunStore } from '../store/useRunStore';
 import { onBattleStart } from '../logic/relicEffects';
 import { useRngStore } from '../store/useRngStore';
+import { enemyPos } from '../components/pixi/vfx/battleLayout';
 import battleBg1 from '../assets/images/backgrounds/stage1_battle_backgroung.png';
 import battleBg2 from '../assets/images/backgrounds/stage2_battle_backgroung.png';
 
@@ -25,7 +25,7 @@ const BATTLE_BGS: Record<number, string> = { 1: battleBg1, 2: battleBg2 };
 
 export const BattleView: React.FC = () => {
   const { initDeck, drawCards, masterDeck, setMasterDeck } = useDeckStore();
-  const { currentTurn, battleResult, startPlayerTurn, spawnEnemies, executeOneEnemyTurn, setActiveEnemyIndex, resetBattle, addAmmo, targetingCardId, targetingPosition } = useBattleStore();
+  const { currentTurn, battleResult, startPlayerTurn, spawnEnemies, executeOneEnemyTurn, setActiveEnemyIndex, resetBattle, addAmmo, targetingCardId, dragPreviewCardId, setPreviewTargetEnemy } = useBattleStore();
   const { setScene, currentScene, currentChapter, relics } = useRunStore();
 
   const [showBossClear, setShowBossClear] = useState(false);
@@ -135,18 +135,41 @@ export const BattleView: React.FC = () => {
     }
   }, [currentTurn, processEnemyTurnsSequentially]);
 
-  // 타겟팅 마우스 추적
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
+  // 타겟팅/드래그 프리뷰 중 DOM 레벨 마우스 추적 → 가장 가까운 적 탐지
+  const isPreviewActive = targetingCardId !== null || dragPreviewCardId !== null;
   useEffect(() => {
-    if (targetingCardId !== null && targetingPosition !== null) {
-      // 타겟팅 진입 시 카드 위치로 초기화 (선이 (0,0)으로 가는 것 방지)
-      setMousePos({ x: targetingPosition.x, y: targetingPosition.y });
-      const handleMouseMove = (e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY });
-      window.addEventListener('mousemove', handleMouseMove);
-      return () => window.removeEventListener('mousemove', handleMouseMove);
+    if (!isPreviewActive) {
+      setPreviewTargetEnemy(null);
+      return;
     }
-  }, [targetingCardId, targetingPosition]);
+    const onPointerMove = (e: PointerEvent) => {
+      const es = useBattleStore.getState().enemies;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const scale = (w / h > 16 / 9) ? h / 1080 : w / 1920;
+      const cx = (w - 1920 * scale) / 2;
+      const cy = (h - 1080 * scale) / 2;
+
+      let bestId: string | null = null;
+      let bestDist = Infinity;
+      es.forEach((enemy, i) => {
+        if (enemy.currentHp <= 0) return;
+        const ep = enemyPos(i, es.length);
+        const ex = ep.x * scale + cx;
+        const ey = ep.y * scale + cy;
+        const d = Math.hypot(e.clientX - ex, e.clientY - ey);
+        if (d < bestDist) { bestDist = d; bestId = enemy.id; }
+      });
+
+      setPreviewTargetEnemy(bestDist < Math.max(140, 200 * scale) ? bestId : null);
+    };
+    window.addEventListener('pointermove', onPointerMove);
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove);
+      setPreviewTargetEnemy(null);
+    };
+  }, [isPreviewActive, setPreviewTargetEnemy]);
 
   const handleVictoryContinue = async () => {
     if (currentScene === 'DEBUG_BATTLE') {
@@ -196,14 +219,7 @@ export const BattleView: React.FC = () => {
         </div>
       </div>
 
-      {/* 타겟팅 SVG 곡선 (UI 위에 렌더링) */}
-      {targetingCardId && targetingPosition && (
-        <TargetingLine
-          startX={targetingPosition.x} startY={targetingPosition.y}
-          endX={mousePos.x} endY={mousePos.y}
-          positioning="absolute" zIndex={30}
-        />
-      )}
+      {/* 타겟팅 선은 드래그 시에만 Hand.tsx 포탈에서 표시 */}
 
       {/* 승리 보상 패널 */}
       {battleResult === 'VICTORY' && !showBossClear && (

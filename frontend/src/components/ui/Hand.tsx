@@ -104,6 +104,7 @@ export const Hand: React.FC = () => {
 
       if (dist < DRAG_MIN_DIST) {
         // 짧은 이동 = 클릭 (기존 동작 유지)
+        setHoveredCardId(null); // 클릭 후 호버 해제 → 선택 취소 시 카드가 손패로 복귀
         const card = handRef.current.find(c => c.id === ds.cardId);
         if (card) {
           const el = cardElRefs.current.get(ds.cardId);
@@ -150,6 +151,15 @@ export const Hand: React.FC = () => {
       setDragState(null);
     }
   }, [hand, dragState]);
+
+  // 드래그 중 플레이 존 진입 시 적 데미지 프리뷰 활성화
+  useEffect(() => {
+    if (inPlayZone && draggingCard) {
+      useBattleStore.getState().setDragPreviewCard(draggingCard.id);
+    } else {
+      useBattleStore.getState().setDragPreviewCard(null);
+    }
+  }, [inPlayZone, draggingCard]);
 
   // 레이아웃 계산
   const cardWidth = isMobile ? 78 : isTablet ? 110 : width >= 1440 ? 160 : 140;

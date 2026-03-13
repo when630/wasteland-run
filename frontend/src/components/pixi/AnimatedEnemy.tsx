@@ -1,9 +1,10 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Container, Sprite, Text, useTick } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import type { Enemy } from '../../types/enemyTypes';
 import type { Card } from '../../types/gameTypes';
 import { calculatePreviewDamage } from '../../logic/damageCalculation';
+import { useBattleStore } from '../../store/useBattleStore';
 import { HpBar } from './HpBar';
 
 // 텍스처 캐시 (동일 URL 중복 생성 방지)
@@ -55,7 +56,9 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
   const [tint, setTint] = useState<number>(0xff0000);
   const [alpha, setAlpha] = useState(1);
   const [scaleModifier, setScaleModifier] = useState(1);
-  const [isHovered, setIsHovered] = useState(false);
+  // DOM 레벨 마우스 추적 기반 호버 (Pixi pointerover 대신)
+  const previewTargetEnemyId = useBattleStore(s => s.previewTargetEnemyId);
+  const isPreviewHovered = previewTargetEnemyId === enemy.id;
 
   // 상태이상 예상 데미지 (항상 표시)
   const statusPreviewDamage = useMemo(() => {
@@ -66,15 +69,23 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
     return dmg;
   }, [enemy.statuses]);
 
-  // 호버 시 카드 예상 데미지 계산
+  // 호버 시 카드 예상 데미지 계산 (DOM 레벨 마우스 추적 기반)
   const cardPreviewDamage = useMemo(() => {
-    if (!isHovered || !targetingCard || !canBeTargeted) return 0;
+    if (!isPreviewHovered || !targetingCard || !canBeTargeted) return 0;
     if (targetingCard.type !== 'PHYSICAL_ATTACK' && targetingCard.type !== 'SPECIAL_ATTACK') return 0;
     return calculatePreviewDamage(targetingCard, enemy, enemies, physicalScalingBonus, playerAmmo);
-  }, [isHovered, targetingCard, canBeTargeted, enemy, enemies, physicalScalingBonus, playerAmmo]);
+  }, [isPreviewHovered, targetingCard, canBeTargeted, enemy, enemies, physicalScalingBonus, playerAmmo]);
 
   // 합산 예상 데미지
   const previewDamage = cardPreviewDamage + statusPreviewDamage;
+
+  // 타겟 가능 해제 시 금색 tint/scale 즉시 초기화
+  useEffect(() => {
+    if (!canBeTargeted) {
+      setTint(0xff0000);
+      setScaleModifier(1);
+    }
+  }, [canBeTargeted]);
 
   // 활성 상태(공격 모션) 연출용
   const activeTimerRef = React.useRef<number>(0);
@@ -249,8 +260,6 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
       alpha={alpha}
       interactive={isTargeting && enemy.currentHp > 0}
       pointerdown={onPointerDown}
-      pointerover={() => setIsHovered(true)}
-      pointerout={() => setIsHovered(false)}
     >
       {/* 적 의도/방어/상태이상 → StatusOverlay(React HTML)로 이전됨 */}
       {/* 적 이름 */}

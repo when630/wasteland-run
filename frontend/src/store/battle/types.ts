@@ -86,6 +86,8 @@ export interface BattleFlowSlice {
   turnCount: number;
   targetingCardId: string | null;
   targetingPosition: { x: number; y: number } | null;
+  dragPreviewCardId: string | null;
+  previewTargetEnemyId: string | null;
   damageNumbers: DamageNumberEntry[];
 
   startPlayerTurn: () => void;
@@ -93,6 +95,8 @@ export interface BattleFlowSlice {
   resetBattle: () => void;
   setTargetingCard: (cardId: string | null) => void;
   setTargetingPosition: (pos: { x: number; y: number } | null) => void;
+  setDragPreviewCard: (cardId: string | null) => void;
+  setPreviewTargetEnemy: (enemyId: string | null) => void;
   pushDamageNumber: (enemyId: string, amount: number, color: number) => void;
   clearExpiredDamageNumbers: () => void;
 }

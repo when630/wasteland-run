@@ -13,6 +13,8 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
   turnCount: 1,
   targetingCardId: null,
   targetingPosition: null,
+  dragPreviewCardId: null,
+  previewTargetEnemyId: null,
   damageNumbers: [],
 
   resetBattle: () => {
@@ -29,6 +31,8 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
       playerStatus: { ...DEFAULT_PLAYER_STATUS },
       targetingCardId: null,
       targetingPosition: null,
+      dragPreviewCardId: null,
+      previewTargetEnemyId: null,
       hasPlayedUtilityThisTurn: false,
       playerHitQueue: [],
       playerSpriteState: 'IDLE' as const,
@@ -64,6 +68,8 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
         playerStatus: { ...DEFAULT_PLAYER_STATUS },
         targetingCardId: null,
         targetingPosition: null,
+        dragPreviewCardId: null,
+        previewTargetEnemyId: null,
         hasPlayedUtilityThisTurn: false,
         playerHitQueue: [],
         playerSpriteState: 'IDLE' as const,
@@ -82,6 +88,10 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
   }),
 
   setTargetingPosition: (pos) => set({ targetingPosition: pos }),
+
+  setDragPreviewCard: (cardId) => set({ dragPreviewCardId: cardId }),
+
+  setPreviewTargetEnemy: (enemyId) => set({ previewTargetEnemyId: enemyId }),
 
   pushDamageNumber: (enemyId, amount, color) => {
     const now = Date.now();
