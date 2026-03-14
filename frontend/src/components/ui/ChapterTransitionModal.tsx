@@ -27,7 +27,7 @@ export const ChapterTransitionModal: React.FC = () => {
 
   const handleProceed = async () => {
     setChapter(nextChapter);
-    useMapStore.setState({ currentFloor: 1, nodes: [], currentNodeId: null, visitedNodeIds: [] });
+    useMapStore.setState({ currentFloor: 1, nodes: [], currentNodeId: null, visitedNodeIds: [], pendingNodeId: null, mapChapter: nextChapter });
     setScene('MAP');
     await saveRunData();
   };

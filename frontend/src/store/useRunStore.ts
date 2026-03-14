@@ -156,7 +156,8 @@ export const useRunStore = create<RunState>((set) => ({
       const mapJson = JSON.stringify({
         nodes: mapState.nodes,
         currentNodeId: mapState.currentNodeId,
-        visitedNodeIds: mapState.visitedNodeIds
+        visitedNodeIds: mapState.visitedNodeIds,
+        mapChapter: mapState.mapChapter
       });
 
       await authApi.post('/run', {
@@ -224,12 +225,23 @@ export const useRunStore = create<RunState>((set) => ({
         if (data.mapJson) {
           try {
             const mapData = JSON.parse(data.mapJson);
-            useMapStore.setState({
-              nodes: mapData.nodes || [],
-              currentNodeId: mapData.currentNodeId || null,
-              visitedNodeIds: mapData.visitedNodeIds || [],
-              pendingNodeId: null
-            });
+            const savedMapChapter = mapData.mapChapter || 1;
+            const loadedChapter = data.currentChapter || 1;
+            // 저장된 맵의 챕터가 현재 챕터와 일치하면 복원, 아니면 빈 상태로 두어 MapView에서 재생성
+            if (savedMapChapter === loadedChapter && mapData.nodes?.length > 0) {
+              useMapStore.setState({
+                nodes: mapData.nodes,
+                currentNodeId: mapData.currentNodeId || null,
+                visitedNodeIds: mapData.visitedNodeIds || [],
+                pendingNodeId: null,
+                mapChapter: savedMapChapter
+              });
+            } else {
+              useMapStore.setState({
+                nodes: [], currentNodeId: null, visitedNodeIds: [],
+                pendingNodeId: null, mapChapter: loadedChapter
+              });
+            }
           } catch (e) {
             console.warn('맵 데이터 파싱 실패, 맵을 새로 생성합니다.', e);
           }

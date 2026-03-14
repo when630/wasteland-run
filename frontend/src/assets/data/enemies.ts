@@ -3,6 +3,37 @@ import { generateUniqueId, type SeededRNG } from '../../utils/rng';
 import scarecrowImg from '../images/characters/scarecrow.webp';
 import scarecrowAttackImg from '../images/characters/scarecrow_attack.webp';
 import scarecrowHitImg from '../images/characters/scarecrow_hit.webp';
+// 챕터 1 스프라이트
+import scrapCollectorImg from '../images/characters/scrap_collector.webp';
+import scrapCollectorAttackImg from '../images/characters/scrap_collector_attack.webp';
+import scrapCollectorHitImg from '../images/characters/scrap_collector_hit.webp';
+import acidDogImg from '../images/characters/acid_dog.webp';
+import acidDogAttackImg from '../images/characters/acid_dog_attack.webp';
+import acidDogHitImg from '../images/characters/acid_dog_hit.webp';
+import wasteSlimeImg from '../images/characters/waste_slime.webp';
+import wasteSlimeAttackImg from '../images/characters/waste_slime_attack.webp';
+import wasteSlimeHitImg from '../images/characters/waste_slime_hit.webp';
+import radiationSpiderImg from '../images/characters/radiation_spider.webp';
+import radiationSpiderAttackImg from '../images/characters/radiation_spider_attack.webp';
+import radiationSpiderHitImg from '../images/characters/radiation_spider_hit.webp';
+import rustMarauderImg from '../images/characters/rust_marauder.webp';
+import rustMarauderAttackImg from '../images/characters/rust_marauder_attack.webp';
+import rustMarauderHitImg from '../images/characters/rust_marauder_hit.webp';
+import scrapTurretImg from '../images/characters/scrap_turret.webp';
+import scrapTurretAttackImg from '../images/characters/scrap_turret_attack.webp';
+import scrapTurretHitImg from '../images/characters/scrap_turret_hit.webp';
+import mutantBehemothImg from '../images/characters/mutant_behemoth.webp';
+import mutantBehemothAttackImg from '../images/characters/mutant_behemoth_attack.webp';
+import mutantBehemothHitImg from '../images/characters/mutant_behemoth_hit.webp';
+import rogueSentryImg from '../images/characters/rogue_sentry.webp';
+import rogueSentryAttackImg from '../images/characters/rogue_sentry_attack.webp';
+import rogueSentryHitImg from '../images/characters/rogue_sentry_hit.webp';
+import mutantSniperImg from '../images/characters/mutant_sniper.webp';
+import mutantSniperAttackImg from '../images/characters/mutant_sniper_attack.webp';
+import mutantSniperHitImg from '../images/characters/mutant_sniper_hit.webp';
+import brutusImg from '../images/characters/brutus.webp';
+import brutusAttackImg from '../images/characters/brutus_attack.webp';
+import brutusHitImg from '../images/characters/brutus_hit.webp';
 
 type BaseEnemy = Omit<Enemy, 'id' | 'currentHp' | 'shield' | 'resist' | 'currentIntent'> & { chapter?: number; initialShield?: number };
 
@@ -26,6 +57,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '고철 수집가',
     maxHp: 45,
     chapter: 1,
+    spriteUrl: scrapCollectorImg,
+    spriteAttackUrl: scrapCollectorAttackImg,
+    spriteHitUrl: scrapCollectorHitImg,
   },
   acid_dog: {
     baseId: 'acid_dog',
@@ -33,6 +67,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '산성 침 들개',
     maxHp: 28,
     chapter: 1,
+    spriteUrl: acidDogImg,
+    spriteAttackUrl: acidDogAttackImg,
+    spriteHitUrl: acidDogHitImg,
   },
   waste_slime: {
     baseId: 'waste_slime',
@@ -40,6 +77,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '폐기물 슬라임',
     maxHp: 65,
     chapter: 1,
+    spriteUrl: wasteSlimeImg,
+    spriteAttackUrl: wasteSlimeAttackImg,
+    spriteHitUrl: wasteSlimeHitImg,
   },
   radiation_spider: {
     baseId: 'radiation_spider',
@@ -47,6 +87,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '방사능 거미',
     maxHp: 22,
     chapter: 1,
+    spriteUrl: radiationSpiderImg,
+    spriteAttackUrl: radiationSpiderAttackImg,
+    spriteHitUrl: radiationSpiderHitImg,
   },
   rust_marauder: {
     baseId: 'rust_marauder',
@@ -54,6 +97,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '녹슨 약탈자',
     maxHp: 38,
     chapter: 1,
+    spriteUrl: rustMarauderImg,
+    spriteAttackUrl: rustMarauderAttackImg,
+    spriteHitUrl: rustMarauderHitImg,
   },
   scrap_turret: {
     baseId: 'scrap_turret',
@@ -61,6 +107,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '폐 자동포탑',
     maxHp: 30,
     chapter: 1,
+    spriteUrl: scrapTurretImg,
+    spriteAttackUrl: scrapTurretAttackImg,
+    spriteHitUrl: scrapTurretHitImg,
   },
   // 엘리트 몬스터
   mutant_behemoth: {
@@ -69,6 +118,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '돌연변이 베히모스',
     maxHp: 110,
     chapter: 1,
+    spriteUrl: mutantBehemothImg,
+    spriteAttackUrl: mutantBehemothAttackImg,
+    spriteHitUrl: mutantBehemothHitImg,
   },
   rogue_sentry: {
     baseId: 'rogue_sentry',
@@ -76,6 +128,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '폭주하는 경비 드론',
     maxHp: 85,
     chapter: 1,
+    spriteUrl: rogueSentryImg,
+    spriteAttackUrl: rogueSentryAttackImg,
+    spriteHitUrl: rogueSentryHitImg,
   },
   mutant_sniper: {
     baseId: 'mutant_sniper',
@@ -83,6 +138,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '변이 저격수',
     maxHp: 75,
     chapter: 1,
+    spriteUrl: mutantSniperImg,
+    spriteAttackUrl: mutantSniperAttackImg,
+    spriteHitUrl: mutantSniperHitImg,
   },
   // 보스
   brutus: {
@@ -91,6 +149,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '고철 기갑수 브루터스',
     maxHp: 140,
     chapter: 1,
+    spriteUrl: brutusImg,
+    spriteAttackUrl: brutusAttackImg,
+    spriteHitUrl: brutusHitImg,
   },
 
   // ===== 챕터 2: 무너진 지하철도 =====

@@ -64,7 +64,7 @@ export const MainMenuView: React.FC = () => {
     useDeckStore.getState().setMasterDeck(createStartingDeck());
 
     // 맵(층) 초기화 — 0층에서 출발 이벤트 후 1층으로 진입
-    useMapStore.setState({ currentFloor: 0, nodes: [], currentNodeId: null, visitedNodeIds: [] });
+    useMapStore.setState({ currentFloor: 0, nodes: [], currentNodeId: null, visitedNodeIds: [], pendingNodeId: null, mapChapter: 1 });
 
     // 출발 이벤트로 이동 (0층)
     setScene('STARTING_EVENT');

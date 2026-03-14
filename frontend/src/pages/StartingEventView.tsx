@@ -29,7 +29,7 @@ export const StartingEventView: React.FC = () => {
   };
 
   const handleContinue = async () => {
-    useMapStore.setState({ currentFloor: 1 });
+    useMapStore.setState({ currentFloor: 1, nodes: [], currentNodeId: null, visitedNodeIds: [], pendingNodeId: null });
     setScene('MAP');
     await useRunStore.getState().saveRunData();
   };

@@ -28,16 +28,16 @@ interface MapViewProps {
 
 export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) => {
   const { setScene } = useRunStore();
-  const { nodes, currentNodeId, visitedNodeIds, generateMap, setPendingNode, commitPendingNode } = useMapStore();
+  const { nodes, currentNodeId, visitedNodeIds, generateMap, setPendingNode, commitPendingNode, mapChapter } = useMapStore();
   const { isMobile } = useResponsive();
 
-  // 첫 마운트 시 맵이 없으면 생성 (현재 챕터 기반)
+  // 맵이 없거나 챕터가 변경되었으면 새로 생성
   const { currentChapter } = useRunStore();
   useEffect(() => {
-    if (nodes.length === 0) {
+    if (nodes.length === 0 || mapChapter !== currentChapter) {
       generateMap(currentChapter);
     }
-  }, [nodes, generateMap, currentChapter]);
+  }, [nodes.length, mapChapter, generateMap, currentChapter]);
 
   // 씬 완료 후 MAP 복귀 시 pending 노드를 커밋하고 저장
   useEffect(() => {
@@ -73,7 +73,7 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
       alignItems: 'center',
       paddingTop: '50px',
       overflowY: 'auto',
-      overflowX: 'hidden'
+      overflowX: 'hidden',
     }}>
       {viewOnly && onClose && (
         <button
@@ -101,7 +101,7 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
         boxShadow: '0 0 30px rgba(0,0,0,0.5), inset 0 0 60px rgba(139, 111, 71, 0.3)',
         minWidth: isMobile ? 'auto' : '850px',
         width: isMobile ? '95vw' : undefined,
-        marginBottom: isMobile ? '40px' : '100px'
+        marginBottom: isMobile ? '40px' : '100px',
       }}>
         {/* Zone 배경 이미지 오버레이 (아주 연하게) */}
         <div style={{
@@ -249,13 +249,13 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
                 showHead={false}
                 zIndex={edgeZIndex}
                 dashness={{ strokeLen: parseInt(dashStr), nonStrokeLen: parseInt(dashStr.split(' ')[1]) }}
-                SVGcanvasStyle={{ filter: 'url(#wobbly)' }}
+                SVGcanvasStyle={{ filter: 'url(#wobbly)', pointerEvents: 'none' }}
               />
             );
           })
         ))}
         {/* 삐뚤빼뚤 효과용 SVG 필터 */}
-        <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+        <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }}>
           <defs>
             <filter id="wobbly">
               <feTurbulence type="turbulence" baseFrequency="0.03" numOctaves="2" result="turbulence" seed="2" />

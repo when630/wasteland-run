@@ -19,6 +19,7 @@ interface MapState {
   currentFloor: number;
   visitedNodeIds: string[];
   pendingNodeId: string | null; // 클릭했지만 아직 완료되지 않은 노드
+  mapChapter: number; // 현재 맵이 생성된 챕터 번호
 
   // Actions
   generateMap: (chapter?: number) => void;
@@ -33,6 +34,7 @@ export const useMapStore = create<MapState>((set) => ({
   currentFloor: 1,
   visitedNodeIds: [],
   pendingNodeId: null,
+  mapChapter: 1,
 
   generateMap: (chapter: number = 1) => {
     const TOTAL_FLOORS = 15;
@@ -192,7 +194,7 @@ export const useMapStore = create<MapState>((set) => ({
     }
 
     const newNodes = Array.from(nodeMap.values());
-    set({ nodes: newNodes, currentNodeId: null, currentFloor: 1, visitedNodeIds: [] });
+    set({ nodes: newNodes, currentNodeId: null, currentFloor: 1, visitedNodeIds: [], mapChapter: chapter });
   },
 
   moveToNode: (nodeId: string) => set((state) => {
