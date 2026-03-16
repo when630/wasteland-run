@@ -562,3 +562,269 @@ Pixel art character sprite, post-apocalyptic style, transparent background (PNG)
 ```
 Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A massive AI-human hybrid final boss, lower body merged with a corporate mainframe/throne of servers and cables, upper body humanoid but augmented with cybernetic implants, one arm is a massive energy cannon, halo-like holographic display behind head, glowing red eyes, corporate suit remnants visible under tech augmentations, nanobots swirling around. Boss-scale (3x player size), merged with machinery below waist. Taking damage pose, mainframe sparking and exploding, red impact flash effect, cybernetic implants cracking, holographic halo glitching, cables snapping, nanobots scattering.
 ```
+
+---
+
+## 신규 몬스터 스프라이트 프롬프트 (미제작 34종)
+
+> 아래 몬스터들은 코드에 데이터가 있으나 스프라이트가 없는 상태입니다.
+> 공통 프리픽스: `Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art.`
+
+---
+
+### 챕터 1 신규
+
+---
+
+### 녹슨 감시 로봇 (rusted_watchbot)
+
+**idle**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A small rusted patrol robot, one cracked camera eye flickering red, the other eye broken and dark, boxy body on squeaky rusted wheels, a small antenna on top bent sideways, dented metal plating with peeling paint, tiny laser pointer on front. Small mechanical creature. Standing idle pose, camera eye scanning back and forth, antenna twitching.
+```
+
+**attack**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A small rusted patrol robot, one cracked camera eye flickering red, the other eye broken and dark, boxy body on squeaky rusted wheels, a small antenna on top bent sideways, dented metal plating with peeling paint, tiny laser pointer on front. Small mechanical creature. Dynamic attack pose, firing a weak red laser beam from front pointer, camera eye glowing bright red, motion lines showing movement.
+```
+
+**hit**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A small rusted patrol robot, one cracked camera eye flickering red, the other eye broken and dark, boxy body on squeaky rusted wheels, a small antenna on top bent sideways, dented metal plating with peeling paint, tiny laser pointer on front. Small mechanical creature. Taking damage pose, sparking and jolting backward, red impact flash effect, metal panels popping off, wheels skidding.
+```
+
+---
+
+### 변이 까마귀 떼 (mutant_crows)
+
+**idle**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A flock of 3-4 mutated crows clustered together, oversized with patchy feathers, glowing neon-green eyes, extra-long talons, some with extra vestigial wings or third eye, dark purple-black plumage with sickly green highlights. Medium creature cluster. Standing idle pose, perched together, heads twitching and eyes darting.
+```
+
+**attack**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A flock of 3-4 mutated crows, oversized with patchy feathers, glowing neon-green eyes, extra-long talons, dark purple-black plumage with sickly green highlights. Medium creature cluster. Dynamic attack pose, all diving forward in formation with talons extended, wings spread, motion lines showing swooping movement, aggressive action pose.
+```
+
+**hit**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A flock of 3-4 mutated crows, oversized with patchy feathers, glowing neon-green eyes, extra-long talons, dark purple-black plumage with sickly green highlights. Medium creature cluster. Taking damage pose, scattering in panic, feathers flying, red impact flash effect, one crow tumbling, others flapping chaotically.
+```
+
+---
+
+### 방사능 여왕 거미 (spider_queen) — 보스
+
+**idle**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A massive radioactive spider queen, body 3x player size, bulbous abdomen covered in pulsating egg sacs glowing sickly green, eight thick armored legs with barbed hooks, multiple glowing green compound eyes, fangs dripping fluorescent venom, radiation warning symbols faintly visible on carapace, small spider hatchlings crawling on body. Boss-scale arachnid creature. Standing idle pose, abdomen pulsating, venom dripping from fangs, eggs faintly glowing.
+```
+
+**attack**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A massive radioactive spider queen, body 3x player size, bulbous abdomen covered in pulsating egg sacs, eight thick armored legs, multiple glowing green compound eyes, fangs dripping fluorescent venom. Boss-scale arachnid creature. Dynamic attack pose, rearing up on hind legs and spraying a stream of radioactive venom from fangs, green toxic splash effect, motion lines showing forward thrust, aggressive action pose.
+```
+
+**hit**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A massive radioactive spider queen, body 3x player size, bulbous abdomen covered in pulsating egg sacs, eight thick armored legs, multiple glowing green compound eyes, fangs dripping fluorescent venom. Boss-scale arachnid creature. Taking damage pose, legs buckling, red impact flash on carapace, green ichor splashing from wounds, egg sacs bursting, small spiders scattering, pained screech pose.
+```
+
+---
+
+### 폭풍 발전기 (storm_generator) — 보스
+
+**idle**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A massive industrial storm generator machine, cylindrical body with tesla coils on top crackling with blue-white electricity, armored panels with rivets, spinning turbine core visible through grated opening, heavy base with tank treads, warning signs and hazard stripes, electrical arcs jumping between coils. Boss-scale machine (3x player size). Standing idle pose, tesla coils sparking intermittently, turbine humming, electricity arcing.
+```
+
+**attack**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A massive industrial storm generator machine, cylindrical body with tesla coils on top, armored panels, spinning turbine core, heavy base with tank treads. Boss-scale machine (3x player size). Dynamic attack pose, tesla coils overcharging with massive lightning bolts shooting forward, blinding electrical storm effect, turbine spinning at max speed, sparks flying everywhere, aggressive action pose.
+```
+
+**hit**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A massive industrial storm generator machine, cylindrical body with tesla coils on top, armored panels, spinning turbine core, heavy base with tank treads. Boss-scale machine (3x player size). Taking damage pose, armor panels denting and flying off, red impact flash, tesla coils short-circuiting with wild sparks, turbine stuttering, smoke billowing from cracks.
+```
+
+---
+
+### 챕터 2 신규
+
+---
+
+### 감염된 승객 (infected_passenger)
+
+**idle**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A zombie-like infected subway passenger, torn business suit with loosened tie, pale gray-green rotting skin, vacant milky-white eyes, jaw hanging loose, shambling posture with arms hanging limp, fungal growths on shoulders and back, old briefcase still clutched in one hand. Humanoid undead figure. Standing idle pose, swaying unsteadily, jaw slack, arms hanging.
+```
+
+**attack**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A zombie-like infected subway passenger, torn business suit, pale gray-green rotting skin, vacant milky-white eyes, fungal growths on shoulders. Humanoid undead figure. Dynamic attack pose, lunging forward with arms outstretched and jaw wide open attempting to bite, motion lines showing lurching movement, aggressive action pose.
+```
+
+**hit**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A zombie-like infected subway passenger, torn business suit, pale gray-green rotting skin, vacant milky-white eyes, fungal growths on shoulders. Humanoid undead figure. Taking damage pose, stumbling backward, red impact flash, fungal spores bursting from body, suit tearing further, green toxic mist releasing.
+```
+
+---
+
+### 형광 이끼 (glowing_moss)
+
+**idle**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A large cluster of bioluminescent moss growing on a rock formation, glowing bright neon-green with pulsating light, releasing floating spore particles upward, tendrils reaching outward, mushroom-like fruiting bodies on top, slimy wet texture, subtle face-like pattern in the moss (two darker spots like eyes). Medium organic creature. Standing idle pose, gently pulsating with bioluminescent glow, spores floating upward.
+```
+
+**attack**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A large cluster of bioluminescent moss on a rock formation, glowing neon-green, tendrils reaching outward, mushroom-like fruiting bodies. Medium organic creature. Dynamic attack pose, shooting a burst of toxic spores forward in a cloud, tendrils whipping outward, glow intensifying, motion lines showing spore ejection.
+```
+
+**hit**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A large cluster of bioluminescent moss on a rock formation, glowing neon-green, tendrils reaching outward, mushroom-like fruiting bodies. Medium organic creature. Taking damage pose, chunks of moss flying off, red impact flash, glow flickering and dimming, spores scattering chaotically, rock cracking.
+```
+
+---
+
+### 탈선한 기관차 (derailed_train) — 보스
+
+**idle**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A sentient derailed subway locomotive, front face anthropomorphized with headlights as angry glowing red eyes, grille as a snarling mouth with metal teeth, crumpled and dented body with rust and graffiti, one rail still attached dragging behind, steam venting from cracks, sparking broken electrical wires hanging. Boss-scale vehicle creature (3x player size). Standing idle pose, headlight eyes glowing menacingly, steam hissing from vents, engine rumbling.
+```
+
+**attack**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A sentient derailed subway locomotive, front face with headlights as angry red eyes, grille as snarling mouth, crumpled body with rust, steam venting. Boss-scale vehicle creature (3x player size). Dynamic attack pose, charging forward at full speed, headlights blazing, sparks flying from dragging rail, smoke and steam billowing, ground cracking beneath, motion lines showing massive momentum.
+```
+
+**hit**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A sentient derailed subway locomotive, front face with headlights as angry red eyes, grille as snarling mouth, crumpled body with rust, steam venting. Boss-scale vehicle creature (3x player size). Taking damage pose, panels flying off, red impact flash, headlights flickering, windshield cracking, steam erupting from new breaches, wheels locking up.
+```
+
+---
+
+### 지하 군주 (underground_lord) — 보스
+
+**idle**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A massive mutant mole-king, 3x player size, standing upright on thick hind legs, wearing a crude crown made of bent subway rails, tattered royal cloak over muscular furry body, one massive claw holding a scepter made from a signal pole, nearly blind tiny eyes but massive star-nosed snout, long digging claws, bioluminescent patches on fur. Boss-scale bipedal beast. Standing idle pose, crown glinting, scepter planted on ground, snout twitching.
+```
+
+**attack**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A massive mutant mole-king, 3x player size, crude crown of bent subway rails, tattered cloak, signal pole scepter, star-nosed snout, massive digging claws. Boss-scale bipedal beast. Dynamic attack pose, swinging scepter forward with tremendous force, cloak billowing, ground cracking from impact, motion lines showing power, aggressive action pose.
+```
+
+**hit**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A massive mutant mole-king, 3x player size, crude crown of bent subway rails, tattered cloak, signal pole scepter, star-nosed snout, massive digging claws. Boss-scale bipedal beast. Taking damage pose, crown tilting, cloak tearing, red impact flash on body, fur singeing, staggering backward, scepter wobbling, enraged expression.
+```
+
+---
+
+### 챕터 3 신규
+
+---
+
+### 방주 청소 드론 (cleaning_drone)
+
+**idle**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A small circular cleaning robot similar to a roomba, white shell with corporate logo partially scratched off, a small retractable laser turret on top (repurposed cleaning laser), blue LED ring around edge, hovering slightly off ground with anti-gravity pads, cracks in shell revealing circuitry. Small mechanical creature. Standing idle pose, hovering in place, LED ring cycling blue, laser turret scanning.
+```
+
+**attack**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A small circular cleaning robot, white shell, retractable laser turret, blue LED ring, hovering. Small mechanical creature. Dynamic attack pose, laser turret extended and firing a thin red beam, LED ring turning red, tilting forward aggressively, motion lines showing movement.
+```
+
+**hit**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A small circular cleaning robot, white shell, retractable laser turret, blue LED ring, hovering. Small mechanical creature. Taking damage pose, spinning out of control, red impact flash, shell cracking, sparks flying, LED ring flickering, hover failing and tilting.
+```
+
+---
+
+### 실험체 X-7 (experiment_x7)
+
+**idle**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A muscular bio-engineered humanoid experiment, translucent skin revealing pulsing red muscles and veins beneath, number X-7 branded on chest in red, restraint collar still around neck with broken chain, one arm grotesquely oversized and mutated, eyes wild and feral with red irises, wearing torn hospital gown remnants. Large humanoid creature. Standing idle pose, heavy breathing, oversized arm twitching, veins pulsing visibly.
+```
+
+**attack**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A muscular bio-engineered humanoid, translucent skin, X-7 brand, broken restraint collar, one grotesquely oversized arm, wild red eyes. Large humanoid creature. Dynamic attack pose, swinging oversized mutant arm in a devastating haymaker, ground cracking beneath feet, motion lines showing tremendous force, acid dripping from arm, aggressive action pose.
+```
+
+**hit**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A muscular bio-engineered humanoid, translucent skin, X-7 brand, broken restraint collar, one grotesquely oversized arm, wild red eyes. Large humanoid creature. Taking damage pose, staggering but snarling angrily, red impact flash, translucent skin showing internal damage, green blood splattering, entering rage state with glowing veins.
+```
+
+---
+
+### 프로토타입 전투기 (prototype_fighter) — 엘리트
+
+**idle**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. An incomplete prototype combat robot, bipedal frame with one arm fully armed with a gatling gun, the other arm socket empty with exposed wiring and hydraulics, asymmetric armor plating (one side polished chrome, other side bare skeleton frame), single red camera eye on head, legs with reverse-joint configuration, sparks occasionally from exposed circuits. Large mechanical creature. Standing idle pose, camera eye scanning, gatling arm at ready, exposed wires sparking intermittently.
+```
+
+**attack**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. An incomplete prototype combat robot, bipedal with gatling gun arm, empty arm socket with exposed wiring, asymmetric armor, single red camera eye, reverse-joint legs. Large mechanical creature. Dynamic attack pose, gatling arm spinning and firing with muzzle flash and shell casings, camera eye blazing red, leaning forward aggressively, motion lines showing recoil.
+```
+
+**hit**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. An incomplete prototype combat robot, bipedal with gatling gun arm, empty arm socket with exposed wiring, asymmetric armor, single red camera eye, reverse-joint legs. Large mechanical creature. Taking damage pose, armor panel flying off, red impact flash, hydraulic fluid spraying, camera eye flickering, staggering on reverse-joint legs, sparks erupting from exposed frame.
+```
+
+---
+
+### AI 중앙통제 시스템 (central_ai) — 보스
+
+**idle**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A massive central AI system manifested as a wall of server racks with a giant holographic face projected in front, the face is angular and geometric with cold blue-white features, single large red eye in the center of the face, dozens of cables and fiber optics extending outward like tentacles, multiple smaller screens showing data streams, cooling fans spinning behind. Boss-scale installation (3x player size), stationary. Standing idle pose, holographic face slowly rotating, red eye pulsing, data streams flowing across screens.
+```
+
+**attack**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A massive central AI system with server racks, giant holographic face, large red eye, cable tentacles, data screens. Boss-scale installation (3x player size). Dynamic attack pose, cable tentacles lashing forward, holographic face contorting in anger, red eye blazing, screens displaying attack warnings, electric arcs shooting from cables, aggressive action pose.
+```
+
+**hit**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A massive central AI system with server racks, giant holographic face, large red eye, cable tentacles, data screens. Boss-scale installation (3x player size). Taking damage pose, server racks sparking and smoking, holographic face glitching with static, red eye flickering, cables snapping, screens cracking, red impact flash, data corruption visual effects.
+```
+
+---
+
+### 최종 병기 프로젝트 (final_weapon) — 보스
+
+**idle**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A colossal humanoid weapons platform, 3x player size, heavily armored mech with missile pods on shoulders, a massive sword-arm on the right side (blade made from sharpened I-beam), gatling cannon replacing left arm, armored cockpit head with visor slit glowing red, legs like armored stilts with heavy feet, exhaust vents on back belching smoke, ammunition belts feeding into gatling. Boss-scale war machine. Standing idle pose, visor glowing ominously, ammunition belt feeding, exhaust venting, sword-arm at rest.
+```
+
+**attack**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A colossal humanoid weapons platform, 3x player size, missile pods, massive sword-arm, gatling cannon left arm, armored cockpit head, armored stilt legs. Boss-scale war machine. Dynamic attack pose, gatling cannon spinning and firing with massive muzzle flash, missile pods launching, sword-arm raised for devastating overhead strike, visor blazing red, motion lines showing overwhelming firepower.
+```
+
+**hit**
+```
+Pixel art character sprite, post-apocalyptic style, transparent background (PNG), muted earth tones with brown/gray palette, detailed pixel shading, side-facing (3/4 view facing left), single character only, game sprite asset, no background elements, no UI, no text. Style reference: Darkest Dungeon meets pixel art. A colossal humanoid weapons platform, 3x player size, missile pods, massive sword-arm, gatling cannon left arm, armored cockpit head, armored stilt legs. Boss-scale war machine. Taking damage pose, armor plates blowing off, red impact flash, one missile pod exploding, visor cracking, sparks flying from joints, staggering on stilt legs, ammunition belt snapping.
+```
