@@ -269,6 +269,11 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
             } catch { /* VFX는 게임 로직에 영향 없음 */ }
           }
 
+          // 분노 파워: 물리 피격 시 방어도 획득
+          if (!isSpecial && dmgResult.totalDamage > 0 && state.powerRageAmount > 0) {
+            newShield += state.powerRageAmount;
+          }
+
           if (isSpecial && dmgResult.specialDefended && ammoOnSpecialDefend > 0) {
             ammoGained += ammoOnSpecialDefend;
           }

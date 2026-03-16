@@ -137,6 +137,7 @@ export const useCardPlay = () => {
       playerShield: useBattleStore.getState().playerStatus.shield,
       rampageCounts: useBattleStore.getState().rampageCounts,
       nextAttackBonus: useBattleStore.getState().nextAttackBonus,
+      powerFrenzyAmount: useBattleStore.getState().powerFrenzyAmount,
     });
 
     let hasDamage = false;
@@ -283,6 +284,16 @@ export const useCardPlay = () => {
       setTargetingCard(null);
     }
     playCardFromHand(cardId);
+
+    // 불사조의 재: 카드 소멸 시 방어도 획득
+    if (card.isExhaust) {
+      const phoenixAmount = useBattleStore.getState().powerPhoenixAmount;
+      if (phoenixAmount > 0) {
+        addPlayerShield(phoenixAmount);
+        addPlayerResist(phoenixAmount);
+        setToastMessage(`불사조의 재 발동! 방어도 ${phoenixAmount}+${phoenixAmount}!`);
+      }
+    }
 
     return true;
   };

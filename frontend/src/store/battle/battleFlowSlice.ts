@@ -62,11 +62,6 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
       let startingAp = state.playerMaxAp;
       startingAp += state.bonusApNextTurn;
 
-      const nextDebuffs: Record<string, number> = {};
-      Object.entries(state.playerDebuffs).forEach(([key, val]) => {
-        if (val > 1) nextDebuffs[key] = val - 1;
-      });
-
       // 요새화 파워: 매 턴 시작 시 물리 방어도 자동 획득
       const fortifyShield = state.powerFortifyAmount;
 
@@ -74,6 +69,7 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
         currentTurn: 'PLAYER',
         playerActionPoints: startingAp,
         turnCount: state.turnCount + 1,
+        // 방어도/버프 리셋하되 디버프는 유지 (endPlayerTurn에서 감소)
         playerStatus: { ...DEFAULT_PLAYER_STATUS, shield: fortifyShield },
         targetingCardId: null,
         targetingPosition: null,
@@ -84,12 +80,19 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
         playerSpriteState: 'IDLE' as const,
         activeEnemyIndex: null,
         bonusApNextTurn: 0,
-        playerDebuffs: nextDebuffs,
+        // playerDebuffs 유지 — 적이 부여한 디버프가 플레이어 턴 동안 지속
       };
     });
   },
 
-  endPlayerTurn: () => set({ currentTurn: 'ENEMY' }),
+  endPlayerTurn: () => set((state) => {
+    // 플레이어 턴 종료 시 디버프 1턴 감소 (0 이하면 제거)
+    const nextDebuffs: Record<string, number> = {};
+    Object.entries(state.playerDebuffs).forEach(([key, val]) => {
+      if (val > 1) nextDebuffs[key] = val - 1;
+    });
+    return { currentTurn: 'ENEMY' as const, playerDebuffs: nextDebuffs };
+  }),
 
   setTargetingCard: (cardId) => set({
     targetingCardId: cardId,

@@ -33,6 +33,7 @@ export interface ResolveContext {
   playerShield?: number;
   rampageCounts?: Record<string, number>; // baseId → 전투 중 사용 횟수
   nextAttackBonus?: number; // 무기 개조: 다음 공격 보너스 피해
+  powerFrenzyAmount?: number; // 광기: HP 50% 이하 시 추가 피해
 }
 
 /**
@@ -112,6 +113,12 @@ function resolveDamageEffect(
   // 무기 개조 보너스 적용
   if ((ctx.nextAttackBonus ?? 0) > 0) {
     baseAmount += ctx.nextAttackBonus!;
+  }
+  // 광기 파워: HP 50% 이하 시 추가 피해
+  if ((ctx.powerFrenzyAmount ?? 0) > 0 && ctx.playerHp != null && ctx.playerMaxHp != null) {
+    if (ctx.playerHp <= ctx.playerMaxHp / 2) {
+      baseAmount += ctx.powerFrenzyAmount!;
+    }
   }
 
   // [과충전 코일건] 탄약 소모량 비례
