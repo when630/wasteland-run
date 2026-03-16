@@ -23,4 +23,6 @@ export interface RandomEvent {
   description: string;
   visualDesc: string; // 분위기를 묘사하는 문구
   options: EventOption[];
+  chapters?: number[]; // 등장 가능 챕터 (미지정 시 전 챕터)
+  oncePerRun?: boolean; // 런 당 1회만 등장 (성소 등)
 }

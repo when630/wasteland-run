@@ -627,5 +627,150 @@ export const RANDOM_EVENTS: RandomEvent[] = [
         }
       }
     ]
-  }
+  },
+
+  // ═══ 신규 — 성소 (공통, 런 당 1회) ═══
+  {
+    id: 'evt_shrine_upgrade', title: '강화 성소',
+    description: '낡은 작업대입니다. 공구들이 아직 쓸 만합니다.',
+    visualDesc: '녹슨 공구들이 정돈된 작업대 위로 빛이 비칩니다...',
+    oncePerRun: true,
+    options: [
+      { label: '[장비를 정비한다]', description: '카드 1장 강화.', condition: () => useDeckStore.getState().masterDeck.some(c => !c.isUpgraded), onSelect: () => 'TRIGGER_CARD_UPGRADE' },
+      { label: '[떠난다]', description: '아무 일 없음.', onSelect: () => '작업대를 뒤로 하고 떠났습니다.' },
+    ]
+  },
+  {
+    id: 'evt_shrine_purify', title: '정화 성소',
+    description: '아직 타오르는 소각로. 불필요한 것을 태울 수 있습니다.',
+    visualDesc: '붉게 타오르는 소각로에서 열기가 뿜어져 나옵니다...',
+    oncePerRun: true,
+    options: [
+      { label: '[필요 없는 장비를 태운다]', description: '카드 1장 제거.', condition: () => useDeckStore.getState().masterDeck.length > 5, onSelect: () => 'TRIGGER_CARD_REMOVE' },
+      { label: '[떠난다]', description: '아무 일 없음.', onSelect: () => '소각로를 뒤로 하고 떠났습니다.' },
+    ]
+  },
+  {
+    id: 'evt_shrine_transform', title: '변환 성소',
+    description: '방사능 결정체가 빛납니다. 물건의 형태가 변하는 것 같습니다.',
+    visualDesc: '보라색 빛을 뿜는 결정체 주변 공기가 왜곡됩니다...',
+    oncePerRun: true,
+    options: [
+      { label: '[장비를 결정체에 댄다]', description: '카드 1장 제거 → 같은 타입 랜덤 카드 획득.', condition: () => useDeckStore.getState().masterDeck.length > 5, onSelect: () => {
+        const ds = useDeckStore.getState(); const deck = [...ds.masterDeck];
+        const ri = Math.floor(useRngStore.getState().eventRng.next() * deck.length); const removed = deck[ri]; deck.splice(ri, 1);
+        const pool = ALL_CARDS.filter(c => c.type === removed.type && c.tier !== 'BASIC' && c.baseId !== removed.baseId);
+        if (pool.length > 0) { const p = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)]; ds.setMasterDeck(deck); ds.addCardToMasterDeck({ ...p } as any); return `[${removed.name}] → [${p.name}]!`; }
+        ds.setMasterDeck(deck); return `[${removed.name}]이 사라졌지만 아무것도 돌아오지 않았습니다.`;
+      }},
+      { label: '[떠난다]', description: '아무 일 없음.', onSelect: () => '결정체를 건드리지 않고 떠났습니다.' },
+    ]
+  },
+
+  // ═══ 신규 — 탐색/NPC ═══
+  {
+    id: 'evt_forgotten_armory', title: '잊혀진 무기고',
+    description: '무기 보관함이 열려 있습니다. 세 가지 무기 중 하나만 들 수 있습니다.',
+    visualDesc: '철제 보관함에서 무기들이 먼지를 뒤집어쓴 채 빛납니다...',
+    chapters: [2, 3],
+    options: [
+      { label: '[근접 무기]', description: '체력 -5, [희귀] 물리 공격 카드.', onSelect: () => { useRunStore.getState().damagePlayer(5); const p = ALL_CARDS.filter(c => c.tier === 'RARE' && c.type === 'PHYSICAL_ATTACK'); const pk = p[Math.floor(useRngStore.getState().eventRng.next() * p.length)]; useDeckStore.getState().addCardToMasterDeck({ ...pk } as any); return `(체력 -5) [${pk.name}] 획득!`; }},
+      { label: '[화기]', description: '체력 -5, [희귀] 특수 공격 카드.', onSelect: () => { useRunStore.getState().damagePlayer(5); const p = ALL_CARDS.filter(c => c.tier === 'RARE' && c.type === 'SPECIAL_ATTACK'); const pk = p[Math.floor(useRngStore.getState().eventRng.next() * p.length)]; useDeckStore.getState().addCardToMasterDeck({ ...pk } as any); return `(체력 -5) [${pk.name}] 획득!`; }},
+      { label: '[방어구]', description: '체력 -5, [희귀] 방어 카드.', onSelect: () => { useRunStore.getState().damagePlayer(5); const p = ALL_CARDS.filter(c => c.tier === 'RARE' && (c.type === 'PHYSICAL_DEFENSE' || c.type === 'SPECIAL_DEFENSE')); const pk = p[Math.floor(useRngStore.getState().eventRng.next() * p.length)]; useDeckStore.getState().addCardToMasterDeck({ ...pk } as any); return `(체력 -5) [${pk.name}] 획득!`; }},
+    ]
+  },
+  {
+    id: 'evt_storm_shelter', title: '모래폭풍 속 대피소',
+    description: '모래폭풍이 몰아칩니다. 근처에 작은 동굴이 보입니다.',
+    visualDesc: '모래바람 사이로 동굴 입구가 보입니다...', chapters: [1],
+    options: [
+      { label: '[동굴에서 쉰다]', description: '체력 20 회복.', onSelect: () => { useRunStore.getState().healPlayer(20); return '체력 20 회복!'; }},
+      { label: '[폭풍 속을 뒤진다]', description: '체력 -8, 유물 1개.', onSelect: () => { useRunStore.getState().damagePlayer(8); const rs = useRunStore.getState(); const pool = RELICS.filter(r => r.tier !== 'BOSS' && r.tier !== 'STARTER' && !rs.relics.includes(r.id)); if (pool.length > 0) { const p = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)]; rs.addRelic(p.id); return `(체력 -8) [${p.name}] 획득!`; } return '아무것도 못 찾았습니다. (체력 -8)'; }},
+      { label: '[그냥 맞는다]', description: '체력 -5.', onSelect: () => { useRunStore.getState().damagePlayer(5); return '체력 -5'; }},
+    ]
+  },
+  {
+    id: 'evt_wandering_doctor', title: '방랑 의사',
+    description: '백의 노인이 간이 진료소를 차렸습니다.',
+    visualDesc: '깨끗한 백의가 황무지에서 눈에 띕니다...', chapters: [2, 3],
+    options: [
+      { label: '[치료 (골드 30)]', description: '체력 완전 회복.', condition: () => useRunStore.getState().gold >= 30, onSelect: () => { useRunStore.getState().addGold(-30); useRunStore.getState().healPlayer(999); return '체력 완전 회복! (골드 -30)'; }},
+      { label: '[증강 (골드 60)]', description: '최대 체력 +10.', condition: () => useRunStore.getState().gold >= 60, onSelect: () => { useRunStore.getState().addGold(-60); const rs = useRunStore.getState(); useRunStore.setState({ playerMaxHp: rs.playerMaxHp + 10 }); rs.healPlayer(10); return '최대 체력 +10! (골드 -60)'; }},
+      { label: '[대가 없이 떠난다]', description: '체력 15 회복.', onSelect: () => { useRunStore.getState().healPlayer(15); return '체력 15 회복'; }},
+    ]
+  },
+  {
+    id: 'evt_scrap_gambler', title: '고철 도박사',
+    description: '고철 룰렛을 돌리는 도박사. "한 판 돌려보시겠소?"',
+    visualDesc: '금속 룰렛이 딸깍거리며 돌아갑니다...', chapters: [2],
+    options: [
+      { label: '[소액 (골드 25)]', description: '50% 골드 50, 50% 잃음.', condition: () => useRunStore.getState().gold >= 25, onSelect: () => { useRunStore.getState().addGold(-25); if (useRngStore.getState().eventRng.next() < 0.5) { useRunStore.getState().addGold(50); return '당첨! (+25 순이익)'; } return '빗나갔습니다... (-25)'; }},
+      { label: '[대형 (골드 50)]', description: '40% 유물/30% 골드/30% 잃음.', condition: () => useRunStore.getState().gold >= 50, onSelect: () => { useRunStore.getState().addGold(-50); const r = useRngStore.getState().eventRng.next(); if (r < 0.4) { const rs = useRunStore.getState(); const pool = RELICS.filter(x => x.tier === 'RARE' && !rs.relics.includes(x.id)); if (pool.length > 0) { const p = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)]; rs.addRelic(p.id); return `대박! [${p.name}]!`; } useRunStore.getState().addGold(100); return '골드로 대체! (+50)'; } else if (r < 0.7) { useRunStore.getState().addGold(100); return '잭팟! (+50)'; } return '잃었습니다... (-50)'; }},
+      { label: '[도박사를 턴다]', description: '골드 20, 50% 전투.', onSelect: () => { useRunStore.getState().addGold(20); if (useRngStore.getState().eventRng.next() < 0.5) return 'TRIGGER_ELITE_BATTLE'; return '도주 성공! (+20)'; }},
+    ]
+  },
+
+  // ═══ 신규 — 2막 전용 ═══
+  {
+    id: 'evt_ghost_train', title: '지하철 유령 열차',
+    description: '어둠 속에서 열차가 다가옵니다. 무인 운행 중인 것 같습니다.',
+    visualDesc: '녹슨 열차의 헤드라이트가 터널을 비춥니다...', chapters: [2],
+    options: [
+      { label: '[올라탄다]', description: '50% 골드 80+강화, 50% 체력 -12+화상.', onSelect: () => { if (useRngStore.getState().eventRng.next() < 0.5) { useRunStore.getState().addGold(80); return 'TRIGGER_CARD_UPGRADE'; } useRunStore.getState().damagePlayer(12); const { id: _id, ...b } = STATUS_CARDS[0]; useDeckStore.getState().addCardToMasterDeck(b as any); return '탈선! (체력 -12, [화상])'; }},
+      { label: '[선로를 뒤진다]', description: '골드 30 + [변화] 카드.', onSelect: () => { useRunStore.getState().addGold(30); const pool = ALL_CARDS.filter(c => c.type === 'UTILITY' && c.tier !== 'BASIC'); const pk = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)]; useDeckStore.getState().addCardToMasterDeck({ ...pk } as any); return `골드 30 + [${pk.name}]!`; }},
+      { label: '[기다린다]', description: '아무 일 없음.', onSelect: () => '열차가 사라져갔습니다.' },
+    ]
+  },
+  {
+    id: 'evt_tunnel_hideout', title: '터널 속 은신처',
+    description: '누군가의 은신처. 침낭과 보급품이 있습니다.',
+    visualDesc: '방수포 안에 아늑한 공간이 있습니다...', chapters: [2],
+    options: [
+      { label: '[하룻밤 머문다]', description: '체력 25 회복 + 카드 강화.', onSelect: () => { useRunStore.getState().healPlayer(25); return 'TRIGGER_CARD_UPGRADE'; }},
+      { label: '[보급품 챙기기]', description: '골드 40 + [일반] 카드.', onSelect: () => { useRunStore.getState().addGold(40); const pool = ALL_CARDS.filter(c => c.tier === 'COMMON'); const pk = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)]; useDeckStore.getState().addCardToMasterDeck({ ...pk } as any); return `골드 40 + [${pk.name}]!`; }},
+      { label: '[함정 경계]', description: '체력 -5, [고급] 유물.', onSelect: () => { useRunStore.getState().damagePlayer(5); const rs = useRunStore.getState(); const pool = RELICS.filter(x => x.tier === 'UNCOMMON' && !rs.relics.includes(x.id)); if (pool.length > 0) { const p = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)]; rs.addRelic(p.id); return `(체력 -5) [${p.name}] 획득!`; } return '아무것도 없었습니다. (-5)'; }},
+    ]
+  },
+
+  // ═══ 신규 — 3막 전용 ═══
+  {
+    id: 'evt_ancient_duplicator', title: '고대 복제 장치',
+    description: '기업의 실험용 복제기가 에너지를 뿜고 있습니다.',
+    visualDesc: '장치에서 파란 에너지가 순환하고 있습니다...', chapters: [3],
+    options: [
+      { label: '[카드 복제]', description: '카드 1장 선택하여 복제.', onSelect: () => 'TRIGGER_CARD_DUPLICATE' },
+      { label: '[분해]', description: '골드 60.', onSelect: () => { useRunStore.getState().addGold(60); return '부품을 챙겼습니다. (골드 60)'; }},
+      { label: '[떠난다]', description: '아무 일 없음.', onSelect: () => '손대지 않기로 했습니다.' },
+    ]
+  },
+  {
+    id: 'evt_ai_diagnostic', title: 'AI 진단 시스템',
+    description: '기업 의료 AI가 가동 중입니다. "스캔을 시작합니다."',
+    visualDesc: '홀로그램에 인체 스캔 데이터가 떠오릅니다...', chapters: [3],
+    options: [
+      { label: '[풀 스캔]', description: '카드 2장 강화 + [방사능 오염] 추가.', condition: () => useDeckStore.getState().masterDeck.filter(c => !c.isUpgraded).length >= 2, onSelect: () => { const ds = useDeckStore.getState(); const tgts = customShuffle(ds.masterDeck.filter(c => !c.isUpgraded), useRngStore.getState().eventRng).slice(0, 2); tgts.forEach(t => ds.upgradeCard(t.id)); const { id: _id, ...rad } = STATUS_CARDS[1]; ds.addCardToMasterDeck(rad as any); return `[${tgts.map(t => t.name).join(', ')}] 강화! ([방사능 오염] 추가)`; }},
+      { label: '[퀵 스캔]', description: '카드 1장 강화.', condition: () => useDeckStore.getState().masterDeck.some(c => !c.isUpgraded), onSelect: () => 'TRIGGER_CARD_UPGRADE' },
+      { label: '[해킹]', description: '체력 -10, [희귀] 카드.', onSelect: () => { useRunStore.getState().damagePlayer(10); const pool = ALL_CARDS.filter(c => c.tier === 'RARE'); const pk = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)]; useDeckStore.getState().addCardToMasterDeck({ ...pk } as any); return `(체력 -10) [${pk.name}] 획득!`; }},
+    ]
+  },
+  {
+    id: 'evt_corporate_lab', title: '기업 실험실',
+    description: '방주 내부 생체 실험실. 약품이 진열되어 있습니다.',
+    visualDesc: '형광 조명 아래 약품들이 빛납니다...', chapters: [3],
+    options: [
+      { label: '[혈청 주입]', description: '최대 체력 +8, [화상] 추가.', onSelect: () => { const rs = useRunStore.getState(); useRunStore.setState({ playerMaxHp: rs.playerMaxHp + 8 }); rs.healPlayer(8); const { id: _id, ...b } = STATUS_CARDS[0]; useDeckStore.getState().addCardToMasterDeck(b as any); return '최대 체력 +8! ([화상] 추가)'; }},
+      { label: '[안정제 복용]', description: '상태이상 카드 전부 제거.', onSelect: () => { const ds = useDeckStore.getState(); const isS = (c: { type: string }) => c.type === 'STATUS_BURN' || c.type === 'STATUS_RADIATION'; const cnt = ds.masterDeck.filter(isS).length; if (cnt > 0) { ds.setMasterDeck(ds.masterDeck.filter(c => !isS(c))); return `정화! (${cnt}장 제거)`; } return '변화 없음.'; }},
+      { label: '[약품 파괴]', description: '골드 50 + [변화] 카드.', onSelect: () => { useRunStore.getState().addGold(50); const pool = ALL_CARDS.filter(c => c.type === 'UTILITY' && c.tier !== 'BASIC'); const pk = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)]; useDeckStore.getState().addCardToMasterDeck({ ...pk } as any); return `골드 50 + [${pk.name}]!`; }},
+    ]
+  },
+  {
+    id: 'evt_security_protocol', title: '최종 보안 프로토콜',
+    description: '보안 시스템이 침입자를 감지했습니다. 잠긴 문 너머에 장비가 보입니다.',
+    visualDesc: '붉은 경고등이 깜빡입니다...', chapters: [3],
+    options: [
+      { label: '[해킹]', description: '체력 -8, [희귀] 유물.', onSelect: () => { useRunStore.getState().damagePlayer(8); const rs = useRunStore.getState(); const pool = RELICS.filter(x => x.tier === 'RARE' && !rs.relics.includes(x.id)); if (pool.length > 0) { const p = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)]; rs.addRelic(p.id); return `해킹 성공! (체력 -8) [${p.name}]!`; } return '비어있었습니다. (-8)'; }},
+      { label: '[우회]', description: '골드 30 + 카드 강화.', onSelect: () => { useRunStore.getState().addGold(30); return 'TRIGGER_CARD_UPGRADE'; }},
+      { label: '[경보]', description: '엘리트 전투.', onSelect: () => 'TRIGGER_ELITE_BATTLE' },
+    ]
+  },
 ];
