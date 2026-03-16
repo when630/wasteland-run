@@ -19,7 +19,7 @@ import restBadge from '../assets/images/map/campfire_badge.webp';
 import shopBadge from '../assets/images/map/shop_badge.webp';
 import eventBadge from '../assets/images/map/event_badge.webp';
 import bossBadge from '../assets/images/map/boss_badge.webp';
-import { iconClose } from '../assets/images/GUI';
+import { iconClose, iconLoot } from '../assets/images/GUI';
 
 interface MapViewProps {
   viewOnly?: boolean;
@@ -55,7 +55,8 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
     REST: restBadge,
     SHOP: shopBadge,
     EVENT: eventBadge,
-    BOSS: bossBadge
+    BOSS: bossBadge,
+    TREASURE: iconLoot,
   };
 
   const handleNodeClick = (nodeId: string, type: NodeType) => {

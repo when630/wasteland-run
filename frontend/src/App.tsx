@@ -3,6 +3,7 @@ import { MapView } from './pages/MapView';
 import { RestView } from './pages/RestView';
 import { EventView } from './pages/EventView';
 import { ShopView } from './pages/ShopView';
+import { TreasureRoomView } from './pages/TreasureRoomView';
 import { StartingEventView } from './pages/StartingEventView';
 import { useRunStore } from './store/useRunStore';
 import { ToastMessage } from './components/ui/ToastMessage';
@@ -28,6 +29,7 @@ function SceneManager() {
       case 'REST':
       case 'EVENT':
       case 'SHOP':
+      case 'TREASURE':
       case 'STARTING_EVENT':
         audioStore.playBgm('MAP');
         break;
@@ -65,6 +67,8 @@ function SceneManager() {
         return <StartingEventView />;
       case 'SHOP':
         return <ShopView />;
+      case 'TREASURE':
+        return <TreasureRoomView />;
       default:
         return <MapView />;
     }

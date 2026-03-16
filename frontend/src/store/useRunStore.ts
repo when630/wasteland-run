@@ -6,7 +6,7 @@ interface RunState {
   playerMaxHp: number;
   gold: number;
   currentMapNode: string | null;
-  currentScene: 'MAIN_MENU' | 'MAP' | 'BATTLE' | 'ELITE' | 'REST' | 'EVENT' | 'SHOP' | 'BOSS' | 'DEBUG_BATTLE' | 'STARTING_EVENT'; // 🌟 씬 타입 확장
+  currentScene: 'MAIN_MENU' | 'MAP' | 'BATTLE' | 'ELITE' | 'REST' | 'EVENT' | 'SHOP' | 'BOSS' | 'DEBUG_BATTLE' | 'STARTING_EVENT' | 'TREASURE';
   currentChapter: number; // 현재 챕터 (1~3)
   relics: string[];
   toastMessage: string | null; // 🌟 전역 알림 메시지 상태

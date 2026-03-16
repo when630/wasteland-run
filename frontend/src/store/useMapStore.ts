@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { useRngStore } from './useRngStore';
 
-export type NodeType = 'BATTLE' | 'ELITE' | 'REST' | 'SHOP' | 'EVENT' | 'BOSS';
+export type NodeType = 'BATTLE' | 'ELITE' | 'REST' | 'SHOP' | 'EVENT' | 'BOSS' | 'TREASURE';
 
 export interface MapNode {
   id: string;         // 고유 식별자 (예: 'f1-p0', 'f15-boss')
@@ -46,32 +46,36 @@ export const useMapStore = create<MapState>((set) => ({
     const getRandomType = (floor: number): NodeType => {
       if (floor === 1) return 'BATTLE';
       if (floor === TOTAL_FLOORS) return 'BOSS';
-      if (floor === TOTAL_FLOORS - 1) return 'REST';
+      if (floor === TOTAL_FLOORS - 1) return 'REST'; // 14층 고정 모닥불
+      if (floor === 8) return 'TREASURE'; // 8층 고정 보물방
       if (floor === Math.floor(TOTAL_FLOORS / 2)) return 'ELITE';
 
       const r = mapRng.next();
       if (chapter >= 3) {
-        // 챕터 3: 엘리트 25%, 휴식 7%, 전투 38%, 이벤트 18%, 상인 12%
-        if (r < 0.38) return 'BATTLE';
-        if (r < 0.56) return 'EVENT';
-        if (r < 0.81) return 'ELITE';
-        if (r < 0.88) return 'REST';
-        return 'SHOP';
+        // 챕터 3: 전투 36%, 이벤트 17%, 엘리트 24%, 휴식 7%, 상인 11%, 보물 5%
+        if (r < 0.36) return 'BATTLE';
+        if (r < 0.53) return 'EVENT';
+        if (r < 0.77) return 'ELITE';
+        if (r < 0.84) return 'REST';
+        if (r < 0.95) return 'SHOP';
+        return 'TREASURE';
       }
       if (chapter >= 2) {
-        // 챕터 2: 엘리트 21%, 휴식 9%, 전투 40%, 이벤트 22%, 상인 8%
-        if (r < 0.40) return 'BATTLE';
-        if (r < 0.62) return 'EVENT';
-        if (r < 0.83) return 'ELITE';
-        if (r < 0.92) return 'REST';
-        return 'SHOP';
+        // 챕터 2: 전투 38%, 이벤트 21%, 엘리트 20%, 휴식 8%, 상인 8%, 보물 5%
+        if (r < 0.38) return 'BATTLE';
+        if (r < 0.59) return 'EVENT';
+        if (r < 0.79) return 'ELITE';
+        if (r < 0.87) return 'REST';
+        if (r < 0.95) return 'SHOP';
+        return 'TREASURE';
       }
-      // 챕터 1: 전투 45%, 이벤트 22%, 엘리트 16%, 휴식 12%, 상인 5%
-      if (r < 0.45) return 'BATTLE';
-      if (r < 0.67) return 'EVENT';
-      if (r < 0.83) return 'ELITE';
-      if (r < 0.95) return 'REST';
-      return 'SHOP';
+      // 챕터 1: 전투 43%, 이벤트 21%, 엘리트 15%, 휴식 11%, 상인 5%, 보물 5%
+      if (r < 0.43) return 'BATTLE';
+      if (r < 0.64) return 'EVENT';
+      if (r < 0.79) return 'ELITE';
+      if (r < 0.90) return 'REST';
+      if (r < 0.95) return 'SHOP';
+      return 'TREASURE';
     };
 
     // --- (a) 경로 생성: 6개의 1층→14층 랜덤 워크 ---
