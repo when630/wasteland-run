@@ -132,6 +132,9 @@ export const useCardPlay = () => {
       enemies,
       consumedAmmoAmount,
       physicalScalingBonus: powerPhysicalScalingBonus,
+      playerHp: useRunStore.getState().playerHp,
+      playerMaxHp: useRunStore.getState().playerMaxHp,
+      playerShield: useBattleStore.getState().playerStatus.shield,
     });
 
     let hasDamage = false;
