@@ -296,6 +296,114 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     chapter: 3,
     initialShield: 30,
   },
+
+  // ═══════════════════════════════════════
+  // 신규 몬스터 (스프라이트 미제작)
+  // ═══════════════════════════════════════
+
+  // ── 1막 신규 일반 ──
+  rusted_watchbot: {
+    baseId: 'rusted_watchbot',
+    tier: 'NORMAL',
+    name: '녹슨 감시 로봇',
+    maxHp: 20,
+    chapter: 1,
+  },
+  mutant_crows: {
+    baseId: 'mutant_crows',
+    tier: 'NORMAL',
+    name: '변이 까마귀 떼',
+    maxHp: 18,
+    chapter: 1,
+  },
+  // ── 1막 신규 보스 ──
+  spider_queen: {
+    baseId: 'spider_queen',
+    tier: 'BOSS',
+    name: '방사능 여왕 거미',
+    maxHp: 100,
+    chapter: 1,
+  },
+  storm_generator: {
+    baseId: 'storm_generator',
+    tier: 'BOSS',
+    name: '폭풍 발전기',
+    maxHp: 120,
+    chapter: 1,
+    initialShield: 15,
+  },
+
+  // ── 2막 신규 일반 ──
+  infected_passenger: {
+    baseId: 'infected_passenger',
+    tier: 'NORMAL',
+    name: '감염된 승객',
+    maxHp: 40,
+    chapter: 2,
+  },
+  glowing_moss: {
+    baseId: 'glowing_moss',
+    tier: 'NORMAL',
+    name: '형광 이끼',
+    maxHp: 25,
+    chapter: 2,
+  },
+  // ── 2막 신규 보스 ──
+  derailed_train: {
+    baseId: 'derailed_train',
+    tier: 'BOSS',
+    name: '탈선한 기관차',
+    maxHp: 200,
+    chapter: 2,
+    initialShield: 20,
+  },
+  underground_lord: {
+    baseId: 'underground_lord',
+    tier: 'BOSS',
+    name: '지하 군주',
+    maxHp: 160,
+    chapter: 2,
+  },
+
+  // ── 3막 신규 일반 ──
+  cleaning_drone: {
+    baseId: 'cleaning_drone',
+    tier: 'NORMAL',
+    name: '방주 청소 드론',
+    maxHp: 22,
+    chapter: 3,
+  },
+  experiment_x7: {
+    baseId: 'experiment_x7',
+    tier: 'NORMAL',
+    name: '실험체 X-7',
+    maxHp: 60,
+    chapter: 3,
+  },
+  // ── 3막 신규 엘리트 ──
+  prototype_fighter: {
+    baseId: 'prototype_fighter',
+    tier: 'ELITE',
+    name: '프로토타입 전투기',
+    maxHp: 100,
+    chapter: 3,
+  },
+  // ── 3막 신규 보스 ──
+  central_ai: {
+    baseId: 'central_ai',
+    tier: 'BOSS',
+    name: 'AI 중앙통제 시스템',
+    maxHp: 180,
+    chapter: 3,
+    initialShield: 25,
+  },
+  final_weapon: {
+    baseId: 'final_weapon',
+    tier: 'BOSS',
+    name: '최종 병기 프로젝트',
+    maxHp: 250,
+    chapter: 3,
+  },
 };
 
 /**
@@ -617,6 +725,152 @@ export const determineNextIntent = (baseId: string, rng?: SeededRNG): Intent => 
       }
     }
 
+    // ═══ 신규 몬스터 패턴 ═══
+
+    // 1막 신규
+    case 'rusted_watchbot': {
+      // 아군 버프 위주, 약한 공격
+      if (rand < 0.6) {
+        return { type: 'BUFF', amount: 5, description: '🛡️ 아군 방어 강화 (방어도 5)' };
+      } else {
+        return { type: 'ATTACK', amount: 3, damageType: 'SPECIAL', description: '☣️ 경고 레이저 3' };
+      }
+    }
+    case 'mutant_crows': {
+      // 다단 히트, 체력 낮음
+      if (rand < 0.5) {
+        return { type: 'ATTACK', amount: 2, damageType: 'PHYSICAL', description: '⚔️ 부리 난타 (2x3)' };
+      } else {
+        return { type: 'ATTACK', amount: 4, damageType: 'PHYSICAL', description: '⚔️ 급강하 4' };
+      }
+    }
+    case 'spider_queen': {
+      // 보스: 소환 + 특수 공격
+      if (rand < 0.3) {
+        return { type: 'BUFF', amount: 10, description: '🛡️ 알집 방어 (방어도 10)' };
+      } else if (rand < 0.55) {
+        return { type: 'ATTACK', amount: 12, damageType: 'SPECIAL', description: '☣️ 독액 분사 12', applyDebuff: { status: 'WEAK', amount: 1 } };
+      } else if (rand < 0.8) {
+        return { type: 'ATTACK', amount: 8, damageType: 'SPECIAL', description: '☣️ 독거미 소환 (4x2)' };
+      } else {
+        return { type: 'ATTACK', amount: 6, damageType: 'SPECIAL', description: '☣️ 맹독 주입 6', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
+      }
+    }
+    case 'storm_generator': {
+      // 보스: 전체 특수 공격 + 디버프
+      if (rand < 0.25) {
+        return { type: 'BUFF', amount: 12, description: '🛡️ 전자기 차폐 (방어도 12)' };
+      } else if (rand < 0.5) {
+        return { type: 'ATTACK', amount: 10, damageType: 'SPECIAL', description: '☣️ 전기 폭풍 10 (전체)', applyDebuff: { status: 'WEAK', amount: 1 } };
+      } else if (rand < 0.75) {
+        return { type: 'ATTACK', amount: 14, damageType: 'SPECIAL', description: '☣️ 고압 방전 14' };
+      } else {
+        return { type: 'ATTACK', amount: 8, damageType: 'SPECIAL', description: '☣️ 연쇄 번개 (4x2)', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
+      }
+    }
+
+    // 2막 신규
+    case 'infected_passenger': {
+      // 느린 강공격, 사망 시 독 폭발 (별도 로직)
+      if (rand < 0.4) {
+        return { type: 'ATTACK', amount: 10, damageType: 'PHYSICAL', description: '⚔️ 좀비 물기 10' };
+      } else if (rand < 0.7) {
+        return { type: 'ATTACK', amount: 7, damageType: 'PHYSICAL', description: '⚔️ 돌진 7', applyDebuff: { status: 'WEAK', amount: 1 } };
+      } else {
+        return { type: 'BUFF', amount: 5, description: '🛡️ 썩은 살 방어 (방어도 5)' };
+      }
+    }
+    case 'glowing_moss': {
+      // 아군 힐(버프), 약한 특수 공격
+      if (rand < 0.6) {
+        return { type: 'BUFF', amount: 5, description: '🛡️ 포자 치유 (아군 체력 5 회복)' };
+      } else {
+        return { type: 'ATTACK', amount: 3, damageType: 'SPECIAL', description: '☣️ 독성 포자 3', applyDebuff: { status: 'WEAK', amount: 1 } };
+      }
+    }
+    case 'derailed_train': {
+      // 보스: 3턴 주기 전체 돌진 + 사이 턴 충전
+      if (rand < 0.3) {
+        return { type: 'BUFF', amount: 15, description: '🛡️ 증기 충전 (방어도 15)' };
+      } else if (rand < 0.55) {
+        return { type: 'ATTACK', amount: 25, damageType: 'PHYSICAL', description: '⚔️ 기관차 돌진 25' };
+      } else if (rand < 0.8) {
+        return { type: 'ATTACK', amount: 12, damageType: 'PHYSICAL', description: '⚔️ 차륜 분쇄 12', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
+      } else {
+        return { type: 'ATTACK', amount: 15, damageType: 'PHYSICAL', description: '⚔️ 충돌 파편 (5x3)' };
+      }
+    }
+    case 'underground_lord': {
+      // 보스: 졸개 소환 + 버프
+      if (rand < 0.25) {
+        return { type: 'BUFF', amount: 12, description: '🛡️ 지하 왕좌 (방어도 12)' };
+      } else if (rand < 0.5) {
+        return { type: 'ATTACK', amount: 16, damageType: 'PHYSICAL', description: '⚔️ 왕의 일격 16' };
+      } else if (rand < 0.75) {
+        return { type: 'ATTACK', amount: 10, damageType: 'SPECIAL', description: '☣️ 암흑 포효 10', applyDebuff: { status: 'WEAK', amount: 2 } };
+      } else {
+        return { type: 'ATTACK', amount: 8, damageType: 'PHYSICAL', description: '⚔️ 졸개 돌격 (4x2)' };
+      }
+    }
+
+    // 3막 신규
+    case 'cleaning_drone': {
+      // 약한 특수 공격
+      if (rand < 0.5) {
+        return { type: 'ATTACK', amount: 4, damageType: 'SPECIAL', description: '☣️ 청소 레이저 4' };
+      } else {
+        return { type: 'ATTACK', amount: 3, damageType: 'SPECIAL', description: '☣️ 소독 스프레이 3', applyDebuff: { status: 'WEAK', amount: 1 } };
+      }
+    }
+    case 'experiment_x7': {
+      // 50% HP 이하 광폭화 (더 강한 공격)
+      if (rand < 0.4) {
+        return { type: 'ATTACK', amount: 12, damageType: 'PHYSICAL', description: '⚔️ 변이 팔 강타 12' };
+      } else if (rand < 0.7) {
+        return { type: 'ATTACK', amount: 8, damageType: 'SPECIAL', description: '☣️ 산성 체액 8', applyDebuff: { status: 'BURN', amount: 1 } };
+      } else {
+        return { type: 'ATTACK', amount: 15, damageType: 'PHYSICAL', description: '⚔️ 광폭화 난타 (5x3)' };
+      }
+    }
+    case 'prototype_fighter': {
+      // 엘리트: 2페이즈 (HP 기반 패턴 변경 — 현재는 혼합)
+      if (rand < 0.3) {
+        return { type: 'ATTACK', amount: 16, damageType: 'PHYSICAL', description: '⚔️ 프로토 펀치 16' };
+      } else if (rand < 0.55) {
+        return { type: 'ATTACK', amount: 12, damageType: 'SPECIAL', description: '☣️ 시험용 빔 12', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
+      } else if (rand < 0.8) {
+        return { type: 'BUFF', amount: 12, description: '🛡️ 장갑 전개 (방어도 12)' };
+      } else {
+        return { type: 'ATTACK', amount: 10, damageType: 'PHYSICAL', description: '⚔️ 기관포 (5x2)', applyDebuff: { status: 'BURN', amount: 1 } };
+      }
+    }
+    case 'central_ai': {
+      // 보스: 특수 위주 + 상태이상 카드 주입
+      if (rand < 0.2) {
+        return { type: 'BUFF', amount: 18, description: '🛡️ 방화벽 (방어도 18)' };
+      } else if (rand < 0.4) {
+        return { type: 'ATTACK', amount: 16, damageType: 'SPECIAL', description: '☣️ 시스템 해킹 16', applyDebuff: { status: 'WEAK', amount: 2 } };
+      } else if (rand < 0.6) {
+        return { type: 'ATTACK', amount: 12, damageType: 'SPECIAL', description: '☣️ 데이터 침식 12', applyDebuff: { status: 'BURN', amount: 2 } };
+      } else if (rand < 0.8) {
+        return { type: 'ATTACK', amount: 20, damageType: 'SPECIAL', description: '☣️ 전자전 포격 20' };
+      } else {
+        return { type: 'ATTACK', amount: 10, damageType: 'SPECIAL', description: '☣️ 바이러스 살포 (5x2)', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
+      }
+    }
+    case 'final_weapon': {
+      // 보스: 순수 물리 폭딜, 매 턴 강화
+      if (rand < 0.25) {
+        return { type: 'ATTACK', amount: 22, damageType: 'PHYSICAL', description: '⚔️ 주포 발사 22' };
+      } else if (rand < 0.5) {
+        return { type: 'ATTACK', amount: 15, damageType: 'PHYSICAL', description: '⚔️ 기관총 (5x3)' };
+      } else if (rand < 0.75) {
+        return { type: 'ATTACK', amount: 18, damageType: 'PHYSICAL', description: '⚔️ 미사일 폭격 18', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
+      } else {
+        return { type: 'BUFF', amount: 15, description: '🛡️ 장갑 강화 (방어도 15)' };
+      }
+    }
+
     case 'training_dummy':
       return { type: 'DEFEND', description: '🎯 대기 중...' };
 
@@ -649,3 +903,108 @@ export const getEnemyIdsByTier = (tier: EnemyTier, chapter: number = 1): string[
   Object.values(BASE_ENEMIES)
     .filter(e => e.tier === tier && (e.chapter ?? 1) === chapter)
     .map(e => e.baseId);
+
+// ═══════════════════════════════════════
+// 조우 시스템 — 가중치 기반 적 조합
+// ═══════════════════════════════════════
+
+export interface Encounter {
+  enemies: string[]; // baseId 배열
+  weight: number;    // 등장 가중치
+}
+
+/** 챕터별 약한/강한 적 조우 테이블 */
+export const ENCOUNTER_TABLES: Record<number, { easy: Encounter[]; hard: Encounter[] }> = {
+  1: {
+    easy: [
+      { enemies: ['scrap_collector'], weight: 3 },
+      { enemies: ['acid_dog'], weight: 3 },
+      { enemies: ['radiation_spider', 'radiation_spider'], weight: 2 },
+      { enemies: ['scrap_collector', 'acid_dog'], weight: 2 },
+    ],
+    hard: [
+      { enemies: ['rust_marauder'], weight: 4 },
+      { enemies: ['waste_slime'], weight: 3 },
+      { enemies: ['scrap_collector', 'scrap_collector'], weight: 3 },
+      { enemies: ['scrap_turret', 'acid_dog'], weight: 3 },
+      { enemies: ['radiation_spider', 'radiation_spider', 'radiation_spider'], weight: 2 },
+      { enemies: ['waste_slime', 'radiation_spider'], weight: 3 },
+      { enemies: ['rust_marauder', 'scrap_collector'], weight: 3 },
+      { enemies: ['rusted_watchbot', 'scrap_turret'], weight: 2 },
+      { enemies: ['mutant_crows', 'acid_dog', 'acid_dog'], weight: 2 },
+    ],
+  },
+  2: {
+    easy: [
+      { enemies: ['subway_rat', 'tunnel_spider'], weight: 3 },
+      { enemies: ['mole_person'], weight: 3 },
+      { enemies: ['rail_crawler'], weight: 2 },
+      { enemies: ['subway_rat', 'subway_rat'], weight: 2 },
+    ],
+    hard: [
+      { enemies: ['rusted_golem'], weight: 4 },
+      { enemies: ['electric_slime'], weight: 3 },
+      { enemies: ['mole_person', 'subway_rat'], weight: 3 },
+      { enemies: ['rail_crawler', 'tunnel_spider'], weight: 3 },
+      { enemies: ['tunnel_spider', 'tunnel_spider', 'tunnel_spider'], weight: 2 },
+      { enemies: ['rusted_golem', 'glowing_moss'], weight: 3 },
+      { enemies: ['infected_passenger', 'subway_rat', 'subway_rat'], weight: 2 },
+      { enemies: ['electric_slime', 'rail_crawler'], weight: 2 },
+      { enemies: ['infected_passenger', 'infected_passenger', 'glowing_moss'], weight: 2 },
+    ],
+  },
+  3: {
+    easy: [
+      { enemies: ['security_drone', 'security_drone'], weight: 3 },
+      { enemies: ['corporate_guard', 'hazmat_worker'], weight: 3 },
+      { enemies: ['nano_swarm'], weight: 2 },
+      { enemies: ['cleaning_drone', 'cleaning_drone', 'cleaning_drone'], weight: 2 },
+    ],
+    hard: [
+      { enemies: ['bio_experiment'], weight: 3 },
+      { enemies: ['cryo_sentinel'], weight: 3 },
+      { enemies: ['corporate_guard', 'corporate_guard'], weight: 3 },
+      { enemies: ['security_drone', 'nano_swarm'], weight: 3 },
+      { enemies: ['bio_experiment', 'security_drone'], weight: 3 },
+      { enemies: ['cryo_sentinel', 'hazmat_worker'], weight: 2 },
+      { enemies: ['experiment_x7'], weight: 2 },
+      { enemies: ['experiment_x7', 'cleaning_drone', 'cleaning_drone'], weight: 2 },
+      { enemies: ['corporate_guard', 'cryo_sentinel', 'nano_swarm'], weight: 1 },
+    ],
+  },
+};
+
+/** 챕터별 보스 풀 (런 시작 시 1종 랜덤 선택) */
+export const BOSS_POOL: Record<number, string[]> = {
+  1: ['brutus', 'spider_queen', 'storm_generator'],
+  2: ['leviathan_worm', 'derailed_train', 'underground_lord'],
+  3: ['director_omega', 'central_ai', 'final_weapon'],
+};
+
+/**
+ * 가중치 기반 조우 선택
+ * @param pool 조우 테이블
+ * @param rng 시드 RNG
+ * @param lastEncounter 직전 조합 (연속 등장 방지)
+ */
+export function selectEncounter(
+  pool: Encounter[],
+  rng: SeededRNG,
+  lastEncounter?: string[]
+): Encounter {
+  // 연속 등장 방지 필터
+  let filtered = pool;
+  if (lastEncounter && lastEncounter.length > 0) {
+    const lastKey = lastEncounter.sort().join(',');
+    filtered = pool.filter(e => e.enemies.sort().join(',') !== lastKey);
+    if (filtered.length === 0) filtered = pool; // 전부 필터되면 원본 사용
+  }
+
+  const totalWeight = filtered.reduce((sum, e) => sum + e.weight, 0);
+  let roll = rng.next() * totalWeight;
+  for (const encounter of filtered) {
+    roll -= encounter.weight;
+    if (roll <= 0) return encounter;
+  }
+  return filtered[filtered.length - 1];
+}
