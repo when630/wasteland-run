@@ -23,7 +23,6 @@ export const CardCompendiumItem: React.FC<Props> = ({ card }) => {
     effects: card.effects ?? [],
     isExhaust: card.isExhaust,
     isUpgraded: card.isUpgraded,
-    chapter: card.chapter,
   };
 
   let glowColor = 'transparent';

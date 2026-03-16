@@ -34,8 +34,7 @@ export const ShopView: React.FC = () => {
 
   useEffect(() => {
     const lootRng = useRngStore.getState().lootRng;
-    const chapter = useRunStore.getState().currentChapter;
-    const dropPool = ALL_CARDS.filter(c => c.tier !== 'BASIC' && (c.chapter ?? 1) <= chapter);
+    const dropPool = ALL_CARDS.filter(c => c.tier !== 'BASIC');
     const shuffledCards = customShuffle(dropPool, lootRng);
     const selectedCards = shuffledCards.slice(0, 6).map((card, idx) => {
       const randomPrice = lootRng.nextInt(4) * 10 + 50;

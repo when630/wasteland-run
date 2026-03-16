@@ -12,11 +12,11 @@ function makeCard(baseId: string, overrides: Partial<Card> = {}): Card {
 }
 
 describe('applyUpgrade', () => {
-  it('old_pipe 업그레이드 → 데미지 9', () => {
-    const card = makeCard('old_pipe');
+  it('strike 업그레이드 → 데미지 9', () => {
+    const card = makeCard('strike');
     const upgraded = applyUpgrade(card);
     expect(upgraded.isUpgraded).toBe(true);
-    expect(upgraded.name).toBe('낡은 쇠파이프+');
+    expect(upgraded.name).toBe('타격+');
     expect(upgraded.effects[0].amount).toBe(9);
   });
 
@@ -53,7 +53,7 @@ describe('applyUpgrade', () => {
   });
 
   it('원본 카드 불변성 보장', () => {
-    const card = makeCard('old_pipe');
+    const card = makeCard('strike');
     const originalEffects = [...card.effects];
     applyUpgrade(card);
     expect(card.effects).toEqual(originalEffects);

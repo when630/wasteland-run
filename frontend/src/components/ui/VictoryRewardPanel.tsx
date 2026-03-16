@@ -170,8 +170,7 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
   const goldBtnRef = useRef<HTMLButtonElement>(null);
 
   const [rewardCards] = useState<Card[]>(() => {
-    const chapter = useRunStore.getState().currentChapter;
-    const dropPool = ALL_CARDS.filter(c => c.tier !== 'BASIC' && (c.chapter ?? 1) <= chapter);
+    const dropPool = ALL_CARDS.filter(c => c.tier !== 'BASIC');
     const lootRng = useRngStore.getState().lootRng;
     const shuffled = lootRng.shuffle(dropPool) as Card[];
     return shuffled.slice(0, 3);
