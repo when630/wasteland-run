@@ -3,7 +3,6 @@ import { useRunStore } from '../../store/useRunStore';
 import { RELICS } from '../../assets/data/relics';
 import { useAudioStore } from '../../store/useAudioStore';
 import { iconClose } from '../../assets/images/GUI';
-import { useResponsive } from '../../hooks/useResponsive';
 
 interface RelicBarProps {
   isOpen: boolean;
@@ -13,13 +12,11 @@ interface RelicBarProps {
 export const RelicBar: React.FC<RelicBarProps> = ({ isOpen, onClose }) => {
   const relicsList = useRunStore(state => state.relics);
   const [selectedRelic, setSelectedRelic] = useState<any | null>(null);
-  const { isMobile, height } = useResponsive();
-  const isShortScreen = height < 500;
 
   if (!isOpen) return null;
 
   const txtShadow = '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)';
-  const relicSize = isShortScreen ? 48 : isMobile ? 56 : 64;
+  const relicSize = 64;
 
   return (
     <>
@@ -35,18 +32,18 @@ export const RelicBar: React.FC<RelicBarProps> = ({ isOpen, onClose }) => {
       >
         <div onClick={e => e.stopPropagation()} style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
-          maxWidth: isMobile ? '95vw' : '500px', width: '100%',
+          maxWidth: '500px', width: '100%',
         }}>
           <h2 style={{
-            fontSize: isShortScreen ? '20px' : isMobile ? '24px' : '32px',
+            fontSize: '32px',
             color: '#cc8888', margin: '0 0 8px 0',
             textShadow: txtShadow,
           }}>
             유물 가방
           </h2>
           <p style={{
-            fontSize: isShortScreen ? '12px' : '14px', color: '#8a7e6a',
-            marginBottom: isShortScreen ? '16px' : '28px',
+            fontSize: '14px', color: '#8a7e6a',
+            marginBottom: '28px',
             textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
           }}>
             수집한 유물 {relicsList.length}개
@@ -54,20 +51,20 @@ export const RelicBar: React.FC<RelicBarProps> = ({ isOpen, onClose }) => {
 
           {/* 구분선 */}
           <div style={{
-            width: isMobile ? '80vw' : '400px', height: '1px',
+            width: '400px', height: '1px',
             background: 'linear-gradient(90deg, transparent, rgba(200, 100, 100, 0.3), transparent)',
-            marginBottom: isShortScreen ? '16px' : '24px',
+            marginBottom: '24px',
           }} />
 
           {relicsList.length === 0 ? (
-            <p style={{ color: '#6a5e4a', fontSize: isShortScreen ? '13px' : '16px', textShadow: txtShadow }}>
+            <p style={{ color: '#6a5e4a', fontSize: '16px', textShadow: txtShadow }}>
               아직 획득한 유물이 없습니다.
             </p>
           ) : (
             <div style={{
-              display: 'flex', flexWrap: 'wrap', gap: isShortScreen ? '12px' : '16px',
+              display: 'flex', flexWrap: 'wrap', gap: '16px',
               justifyContent: 'center', padding: '0 16px',
-              maxHeight: isShortScreen ? '200px' : '400px', overflowY: 'auto',
+              maxHeight: '400px', overflowY: 'auto',
             }}>
               {relicsList.map((relicId) => {
                 const relicData = RELICS.find((r: any) => r.id === relicId);
@@ -110,9 +107,9 @@ export const RelicBar: React.FC<RelicBarProps> = ({ isOpen, onClose }) => {
           <button
             onClick={onClose}
             style={{
-              marginTop: isShortScreen ? '20px' : '32px',
-              padding: isShortScreen ? '8px 20px' : '10px 30px',
-              fontSize: isShortScreen ? '13px' : '16px',
+              marginTop: '32px',
+              padding: '10px 30px',
+              fontSize: '16px',
               background: 'none', color: '#a09078',
               border: '1px solid rgba(120, 100, 70, 0.4)',
               borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
@@ -151,19 +148,19 @@ export const RelicBar: React.FC<RelicBarProps> = ({ isOpen, onClose }) => {
               <img src={iconClose} alt="닫기" style={{ width: 22, height: 22, objectFit: 'contain' }} />
             </button>
 
-            <div style={{ width: isShortScreen ? 72 : 100, height: isShortScreen ? 72 : 100, marginBottom: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <div style={{ width: 100, height: 100, marginBottom: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               {selectedRelic.image
                 ? <img src={selectedRelic.image} alt={selectedRelic.name} style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 12px rgba(200, 100, 100, 0.4))' }} />
-                : <span style={{ fontSize: isShortScreen ? 56 : 80 }}>{selectedRelic.icon}</span>
+                : <span style={{ fontSize: 80 }}>{selectedRelic.icon}</span>
               }
             </div>
-            <h2 style={{ color: '#e8dcc8', fontSize: isShortScreen ? '20px' : '24px', margin: '0 0 4px 0', textAlign: 'center', textShadow: txtShadow }}>
+            <h2 style={{ color: '#e8dcc8', fontSize: '24px', margin: '0 0 4px 0', textAlign: 'center', textShadow: txtShadow }}>
               {selectedRelic.name}
             </h2>
-            <div style={{ color: '#cc8888', fontSize: isShortScreen ? '11px' : '13px', marginBottom: '16px', textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}>
+            <div style={{ color: '#cc8888', fontSize: '13px', marginBottom: '16px', textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}>
               [{selectedRelic.tier}]
             </div>
-            <p style={{ color: '#b8a888', fontSize: isShortScreen ? '13px' : '15px', lineHeight: '1.5', textAlign: 'center', margin: 0, textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}>
+            <p style={{ color: '#b8a888', fontSize: '15px', lineHeight: '1.5', textAlign: 'center', margin: 0, textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}>
               {selectedRelic.description}
             </p>
           </div>

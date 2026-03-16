@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { platformLoadStats } from '../../api/platform';
 import { iconClose } from '../../assets/images/GUI';
-import { useResponsive } from '../../hooks/useResponsive';
 
 interface UserStatsData {
   totalRuns: number;
@@ -26,8 +25,6 @@ export const StatisticsModal: React.FC<StatisticsModalProps> = ({ onClose }) => 
   const [stats, setStats] = useState<UserStatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { isMobile, height } = useResponsive();
-  const isShortScreen = height < 500;
 
   useEffect(() => {
     platformLoadStats()
@@ -46,41 +43,41 @@ export const StatisticsModal: React.FC<StatisticsModalProps> = ({ onClose }) => 
 
   const headerStyle: React.CSSProperties = {
     width: '100%',
-    padding: isShortScreen ? '8px 12px' : isMobile ? '12px 16px' : '20px 40px',
+    padding: '20px 40px',
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     borderBottom: '2px solid #333', backgroundColor: '#111', boxSizing: 'border-box'
   };
 
   const titleStyle: React.CSSProperties = {
-    fontSize: isShortScreen ? '16px' : isMobile ? '20px' : '32px',
+    fontSize: '32px',
     fontWeight: 'bold', color: '#fbbf24',
     textShadow: '0 0 10px rgba(251, 191, 36, 0.5)', margin: 0
   };
 
   const contentStyle: React.CSSProperties = {
     flex: 1, width: '100%', maxWidth: '700px',
-    padding: isShortScreen ? '12px 12px' : isMobile ? '20px 16px' : '40px 20px',
+    padding: '40px 20px',
     overflowY: 'auto',
     display: 'flex', flexDirection: 'column',
-    gap: isShortScreen ? '4px' : '12px'
+    gap: '12px'
   };
 
   const sectionTitleStyle: React.CSSProperties = {
-    fontSize: isShortScreen ? '14px' : isMobile ? '16px' : '22px',
+    fontSize: '22px',
     fontWeight: 'bold', color: '#9ca3af',
     borderBottom: '1px solid #374151',
-    paddingBottom: isShortScreen ? '4px' : '8px',
-    marginTop: isShortScreen ? '8px' : '20px'
+    paddingBottom: '8px',
+    marginTop: '20px'
   };
 
   const rowStyle: React.CSSProperties = {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    fontSize: isShortScreen ? '12px' : isMobile ? '14px' : '18px',
-    padding: isShortScreen ? '3px 0' : '8px 0',
+    fontSize: '18px',
+    padding: '8px 0',
     borderBottom: '1px solid #1f2937'
   };
 
-  const iconSize = isShortScreen ? 14 : 18;
+  const iconSize = 18;
 
   const renderHeader = () => (
     <div style={headerStyle}>
@@ -96,7 +93,7 @@ export const StatisticsModal: React.FC<StatisticsModalProps> = ({ onClose }) => 
       <div style={overlayStyle}>
         {renderHeader()}
         <div style={{ ...contentStyle, alignItems: 'center', justifyContent: 'center' }}>
-          <p style={{ fontSize: isShortScreen ? '14px' : '20px', color: '#9ca3af' }}>데이터를 불러오는 중...</p>
+          <p style={{ fontSize: '20px', color: '#9ca3af' }}>데이터를 불러오는 중...</p>
         </div>
       </div>
     );
@@ -107,7 +104,7 @@ export const StatisticsModal: React.FC<StatisticsModalProps> = ({ onClose }) => 
       <div style={overlayStyle}>
         {renderHeader()}
         <div style={{ ...contentStyle, alignItems: 'center', justifyContent: 'center' }}>
-          <p style={{ fontSize: isShortScreen ? '14px' : '20px', color: '#ef4444' }}>{error || '통계 데이터가 없습니다.'}</p>
+          <p style={{ fontSize: '20px', color: '#ef4444' }}>{error || '통계 데이터가 없습니다.'}</p>
         </div>
       </div>
     );

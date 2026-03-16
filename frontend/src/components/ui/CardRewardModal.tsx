@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useDeckStore } from '../../store/useDeckStore';
-import { useResponsive } from '../../hooks/useResponsive';
 import type { Card } from '../../types/gameTypes';
 import { iconLoot } from '../../assets/images/GUI';
 import { CardFrame } from './CardFrame';
@@ -13,12 +12,10 @@ interface CardRewardModalProps {
 
 export const CardRewardModal: React.FC<CardRewardModalProps> = ({ rewardCards, onClose, onCardSelected }) => {
   const { addCardToMasterDeck } = useDeckStore();
-  const { isMobile, height } = useResponsive();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  const isShortScreen = height < 500;
-  const cardW = isShortScreen ? 100 : isMobile ? 140 : 240;
-  const previewW = isShortScreen ? 140 : isMobile ? 200 : 280;
+  const cardW = 240;
+  const previewW = 280;
 
   const handleConfirmTake = () => {
     if (selectedIndex === null) return;
@@ -38,24 +35,21 @@ export const CardRewardModal: React.FC<CardRewardModalProps> = ({ rewardCards, o
       animation: 'fadeIn 0.3s ease-out',
     }}>
       <h2 style={{
-        fontSize: isShortScreen ? '18px' : isMobile ? '24px' : '32px', color: '#d4a854',
-        marginBottom: isShortScreen ? '10px' : isMobile ? '16px' : '24px',
+        fontSize: '32px', color: '#d4a854',
+        marginBottom: '24px',
         display: 'flex', alignItems: 'center', gap: '10px',
         textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
       }}>
-        <img src={iconLoot} alt="" style={{ width: isShortScreen ? 22 : isMobile ? 28 : 36, height: isShortScreen ? 22 : isMobile ? 28 : 36, objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(212,168,84,0.5))' }} />
+        <img src={iconLoot} alt="" style={{ width: 36, height: 36, objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(212,168,84,0.5))' }} />
         전리품: 카드 선택
       </h2>
-      {!isShortScreen && (
-        <p style={{ fontSize: isMobile ? '13px' : '16px', color: '#8a7e6a', marginBottom: isMobile ? '24px' : '40px' }}>
-          덱에 추가할 카드를 한 장 선택하세요.
-        </p>
-      )}
+      <p style={{ fontSize: '16px', color: '#8a7e6a', marginBottom: '40px' }}>
+        덱에 추가할 카드를 한 장 선택하세요.
+      </p>
 
       <div style={{
-        display: 'flex', gap: isShortScreen ? '12px' : isMobile ? '16px' : '36px',
+        display: 'flex', gap: '36px',
         flexWrap: 'wrap', justifyContent: 'center',
-        padding: isMobile ? '0 16px' : undefined,
       }}>
         {rewardCards.map((card, index) => (
           <div
@@ -83,9 +77,9 @@ export const CardRewardModal: React.FC<CardRewardModalProps> = ({ rewardCards, o
       <button
         onClick={onClose}
         style={{
-          marginTop: isShortScreen ? '20px' : isMobile ? '32px' : '50px',
-          padding: isShortScreen ? '8px 20px' : '10px 30px',
-          fontSize: isShortScreen ? '13px' : '16px',
+          marginTop: '50px',
+          padding: '10px 30px',
+          fontSize: '16px',
           background: 'none', color: '#a09078',
           border: '1px solid rgba(120, 100, 70, 0.4)',
           borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
@@ -120,14 +114,14 @@ export const CardRewardModal: React.FC<CardRewardModalProps> = ({ rewardCards, o
             onClick={(e) => e.stopPropagation()}
             style={{
               display: 'flex', gap: '12px',
-              marginTop: isShortScreen ? '14px' : '28px',
+              marginTop: '28px',
             }}
           >
             <button
               onClick={() => setSelectedIndex(null)}
               style={{
-                padding: isShortScreen ? '8px 18px' : '12px 30px',
-                fontSize: isShortScreen ? '14px' : '18px',
+                padding: '12px 30px',
+                fontSize: '18px',
                 background: 'none', color: '#a09078', border: '1px solid rgba(120, 100, 70, 0.4)',
                 borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
                 textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
@@ -140,8 +134,8 @@ export const CardRewardModal: React.FC<CardRewardModalProps> = ({ rewardCards, o
             <button
               onClick={handleConfirmTake}
               style={{
-                padding: isShortScreen ? '8px 20px' : '12px 40px',
-                fontSize: isShortScreen ? '14px' : '20px', fontWeight: 'bold',
+                padding: '12px 40px',
+                fontSize: '20px', fontWeight: 'bold',
                 background: 'none', color: '#d4a854',
                 border: '1px solid rgba(212, 168, 84, 0.5)',
                 borderRadius: '6px', cursor: 'pointer',

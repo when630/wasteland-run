@@ -3,14 +3,10 @@ body {
   padding: 0;
   width: 100vw;
   height: 100vh;
-  height: 100dvh;
   overflow: hidden;
   background-color: #000;
   font-family: 'Courier New', Courier, monospace;
-  /* 기본 황무지 픽셀느낌 폰트 대체 */
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
 }
 
 #root {

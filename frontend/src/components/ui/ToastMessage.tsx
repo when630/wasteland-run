@@ -1,11 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useRunStore } from '../../store/useRunStore';
 import { iconToast } from '../../assets/images/GUI';
-import { useResponsive } from '../../hooks/useResponsive';
 
 export const ToastMessage: React.FC = () => {
   const { toastMessage, setToastMessage } = useRunStore();
-  const { isMobile } = useResponsive();
   const [isVisible, setIsVisible] = useState(false);
   const [displayMsg, setDisplayMsg] = useState('');
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -74,10 +72,9 @@ export const ToastMessage: React.FC = () => {
         transform: 'translateX(-50%)',
         backgroundColor: bgColor,
         color: '#e8dcc8',
-        padding: isMobile ? '10px 16px' : '14px 28px',
+        padding: '14px 28px',
         borderRadius: '4px',
-        fontSize: isMobile ? '14px' : '17px',
-        maxWidth: isMobile ? '90vw' : undefined,
+        fontSize: '17px',
         fontWeight: 'bold',
         letterSpacing: '0.5px',
         boxShadow: `0 0 20px ${glowColor}, 0 4px 15px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08)`,

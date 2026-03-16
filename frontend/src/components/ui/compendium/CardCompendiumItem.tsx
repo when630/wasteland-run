@@ -1,16 +1,12 @@
 import React from 'react';
 import type { Card } from '../../../types/gameTypes';
 import { CardFrame } from '../CardFrame';
-import { useResponsive } from '../../../hooks/useResponsive';
 
 interface Props {
   card: Partial<Card>;
 }
 
 export const CardCompendiumItem: React.FC<Props> = ({ card }) => {
-  const { isMobile, height } = useResponsive();
-  const isShortScreen = height < 500;
-
   const fullCard: Card = {
     id: card.id ?? '',
     baseId: card.baseId ?? '',
@@ -29,7 +25,7 @@ export const CardCompendiumItem: React.FC<Props> = ({ card }) => {
   if (card.tier === 'UNCOMMON') glowColor = 'rgba(74,144,226,0.3)';
   if (card.tier === 'RARE') glowColor = 'rgba(255,215,0,0.3)';
 
-  const cardWidth = isShortScreen ? 90 : isMobile ? 130 : 180;
+  const cardWidth = 180;
 
   return (
     <div

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useDeckStore } from '../../store/useDeckStore';
-import { useResponsive } from '../../hooks/useResponsive';
 import { iconDrawPile, iconDiscardPile, iconExhaustPile } from '../../assets/images/GUI';
 
 const PileButton: React.FC<{
@@ -47,8 +46,7 @@ const PileButton: React.FC<{
 
 export const DeckPiles: React.FC = () => {
   const { drawPile, discardPile, exhaustPile, setViewingPile } = useDeckStore();
-  const { isMobile } = useResponsive();
-  const size = isMobile ? 40 : 52;
+  const size = 52;
 
   return (
     <>

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useRunStore } from '../../store/useRunStore';
 import { useMapStore } from '../../store/useMapStore';
-import { useResponsive } from '../../hooks/useResponsive';
 
 const CHAPTER_DATA: Record<number, { title: string; subtitle: string; description: string; color: string }> = {
   2: {
@@ -20,8 +19,6 @@ const CHAPTER_DATA: Record<number, { title: string; subtitle: string; descriptio
 
 export const ChapterTransitionModal: React.FC = () => {
   const { currentChapter, setChapter, setScene, saveRunData } = useRunStore();
-  const { isMobile, height } = useResponsive();
-  const isShortScreen = height < 500;
   const nextChapter = currentChapter + 1;
   const data = CHAPTER_DATA[nextChapter] || { title: `챕터 ${nextChapter}`, subtitle: '???', description: '미지의 영역으로...', color: '#aaa' };
 
@@ -40,42 +37,40 @@ export const ChapterTransitionModal: React.FC = () => {
       animation: 'fadeIn 1.5s ease-in-out', color: '#fff'
     }}>
       <div style={{
-        fontSize: isShortScreen ? '18px' : isMobile ? '24px' : '36px', color: '#fbbf24', fontWeight: 'bold',
-        marginBottom: isShortScreen ? '4px' : '10px',
+        fontSize: '36px', color: '#fbbf24', fontWeight: 'bold',
+        marginBottom: '10px',
         textShadow: '0 0 20px rgba(251, 191, 36, 0.5)'
       }}>
         챕터 {currentChapter} 클리어!
       </div>
 
-      <div style={{ width: isShortScreen ? '150px' : isMobile ? '200px' : '300px', height: '2px', background: 'linear-gradient(to right, transparent, #555, transparent)', margin: isShortScreen ? '10px 0' : '20px 0' }} />
+      <div style={{ width: '300px', height: '2px', background: 'linear-gradient(to right, transparent, #555, transparent)', margin: '20px 0' }} />
 
       <div style={{
-        fontSize: isShortScreen ? '13px' : isMobile ? '16px' : '20px', color: '#9ca3af',
-        letterSpacing: isShortScreen ? '2px' : isMobile ? '3px' : '5px', marginBottom: isShortScreen ? '4px' : '8px'
+        fontSize: '20px', color: '#9ca3af',
+        letterSpacing: '5px', marginBottom: '8px'
       }}>
         {data.title}
       </div>
       <div style={{
-        fontSize: isShortScreen ? '22px' : isMobile ? '28px' : '48px', color: data.color, fontWeight: 'bold',
-        marginBottom: isShortScreen ? '10px' : '20px',
+        fontSize: '48px', color: data.color, fontWeight: 'bold',
+        marginBottom: '20px',
         textShadow: `0 0 25px ${data.color}50`, letterSpacing: '3px'
       }}>
         {data.subtitle}
       </div>
-      {!isShortScreen && (
-        <p style={{
-          fontSize: isMobile ? '14px' : '18px', color: '#d1d5db', textAlign: 'center', lineHeight: '1.8',
-          maxWidth: isMobile ? '90%' : '500px', marginBottom: isMobile ? '25px' : '40px', whiteSpace: 'pre-line'
-        }}>
-          {data.description}
-        </p>
-      )}
+      <p style={{
+        fontSize: '18px', color: '#d1d5db', textAlign: 'center', lineHeight: '1.8',
+        maxWidth: '500px', marginBottom: '40px', whiteSpace: 'pre-line'
+      }}>
+        {data.description}
+      </p>
 
       <button
         onClick={handleProceed}
         style={{
-          padding: isShortScreen ? '8px 24px' : isMobile ? '12px 40px' : '18px 60px',
-          fontSize: isShortScreen ? '14px' : isMobile ? '16px' : '22px', fontWeight: 'bold',
+          padding: '18px 60px',
+          fontSize: '22px', fontWeight: 'bold',
           background: 'none', color: data.color,
           border: `1px solid ${data.color}60`, borderRadius: '6px', cursor: 'pointer',
           textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',

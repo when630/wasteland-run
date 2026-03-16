@@ -3,7 +3,6 @@ import { useDeckStore } from '../../store/useDeckStore';
 import type { Card } from '../../types/gameTypes';
 import { iconCardRemove } from '../../assets/images/GUI';
 import { CardFrame } from './CardFrame';
-import { useResponsive } from '../../hooks/useResponsive';
 
 interface RemoveCardModalProps {
   onClose: () => void;
@@ -19,7 +18,6 @@ export const RemoveCardModal: React.FC<RemoveCardModalProps> = ({
   description = '방해되는 카드를 한 장 선택하여 덱에서 영구히 제거하세요.',
 }) => {
   const { masterDeck, setMasterDeck } = useDeckStore();
-  const { isMobile } = useResponsive();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
   const selectedCard = masterDeck.find(c => c.id === selectedCardId) ?? null;
@@ -35,36 +33,31 @@ export const RemoveCardModal: React.FC<RemoveCardModalProps> = ({
     onRemoveComplete();
   };
 
-  const { height } = useResponsive();
-  const isShortScreen = height < 500;
-  const cardW = isShortScreen ? 90 : isMobile ? 120 : 200;
-  const previewW = isShortScreen ? 140 : isMobile ? 200 : 260;
+  const cardW = 160;
+  const previewW = 240;
 
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
       backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 10000,
       display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: isShortScreen ? 'flex-start' : 'center',
-      overflowY: 'auto', padding: isShortScreen ? '8px 10px' : isMobile ? '20px 0' : '0',
+      justifyContent: 'center',
+      overflowY: 'auto', padding: '0',
     }}>
-      <h2 style={{ fontSize: isShortScreen ? '16px' : isMobile ? '24px' : '36px', color: '#ffaaaa', marginBottom: isShortScreen ? '4px' : isMobile ? '12px' : '20px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', padding: '0 16px', margin: isShortScreen ? '4px 0' : undefined }}>
-        <img src={iconCardRemove} alt="" style={{ width: isShortScreen ? 20 : isMobile ? 28 : 36, height: isShortScreen ? 20 : isMobile ? 28 : 36, objectFit: 'contain' }} /> {title}
+      <h2 style={{ fontSize: '36px', color: '#ffaaaa', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', padding: '0 16px' }}>
+        <img src={iconCardRemove} alt="" style={{ width: 36, height: 36, objectFit: 'contain' }} /> {title}
       </h2>
-      {!isShortScreen && (
-        <p style={{ fontSize: isMobile ? '14px' : '18px', color: '#ccc', marginBottom: isMobile ? '20px' : '40px', padding: '0 16px', textAlign: 'center' }}>
-          {description}
-        </p>
-      )}
+      <p style={{ fontSize: '18px', color: '#ccc', marginBottom: '40px', padding: '0 16px', textAlign: 'center' }}>
+        {description}
+      </p>
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: `repeat(6, ${cardW}px)`,
-        gap: isShortScreen ? '6px' : isMobile ? '8px' : '14px',
+        gridTemplateColumns: `repeat(auto-fit, ${cardW}px)`,
+        gap: '14px',
         justifyContent: 'center',
-        padding: isShortScreen ? '8px 12px' : isMobile ? '12px 16px' : '20px 30px',
+        padding: '20px 30px',
         width: '100%', boxSizing: 'border-box',
-        flex: isShortScreen ? 1 : undefined,
         overflowY: 'auto',
         minHeight: 0,
       }}>
@@ -88,11 +81,11 @@ export const RemoveCardModal: React.FC<RemoveCardModalProps> = ({
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: '10px', marginTop: isShortScreen ? '6px' : isMobile ? '24px' : '40px', marginBottom: isShortScreen ? '6px' : undefined, alignItems: 'center', padding: '0 16px', flexShrink: 0 }}>
+      <div style={{ display: 'flex', gap: '10px', marginTop: '40px', alignItems: 'center', padding: '0 16px', flexShrink: 0 }}>
         <button
           onClick={onClose}
           style={{
-            padding: isShortScreen ? '6px 14px' : '12px 30px', fontSize: isShortScreen ? '13px' : '18px',
+            padding: '12px 30px', fontSize: '18px',
             background: 'none', color: '#a09078', border: '1px solid rgba(120, 100, 70, 0.4)',
             borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
             textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
@@ -113,7 +106,7 @@ export const RemoveCardModal: React.FC<RemoveCardModalProps> = ({
             backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10001,
             display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
-            gap: isShortScreen ? '24px' : '20px',
+            gap: '20px',
             animation: 'fadeIn 0.15s ease-out',
           }}
         >
@@ -128,14 +121,14 @@ export const RemoveCardModal: React.FC<RemoveCardModalProps> = ({
             onClick={(e) => e.stopPropagation()}
             style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center',
-              gap: isShortScreen ? '8px' : '12px',
+              gap: '12px',
             }}
           >
-            <div style={{ display: 'flex', gap: '10px', marginTop: isShortScreen ? '14px' : '28px' }}>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '28px' }}>
               <button
                 onClick={() => setSelectedCardId(null)}
                 style={{
-                  padding: isShortScreen ? '8px 18px' : '12px 30px', fontSize: isShortScreen ? '14px' : '18px',
+                  padding: '12px 30px', fontSize: '18px',
                   background: 'none', color: '#a09078', border: '1px solid rgba(120, 100, 70, 0.4)',
                   borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
                   textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
@@ -148,7 +141,7 @@ export const RemoveCardModal: React.FC<RemoveCardModalProps> = ({
               <button
                 onClick={handleConfirmRemove}
                 style={{
-                  padding: isShortScreen ? '8px 20px' : '12px 40px', fontSize: isShortScreen ? '14px' : '20px', fontWeight: 'bold',
+                  padding: '12px 40px', fontSize: '20px', fontWeight: 'bold',
                   background: 'none', color: '#ff6666',
                   border: '1px solid rgba(255, 80, 80, 0.4)',
                   borderRadius: '6px', cursor: 'pointer',

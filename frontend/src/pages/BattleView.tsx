@@ -17,7 +17,7 @@ import { createEnemy, getEnemyIdsByTier } from '../assets/data/enemies';
 import { useRunStore } from '../store/useRunStore';
 import { onBattleStart, onBattleEnd } from '../logic/relicEffects';
 import { useRngStore } from '../store/useRngStore';
-import { enemyPos } from '../components/pixi/vfx/battleLayout';
+import { DESIGN_WIDTH, DESIGN_HEIGHT, enemyPos } from '../components/pixi/vfx/battleLayout';
 import battleBg1 from '../assets/images/backgrounds/stage1_battle_backgroung.webp';
 import battleBg2 from '../assets/images/backgrounds/stage2_battle_backgroung.webp';
 import battleBg3 from '../assets/images/backgrounds/stage3_battle_backgroung.webp';
@@ -36,13 +36,13 @@ export const BattleView: React.FC = () => {
     resetBattle();
 
     if (currentScene === 'DEBUG_BATTLE') {
-      // 디버그 모드: 기본 덱 + 훈련용 허수아비
+      // 연습 모드: 기본 덱 + 훈련용 허수아비, 일반 턴제
       setMasterDeck(createStartingDeck());
       initDeck();
       drawCards(5);
-      spawnEnemies([createEnemy('training_dummy')]);
-      // 무제한 자원
-      useBattleStore.setState({ playerMaxAp: 99, playerActionPoints: 99, playerAmmo: 99 });
+      const dummy = createEnemy('training_dummy');
+      dummy.currentIntent = { type: 'DEFEND', description: '대기 중' };
+      spawnEnemies([dummy]);
     } else {
       // 일반 전투
       if (masterDeck.length === 0) {
@@ -112,7 +112,17 @@ export const BattleView: React.FC = () => {
       const highlightTimer = setTimeout(() => setActiveEnemyIndex(enemyIdx), seqIdx * ENEMY_ACTION_DELAY);
       enemyTurnTimersRef.current.push(highlightTimer);
 
-      const actionTimer = setTimeout(() => executeOneEnemyTurn(enemyIdx), seqIdx * ENEMY_ACTION_DELAY + 300);
+      const actionTimer = setTimeout(() => {
+        executeOneEnemyTurn(enemyIdx);
+        // 연습 모드: 적 턴 후 의도를 대기 상태로 복원 (determineNextIntent 덮어쓰기)
+        if (currentScene === 'DEBUG_BATTLE') {
+          useBattleStore.setState(s => ({
+            enemies: s.enemies.map((e, i) => i !== enemyIdx ? e : {
+              ...e, currentIntent: { type: 'DEFEND' as const, description: '대기 중' },
+            }),
+          }));
+        }
+      }, seqIdx * ENEMY_ACTION_DELAY + 300);
       enemyTurnTimersRef.current.push(actionTimer);
     });
 
@@ -123,7 +133,7 @@ export const BattleView: React.FC = () => {
       drawCards(5);
     }, totalTime);
     enemyTurnTimersRef.current.push(turnEndTimer);
-  }, [startPlayerTurn, drawCards, executeOneEnemyTurn, setActiveEnemyIndex]);
+  }, [startPlayerTurn, drawCards, executeOneEnemyTurn, setActiveEnemyIndex, currentScene]);
 
   useEffect(() => {
     if (currentTurn === 'ENEMY') {
@@ -148,9 +158,9 @@ export const BattleView: React.FC = () => {
       const es = useBattleStore.getState().enemies;
       const w = window.innerWidth;
       const h = window.innerHeight;
-      const scale = (w / h > 16 / 9) ? h / 1080 : w / 1920;
-      const cx = (w - 1920 * scale) / 2;
-      const cy = (h - 1080 * scale) / 2;
+      const scale = (w / h > 16 / 9) ? h / DESIGN_HEIGHT : w / DESIGN_WIDTH;
+      const cx = (w - DESIGN_WIDTH * scale) / 2;
+      const cy = (h - DESIGN_HEIGHT * scale) / 2;
 
       let bestId: string | null = null;
       let bestDist = Infinity;

@@ -12,14 +12,12 @@ import { CardFrame } from '../components/ui/CardFrame';
 import shopBg from '../assets/images/backgrounds/shop_map_background.webp';
 import npcImg from '../assets/images/characters/merchant.webp';
 import { iconGoldReward, iconCardRemove } from '../assets/images/GUI';
-import { useResponsive } from '../hooks/useResponsive';
 
 interface ShopCard extends Card { price: number; isSoldOut: boolean; }
 interface ShopRelic extends Relic { price: number; isSoldOut: boolean; }
 
 export const ShopView: React.FC = () => {
   const { gold, addGold, setScene, setToastMessage, relics: ownedRelics, addRelic } = useRunStore();
-  const { isMobile } = useResponsive();
   const { addCardToMasterDeck } = useDeckStore();
 
   const [shopCards, setShopCards] = useState<ShopCard[]>([]);
@@ -95,11 +93,9 @@ export const ShopView: React.FC = () => {
     await useRunStore.getState().saveRunData();
   };
 
-  const { height } = useResponsive();
-  const isShortScreen = height < 500;
-  const cardW = isShortScreen ? 80 : isMobile ? 100 : 140;
-  const previewCardW = isShortScreen ? 150 : isMobile ? 200 : 280;
-  const relicSize = isShortScreen ? 44 : isMobile ? 52 : 64;
+  const cardW = 140;
+  const previewCardW = 280;
+  const relicSize = 64;
 
   const previewCard = previewCardIdx !== null ? shopCards[previewCardIdx] : null;
   const previewRelic = previewRelicIdx !== null ? shopRelics[previewRelicIdx] : null;
@@ -121,10 +117,10 @@ export const ShopView: React.FC = () => {
         style={{
           position: 'absolute',
           right: 0, bottom: 0,
-          height: isShortScreen ? '85%' : '80%',
+          height: '80%',
           objectFit: 'contain', objectPosition: 'bottom right',
           filter: 'drop-shadow(5px 10px 20px rgba(0,0,0,0.8))',
-          pointerEvents: 'none', opacity: isShortScreen ? 0.4 : 0.5,
+          pointerEvents: 'none', opacity: 0.5,
           zIndex: 0,
         }}
       />
@@ -137,27 +133,27 @@ export const ShopView: React.FC = () => {
         {/* 골드 표시 */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: '6px',
-          padding: isShortScreen ? '4px 16px' : '8px 24px',
+          padding: '8px 24px',
           alignSelf: 'flex-end', flexShrink: 0,
         }}>
-          <img src={iconGoldReward} alt="" style={{ width: isShortScreen ? 16 : 22, height: isShortScreen ? 16 : 22, objectFit: 'contain' }} />
-          <span style={{ fontSize: isShortScreen ? '14px' : '20px', color: '#d4a854', fontWeight: 'bold' }}>{gold} G</span>
+          <img src={iconGoldReward} alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} />
+          <span style={{ fontSize: '20px', color: '#d4a854', fontWeight: 'bold' }}>{gold} G</span>
         </div>
 
         {/* 카드 + 유물 진열 영역 */}
         <div style={{
           flex: 1, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
-          gap: isShortScreen ? '10px' : '20px',
-          padding: isShortScreen ? '0 12px' : '0 20px',
+          gap: '20px',
+          padding: '0 20px',
           overflow: 'hidden',
         }}>
           {/* 카드 진열 */}
           <div style={{
-            display: 'flex', flexWrap: 'wrap', gap: isShortScreen ? '8px' : '14px',
+            display: 'flex', flexWrap: 'wrap', gap: '14px',
             justifyContent: 'center', alignItems: 'flex-end',
             background: 'radial-gradient(ellipse at center, rgba(80, 60, 30, 0.12) 0%, transparent 70%)',
-            padding: isShortScreen ? '4px' : '10px',
+            padding: '10px',
           }}>
             {shopCards.map((item, idx) => (
               <div
@@ -176,11 +172,11 @@ export const ShopView: React.FC = () => {
                 <CardFrame card={item} width={cardW} />
                 {!item.isSoldOut && (
                   <div style={{
-                    position: 'absolute', bottom: isShortScreen ? -4 : -6, left: '50%', transform: 'translateX(-50%)',
+                    position: 'absolute', bottom: -6, left: '50%', transform: 'translateX(-50%)',
                     backgroundColor: gold >= item.price ? 'rgba(80, 55, 15, 0.95)' : 'rgba(80, 20, 15, 0.95)',
                     color: gold >= item.price ? '#d4a854' : '#cc6666',
-                    padding: isShortScreen ? '1px 8px' : '2px 10px', borderRadius: '10px',
-                    fontWeight: 'bold', fontSize: isShortScreen ? '10px' : '12px',
+                    padding: '2px 10px', borderRadius: '10px',
+                    fontWeight: 'bold', fontSize: '12px',
                     border: `1px solid ${gold >= item.price ? 'rgba(180, 140, 50, 0.5)' : 'rgba(180, 60, 60, 0.5)'}`,
                     zIndex: 10, whiteSpace: 'nowrap',
                   }}>
@@ -190,7 +186,7 @@ export const ShopView: React.FC = () => {
                 {item.isSoldOut && (
                   <div style={{
                     position: 'absolute', top: '40%', left: 0, right: 0, textAlign: 'center',
-                    color: '#884444', fontSize: isShortScreen ? '12px' : '16px', fontWeight: 'bold',
+                    color: '#884444', fontSize: '16px', fontWeight: 'bold',
                     transform: 'rotate(-20deg)', textShadow: '1px 1px 3px rgba(0,0,0,0.5)',
                   }}>SOLD OUT</div>
                 )}
@@ -200,9 +196,9 @@ export const ShopView: React.FC = () => {
 
           {/* 유물 진열 */}
           <div style={{
-            display: 'flex', gap: isShortScreen ? '12px' : '20px',
+            display: 'flex', gap: '20px',
             justifyContent: 'center', alignItems: 'center',
-            padding: isShortScreen ? '4px 8px' : '8px 16px',
+            padding: '8px 16px',
           }}>
             {shopRelics.map((relic, idx) => (
               <div
@@ -233,11 +229,11 @@ export const ShopView: React.FC = () => {
                 </div>
                 {!relic.isSoldOut && (
                   <div style={{
-                    position: 'absolute', bottom: isShortScreen ? -6 : -8, left: '50%', transform: 'translateX(-50%)',
+                    position: 'absolute', bottom: -8, left: '50%', transform: 'translateX(-50%)',
                     backgroundColor: gold >= relic.price ? 'rgba(80, 55, 15, 0.95)' : 'rgba(80, 20, 15, 0.95)',
                     color: gold >= relic.price ? '#d4a854' : '#cc6666',
                     padding: '1px 6px', borderRadius: '8px',
-                    fontWeight: 'bold', fontSize: isShortScreen ? '9px' : '11px',
+                    fontWeight: 'bold', fontSize: '11px',
                     border: `1px solid ${gold >= relic.price ? 'rgba(180, 140, 50, 0.5)' : 'rgba(180, 60, 60, 0.5)'}`,
                     zIndex: 10, whiteSpace: 'nowrap',
                   }}>
@@ -256,7 +252,7 @@ export const ShopView: React.FC = () => {
             {shopRelics.length === 0 && <span style={{ color: '#6a5e4a', fontSize: '11px' }}>유물 없음</span>}
 
             {/* 덱 압축 */}
-            <div style={{ width: isShortScreen ? '20px' : '30px' }} />
+            <div style={{ width: '30px' }} />
             <button
               disabled={!removeServiceAvailable}
               onClick={handleRemoveService}
@@ -270,9 +266,9 @@ export const ShopView: React.FC = () => {
               onMouseEnter={e => { if (removeServiceAvailable) e.currentTarget.style.transform = 'scale(1.15)'; }}
               onMouseLeave={e => { if (removeServiceAvailable) e.currentTarget.style.transform = 'scale(1)'; }}
             >
-              <img src={iconCardRemove} alt="덱 압축" style={{ width: isShortScreen ? 72 : 96, height: isShortScreen ? 72 : 96, objectFit: 'contain' }} />
+              <img src={iconCardRemove} alt="덱 압축" style={{ width: 96, height: 96, objectFit: 'contain' }} />
               {removeServiceAvailable && (
-                <span style={{ fontWeight: 'bold', fontSize: isShortScreen ? '10px' : '12px', color: gold >= REMOVE_PRICE ? '#d4a854' : '#cc6666' }}>{REMOVE_PRICE}G</span>
+                <span style={{ fontWeight: 'bold', fontSize: '12px', color: gold >= REMOVE_PRICE ? '#d4a854' : '#cc6666' }}>{REMOVE_PRICE}G</span>
               )}
             </button>
           </div>
@@ -281,14 +277,14 @@ export const ShopView: React.FC = () => {
         {/* 하단: 떠나기 */}
         <div style={{
           display: 'flex', justifyContent: 'center', alignItems: 'center',
-          padding: isShortScreen ? '6px 16px' : '12px 24px',
+          padding: '12px 24px',
           flexShrink: 0,
         }}>
           <button
             onClick={() => setScene('MAP')}
             style={{
-              padding: isShortScreen ? '5px 14px' : '8px 24px',
-              fontSize: isShortScreen ? '11px' : '14px', fontWeight: 'bold',
+              padding: '8px 24px',
+              fontSize: '14px', fontWeight: 'bold',
               background: 'none', color: '#a09078',
               border: '1px solid rgba(120, 100, 70, 0.4)',
               borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
@@ -311,22 +307,22 @@ export const ShopView: React.FC = () => {
             backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10000,
             display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
-            gap: isShortScreen ? '10px' : '20px',
+            gap: '20px',
             animation: 'fadeIn 0.15s ease-out',
           }}
         >
           <div onClick={e => e.stopPropagation()} style={{ filter: 'drop-shadow(0 0 20px rgba(212, 168, 84, 0.3))' }}>
             <CardFrame card={previewCard} width={previewCardW} />
           </div>
-          <div onClick={e => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isShortScreen ? '6px' : '10px' }}>
-            <div style={{ fontSize: isShortScreen ? '14px' : '18px', color: gold >= previewCard.price ? '#d4a854' : '#cc6666', fontWeight: 'bold' }}>
+          <div onClick={e => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+            <div style={{ fontSize: '18px', color: gold >= previewCard.price ? '#d4a854' : '#cc6666', fontWeight: 'bold' }}>
               {previewCard.price} G
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
               <button
                 onClick={() => setPreviewCardIdx(null)}
                 style={{
-                  padding: isShortScreen ? '8px 16px' : '10px 24px', fontSize: isShortScreen ? '13px' : '16px',
+                  padding: '10px 24px', fontSize: '16px',
                   background: 'none', color: '#a09078', border: '1px solid rgba(120, 100, 70, 0.4)',
                   borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
                   textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
@@ -340,7 +336,7 @@ export const ShopView: React.FC = () => {
                 onClick={() => handleBuyCard(previewCardIdx!)}
                 disabled={gold < previewCard.price}
                 style={{
-                  padding: isShortScreen ? '8px 18px' : '10px 30px', fontSize: isShortScreen ? '14px' : '18px', fontWeight: 'bold',
+                  padding: '10px 30px', fontSize: '18px', fontWeight: 'bold',
                   background: 'none',
                   color: gold >= previewCard.price ? '#d4a854' : '#888',
                   border: `1px solid ${gold >= previewCard.price ? 'rgba(212, 168, 84, 0.5)' : 'rgba(100, 100, 100, 0.3)'}`,
@@ -368,16 +364,16 @@ export const ShopView: React.FC = () => {
             backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10000,
             display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
-            gap: isShortScreen ? '12px' : '20px',
+            gap: '20px',
             animation: 'fadeIn 0.15s ease-out',
           }}
         >
           <div onClick={e => e.stopPropagation()} style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isShortScreen ? '10px' : '16px',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px',
           }}>
             {/* 유물 확대 이미지 */}
             <div style={{
-              width: isShortScreen ? 80 : 120, height: isShortScreen ? 80 : 120,
+              width: 120, height: 120,
               backgroundColor: 'rgba(30, 25, 18, 0.95)',
               border: '3px solid rgba(180, 140, 50, 0.6)',
               borderRadius: '50%',
@@ -387,26 +383,26 @@ export const ShopView: React.FC = () => {
             }}>
               {previewRelic.image
                 ? <img src={previewRelic.image} alt={previewRelic.name} style={{ width: '75%', height: '75%', objectFit: 'contain' }} />
-                : <span style={{ fontSize: isShortScreen ? 40 : 60 }}>{previewRelic.icon}</span>
+                : <span style={{ fontSize: 60 }}>{previewRelic.icon}</span>
               }
             </div>
 
             {/* 유물 정보 */}
             <div style={{ textAlign: 'center', maxWidth: '300px' }}>
-              <h3 style={{ margin: '0 0 6px 0', fontSize: isShortScreen ? '16px' : '22px', color: '#e0d4bc' }}>{previewRelic.name}</h3>
-              <p style={{ margin: '0 0 4px 0', fontSize: isShortScreen ? '10px' : '12px', color: '#8a7e6a' }}>[{previewRelic.tier}]</p>
-              <p style={{ margin: '0 0 12px 0', fontSize: isShortScreen ? '12px' : '14px', color: '#b8a888', lineHeight: '1.4' }}>{previewRelic.description}</p>
-              <div style={{ fontSize: isShortScreen ? '14px' : '18px', color: gold >= previewRelic.price ? '#d4a854' : '#cc6666', fontWeight: 'bold', marginBottom: '12px' }}>
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '22px', color: '#e0d4bc' }}>{previewRelic.name}</h3>
+              <p style={{ margin: '0 0 4px 0', fontSize: '12px', color: '#8a7e6a' }}>[{previewRelic.tier}]</p>
+              <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#b8a888', lineHeight: '1.4' }}>{previewRelic.description}</p>
+              <div style={{ fontSize: '18px', color: gold >= previewRelic.price ? '#d4a854' : '#cc6666', fontWeight: 'bold', marginBottom: '12px' }}>
                 {previewRelic.price} G
               </div>
             </div>
 
             {/* 버튼 */}
-            <div style={{ display: 'flex', gap: '10px', marginTop: isShortScreen ? '14px' : '28px' }}>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '28px' }}>
               <button
                 onClick={() => setPreviewRelicIdx(null)}
                 style={{
-                  padding: isShortScreen ? '8px 16px' : '10px 24px', fontSize: isShortScreen ? '13px' : '16px',
+                  padding: '10px 24px', fontSize: '16px',
                   background: 'none', color: '#a09078', border: '1px solid rgba(120, 100, 70, 0.4)',
                   borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
                   textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
@@ -420,7 +416,7 @@ export const ShopView: React.FC = () => {
                 onClick={() => handleBuyRelic(previewRelicIdx!)}
                 disabled={gold < previewRelic.price}
                 style={{
-                  padding: isShortScreen ? '8px 18px' : '10px 30px', fontSize: isShortScreen ? '14px' : '18px', fontWeight: 'bold',
+                  padding: '10px 30px', fontSize: '18px', fontWeight: 'bold',
                   background: 'none',
                   color: gold >= previewRelic.price ? '#d4a854' : '#888',
                   border: `1px solid ${gold >= previewRelic.price ? 'rgba(212, 168, 84, 0.5)' : 'rgba(100, 100, 100, 0.3)'}`,

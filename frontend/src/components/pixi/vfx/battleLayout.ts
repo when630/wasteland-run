@@ -1,7 +1,7 @@
 // 전투 캔버스 레이아웃 상수 — BattleStage와 useCardPlay에서 공유
 
-export const DESIGN_WIDTH = 1920;
-export const DESIGN_HEIGHT = 1080;
+export const DESIGN_WIDTH = 1280;
+export const DESIGN_HEIGHT = 720;
 
 /** 캐릭터 배치 Y 비율 — 화면 세로 기준 (0.65→0.55로 올려 카드 핸드와 겹침 방지) */
 export const BATTLE_Y_RATIO = 0.55;

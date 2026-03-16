@@ -5,23 +5,20 @@ import { useMapStore } from '../store/useMapStore';
 import { createStartingDeck } from '../assets/data/cards';
 import { useAudioStore } from '../store/useAudioStore';
 import { useRngStore } from '../store/useRngStore';
-import { useResponsive } from '../hooks/useResponsive';
 import { CompendiumModal } from '../components/ui/CompendiumModal';
 import { SettingsModal } from '../components/ui/SettingsModal';
 import { StatisticsModal } from '../components/ui/StatisticsModal';
 
 export const MainMenuView: React.FC = () => {
   const { isActive, setScene } = useRunStore();
-  const { isMobile, height } = useResponsive();
-  const isShortScreen = height < 500;
   const [isHovered, setIsHovered] = useState<string | null>(null);
   const [isCompendiumOpen, setIsCompendiumOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isStatisticsOpen, setIsStatisticsOpen] = useState(false);
 
   const buttonStyle = (id: string, disabled: boolean = false) => ({
-    padding: isShortScreen ? '6px 16px' : isMobile ? '10px 20px' : '15px 40px',
-    fontSize: isShortScreen ? '16px' : isMobile ? '18px' : '24px',
+    padding: '15px 40px',
+    fontSize: '24px',
     fontWeight: 'bold',
     color: disabled ? '#555' : isHovered === id ? '#fff' : '#aaa',
     backgroundColor: 'transparent',
@@ -87,16 +84,16 @@ export const MainMenuView: React.FC = () => {
       color: '#fff',
       display: 'flex',
       flexDirection: 'column',
-      alignItems: isMobile ? 'center' : 'flex-start',
+      alignItems: 'flex-start',
       justifyContent: 'center',
-      paddingLeft: isMobile ? '0' : '15%',
+      paddingLeft: '15%',
       backgroundImage: 'radial-gradient(circle at right bottom, #2a0a0a 0%, #000 70%)',
     }}>
 
       {/* 타이틀 로고/텍스트 영역 */}
-      <div style={{ marginBottom: isShortScreen ? '16px' : isMobile ? '40px' : '80px', pointerEvents: 'none', textAlign: isMobile ? 'center' : undefined }}>
+      <div style={{ marginBottom: '40px', pointerEvents: 'none' }}>
         <h1 style={{
-          fontSize: isShortScreen ? '36px' : isMobile ? '48px' : '96px',
+          fontSize: '96px',
           margin: 0,
           color: '#ff4444',
           textShadow: '4px 4px 0px #440000, 0 0 20px rgba(255,60,60,0.5)',
@@ -106,10 +103,10 @@ export const MainMenuView: React.FC = () => {
           WASTELAND RUN
         </h1>
         <p style={{
-          fontSize: isMobile ? '12px' : '24px',
+          fontSize: '24px',
           color: '#888',
           marginTop: '10px',
-          letterSpacing: isMobile ? '3px' : '10px',
+          letterSpacing: '10px',
           fontFamily: '"Courier New", Courier, monospace',
           textTransform: 'uppercase'
         }}>
@@ -118,7 +115,7 @@ export const MainMenuView: React.FC = () => {
       </div>
 
       {/* 메뉴 버튼 영역 */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: isShortScreen ? '8px' : '20px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
 
         {isActive && (
           <button
@@ -176,24 +173,22 @@ export const MainMenuView: React.FC = () => {
           ▶ 설정
         </button>
 
-        {/* 디버그 테스트 (개발 모드에서만 표시) */}
+        {/* 연습 모드 (개발 모드에서만 표시) */}
         {import.meta.env.DEV && (
-          <div style={{ marginTop: '20px', borderTop: '1px solid #333', paddingTop: '20px' }}>
-            <button
-              style={{ ...buttonStyle('debug'), fontSize: isMobile ? '14px' : '18px', color: isHovered === 'debug' ? '#ff0' : '#665' }}
-              onMouseEnter={() => setIsHovered('debug')}
-              onMouseLeave={() => setIsHovered(null)}
-              onClick={() => {
-                useAudioStore.getState().playClick();
-                const seed = 'debug_' + Date.now();
-                useRngStore.getState().initialize(seed);
-                useRunStore.setState({ playerHp: 9999, playerMaxHp: 9999, isActive: false });
-                setScene('DEBUG_BATTLE');
-              }}
-            >
-              ▶ 디버그 테스트
-            </button>
-          </div>
+          <button
+            style={{ ...buttonStyle('practice'), fontSize: '20px', color: isHovered === 'practice' ? '#ff0' : '#665' }}
+            onMouseEnter={() => setIsHovered('practice')}
+            onMouseLeave={() => setIsHovered(null)}
+            onClick={() => {
+              useAudioStore.getState().playClick();
+              const seed = 'practice_' + Date.now();
+              useRngStore.getState().initialize(seed);
+              useRunStore.setState({ playerHp: 9999, playerMaxHp: 9999, isActive: false });
+              setScene('DEBUG_BATTLE');
+            }}
+          >
+            ▶ 연습 모드
+          </button>
         )}
 
       </div>

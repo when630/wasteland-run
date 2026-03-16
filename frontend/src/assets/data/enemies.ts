@@ -34,6 +34,63 @@ import mutantSniperHitImg from '../images/characters/mutant_sniper_hit.webp';
 import brutusImg from '../images/characters/brutus.webp';
 import brutusAttackImg from '../images/characters/brutus_attack.webp';
 import brutusHitImg from '../images/characters/brutus_hit.webp';
+// 챕터 1 신규 스프라이트
+import rustedWatchbotImg from '../images/characters/rusted_watchbot.webp';
+import rustedWatchbotAttackImg from '../images/characters/rusted_watchbot_attack.webp';
+import rustedWatchbotHitImg from '../images/characters/rusted_watchbot_hit.webp';
+import mutantCrowsImg from '../images/characters/mutant_crows.webp';
+import mutantCrowsAttackImg from '../images/characters/mutant_crows_attack.webp';
+import mutantCrowsHitImg from '../images/characters/mutant_crows_hit.webp';
+import spiderQueenImg from '../images/characters/spider_queen.webp';
+import spiderQueenAttackImg from '../images/characters/spider_queen_attack.webp';
+import spiderQueenHitImg from '../images/characters/spider_queen_hit.webp';
+import stormGeneratorImg from '../images/characters/storm_generator.webp';
+import stormGeneratorAttackImg from '../images/characters/storm_generator_attack.webp';
+import stormGeneratorHitImg from '../images/characters/storm_generator_hit.webp';
+// 챕터 2 스프라이트
+import subwayRatImg from '../images/characters/subway_rat.webp';
+import subwayRatAttackImg from '../images/characters/subway_rat_attack.webp';
+import subwayRatHitImg from '../images/characters/subway_rat_hit.webp';
+import railCrawlerImg from '../images/characters/rail_crawler.webp';
+import railCrawlerAttackImg from '../images/characters/rail_crawler_attack.webp';
+import railCrawlerHitImg from '../images/characters/rail_crawler_hit.webp';
+import molePersonImg from '../images/characters/mole_person.webp';
+import molePersonAttackImg from '../images/characters/mole_person_attack.webp';
+import molePersonHitImg from '../images/characters/mole_person_hit.webp';
+import tunnelSpiderImg from '../images/characters/tunnel_spider.webp';
+import tunnelSpiderAttackImg from '../images/characters/tunnel_spider_attack.webp';
+import tunnelSpiderHitImg from '../images/characters/tunnel_spider_hit.webp';
+import electricSlimeImg from '../images/characters/electric_slime.webp';
+import electricSlimeAttackImg from '../images/characters/electric_slime_attack.webp';
+import electricSlimeHitImg from '../images/characters/electric_slime_hit.webp';
+import rustedGolemImg from '../images/characters/rusted_golem.webp';
+import rustedGolemAttackImg from '../images/characters/rusted_golem_attack.webp';
+import rustedGolemHitImg from '../images/characters/rusted_golem_hit.webp';
+import derailedConductorImg from '../images/characters/derailed_conductor.webp';
+import derailedConductorAttackImg from '../images/characters/derailed_conductor_attack.webp';
+import derailedConductorHitImg from '../images/characters/derailed_conductor_hit.webp';
+import shadowLurkerImg from '../images/characters/shadow_lurker.webp';
+import shadowLurkerAttackImg from '../images/characters/shadow_lurker_attack.webp';
+import shadowLurkerHitImg from '../images/characters/shadow_lurker_hit.webp';
+import trackGuardianImg from '../images/characters/track_guardian.webp';
+import trackGuardianAttackImg from '../images/characters/track_guardian_attack.webp';
+import trackGuardianHitImg from '../images/characters/track_guardian_hit.webp';
+import leviathanWormImg from '../images/characters/leviathan_worm.webp';
+import leviathanWormAttackImg from '../images/characters/leviathan_worm_attack.webp';
+import leviathanWormHitImg from '../images/characters/leviathan_worm_hit.webp';
+// 챕터 2 신규 스프라이트
+import infectedPassengerImg from '../images/characters/infected_passenger.webp';
+import infectedPassengerAttackImg from '../images/characters/infected_passenger_attack.webp';
+import infectedPassengerHitImg from '../images/characters/infected_passenger_hit.webp';
+import glowingMossImg from '../images/characters/glowing_moss.webp';
+import glowingMossAttackImg from '../images/characters/glowing_moss_attack.webp';
+import glowingMossHitImg from '../images/characters/glowing_moss_hit.webp';
+import derailedTrainImg from '../images/characters/derailed_train.webp';
+import derailedTrainAttackImg from '../images/characters/derailed_train_attack.webp';
+import derailedTrainHitImg from '../images/characters/derailed_train_hit.webp';
+import undergroundLordImg from '../images/characters/underground_lord.webp';
+import undergroundLordAttackImg from '../images/characters/underground_lord_attack.webp';
+import undergroundLordHitImg from '../images/characters/underground_lord_hit.webp';
 
 type BaseEnemy = Omit<Enemy, 'id' | 'currentHp' | 'shield' | 'resist' | 'currentIntent'> & { chapter?: number; initialShield?: number };
 
@@ -161,6 +218,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '지하철 쥐떼',
     maxHp: 32,
     chapter: 2,
+    spriteUrl: subwayRatImg,
+    spriteAttackUrl: subwayRatAttackImg,
+    spriteHitUrl: subwayRatHitImg,
   },
   rail_crawler: {
     baseId: 'rail_crawler',
@@ -168,6 +228,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '레일 크롤러',
     maxHp: 50,
     chapter: 2,
+    spriteUrl: railCrawlerImg,
+    spriteAttackUrl: railCrawlerAttackImg,
+    spriteHitUrl: railCrawlerHitImg,
   },
   mole_person: {
     baseId: 'mole_person',
@@ -175,6 +238,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '두더지 인간',
     maxHp: 35,
     chapter: 2,
+    spriteUrl: molePersonImg,
+    spriteAttackUrl: molePersonAttackImg,
+    spriteHitUrl: molePersonHitImg,
   },
   tunnel_spider: {
     baseId: 'tunnel_spider',
@@ -182,6 +248,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '터널 거미',
     maxHp: 26,
     chapter: 2,
+    spriteUrl: tunnelSpiderImg,
+    spriteAttackUrl: tunnelSpiderAttackImg,
+    spriteHitUrl: tunnelSpiderHitImg,
   },
   electric_slime: {
     baseId: 'electric_slime',
@@ -189,6 +258,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '전기 슬라임',
     maxHp: 55,
     chapter: 2,
+    spriteUrl: electricSlimeImg,
+    spriteAttackUrl: electricSlimeAttackImg,
+    spriteHitUrl: electricSlimeHitImg,
   },
   rusted_golem: {
     baseId: 'rusted_golem',
@@ -196,6 +268,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '녹슨 골렘',
     maxHp: 48,
     chapter: 2,
+    spriteUrl: rustedGolemImg,
+    spriteAttackUrl: rustedGolemAttackImg,
+    spriteHitUrl: rustedGolemHitImg,
   },
   // 챕터 2 엘리트
   derailed_conductor: {
@@ -204,6 +279,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '탈선한 차장',
     maxHp: 100,
     chapter: 2,
+    spriteUrl: derailedConductorImg,
+    spriteAttackUrl: derailedConductorAttackImg,
+    spriteHitUrl: derailedConductorHitImg,
   },
   shadow_lurker: {
     baseId: 'shadow_lurker',
@@ -211,6 +289,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '그림자 잠복자',
     maxHp: 90,
     chapter: 2,
+    spriteUrl: shadowLurkerImg,
+    spriteAttackUrl: shadowLurkerAttackImg,
+    spriteHitUrl: shadowLurkerHitImg,
   },
   track_guardian: {
     baseId: 'track_guardian',
@@ -218,6 +299,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '궤도 수호자',
     maxHp: 95,
     chapter: 2,
+    spriteUrl: trackGuardianImg,
+    spriteAttackUrl: trackGuardianAttackImg,
+    spriteHitUrl: trackGuardianHitImg,
   },
   // 챕터 2 보스
   leviathan_worm: {
@@ -227,6 +311,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     maxHp: 180,
     chapter: 2,
     initialShield: 25,
+    spriteUrl: leviathanWormImg,
+    spriteAttackUrl: leviathanWormAttackImg,
+    spriteHitUrl: leviathanWormHitImg,
   },
 
   // ===== 챕터 3: 거대 기업의 방주 =====
@@ -308,6 +395,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '녹슨 감시 로봇',
     maxHp: 20,
     chapter: 1,
+    spriteUrl: rustedWatchbotImg,
+    spriteAttackUrl: rustedWatchbotAttackImg,
+    spriteHitUrl: rustedWatchbotHitImg,
   },
   mutant_crows: {
     baseId: 'mutant_crows',
@@ -315,6 +405,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '변이 까마귀 떼',
     maxHp: 18,
     chapter: 1,
+    spriteUrl: mutantCrowsImg,
+    spriteAttackUrl: mutantCrowsAttackImg,
+    spriteHitUrl: mutantCrowsHitImg,
   },
   // ── 1막 신규 보스 ──
   spider_queen: {
@@ -323,6 +416,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '방사능 여왕 거미',
     maxHp: 100,
     chapter: 1,
+    spriteUrl: spiderQueenImg,
+    spriteAttackUrl: spiderQueenAttackImg,
+    spriteHitUrl: spiderQueenHitImg,
   },
   storm_generator: {
     baseId: 'storm_generator',
@@ -331,6 +427,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     maxHp: 120,
     chapter: 1,
     initialShield: 15,
+    spriteUrl: stormGeneratorImg,
+    spriteAttackUrl: stormGeneratorAttackImg,
+    spriteHitUrl: stormGeneratorHitImg,
   },
 
   // ── 2막 신규 일반 ──
@@ -340,6 +439,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '감염된 승객',
     maxHp: 40,
     chapter: 2,
+    spriteUrl: infectedPassengerImg,
+    spriteAttackUrl: infectedPassengerAttackImg,
+    spriteHitUrl: infectedPassengerHitImg,
   },
   glowing_moss: {
     baseId: 'glowing_moss',
@@ -347,6 +449,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '형광 이끼',
     maxHp: 25,
     chapter: 2,
+    spriteUrl: glowingMossImg,
+    spriteAttackUrl: glowingMossAttackImg,
+    spriteHitUrl: glowingMossHitImg,
   },
   // ── 2막 신규 보스 ──
   derailed_train: {
@@ -356,6 +461,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     maxHp: 200,
     chapter: 2,
     initialShield: 20,
+    spriteUrl: derailedTrainImg,
+    spriteAttackUrl: derailedTrainAttackImg,
+    spriteHitUrl: derailedTrainHitImg,
   },
   underground_lord: {
     baseId: 'underground_lord',
@@ -363,6 +471,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '지하 군주',
     maxHp: 160,
     chapter: 2,
+    spriteUrl: undergroundLordImg,
+    spriteAttackUrl: undergroundLordAttackImg,
+    spriteHitUrl: undergroundLordHitImg,
   },
 
   // ── 3막 신규 일반 ──

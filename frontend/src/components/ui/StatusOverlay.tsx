@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useBattleStore } from '../../store/useBattleStore';
 import { useRunStore } from '../../store/useRunStore';
 import type { Enemy } from '../../types/enemyTypes';
-import { enemyPos } from '../pixi/vfx/battleLayout';
+import { DESIGN_WIDTH, DESIGN_HEIGHT, BATTLE_Y_RATIO, enemyPos } from '../pixi/vfx/battleLayout';
 import {
   iconPhysicalDefense, iconSpecialDefense,
   iconIntentPhysical, iconIntentSpecial,
@@ -22,11 +22,11 @@ function useScreenLayout() {
   }, []);
 
   const { w, h } = dim;
-  const scale = (w / h > 16 / 9) ? h / 1080 : w / 1920;
-  const ox = (w - 1920 * scale) / 2;
-  const oy = (h - 1080 * scale) / 2;
+  const scale = (w / h > 16 / 9) ? h / DESIGN_HEIGHT : w / DESIGN_WIDTH;
+  const ox = (w - DESIGN_WIDTH * scale) / 2;
+  const oy = (h - DESIGN_HEIGHT * scale) / 2;
 
-  return { scale, ox, oy, isMobile: w < 768 };
+  return { scale, ox, oy };
 }
 
 // 상태이상 뱃지 색상/아이콘 매핑
@@ -297,11 +297,11 @@ const EnemyOverlay: React.FC<{ enemy: Enemy; index: number; total: number; scale
   const cx = ePos.x * scale + ox;
   const cy = ePos.y * scale + oy;
 
-  // Y 오프셋 (Pixi 월드 좌표 기준 → 화면 픽셀로 스케일링)
-  const intentY = (isBoss ? -290 : -170) * scale;
-  const hpBarY = (isBoss ? 260 : 140) * scale;
-  const hpBarRight = (isBoss ? 120 : 80) * scale; // HP바 우측 끝 (width/2)
-  const statusY = hpBarY + (isBoss ? 24 : 22) * scale; // HP바 바로 아래
+  // Y 오프셋 (Pixi 월드 좌표 기준 → 화면 픽셀로 스케일링, 1280x720 기준)
+  const intentY = (isBoss ? -193 : -113) * scale;
+  const hpBarY = (isBoss ? 173 : 93) * scale;
+  const hpBarRight = (isBoss ? 80 : 53) * scale; // HP바 우측 끝 (width/2)
+  const statusY = hpBarY + (isBoss ? 16 : 15) * scale; // HP바 바로 아래
 
   const activeStatuses = enemy.statuses
     ? Object.entries(enemy.statuses).filter(([, val]) => val > 0)
@@ -354,12 +354,12 @@ const PlayerOverlay: React.FC<{
 }> = ({ scale, ox, oy }) => {
   const { playerStatus, playerDebuffs, powerDefenseAmmo50, powerPhysicalScalingActive, powerPhysicalScalingBonus } = useBattleStore();
 
-  const cx = 1920 * 0.25 * scale + ox;
-  const cy = 1080 * 0.55 * scale + oy;
+  const cx = DESIGN_WIDTH * 0.25 * scale + ox;
+  const cy = DESIGN_HEIGHT * BATTLE_Y_RATIO * scale + oy;
 
-  const hpBarY = 155 * scale;       // HP바 Y (BattleStage와 동기)
-  const hpBarRight = 80 * scale;    // HP바 우측 끝 (width 160의 절반)
-  const statusY = (155 + 28) * scale; // HP바 아래 + 여백
+  const hpBarY = 103 * scale;       // HP바 Y (BattleStage와 동기)
+  const hpBarRight = 53 * scale;    // HP바 우측 끝 (width 107의 절반)
+  const statusY = (103 + 19) * scale; // HP바 아래 + 여백
 
   // 버프/디버프 엔트리 수집
   interface Entry { value: string | number; icon?: string; label?: string; color: string; desc: string }

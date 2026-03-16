@@ -9,6 +9,9 @@ const electronAPI = {
   saveSettings: (data: unknown) => ipcRenderer.invoke('save-settings', data),
   loadSettings: () => ipcRenderer.invoke('load-settings'),
   toggleFullscreen: () => ipcRenderer.invoke('toggle-fullscreen'),
+  setFullscreen: (fullscreen: boolean) => ipcRenderer.invoke('set-fullscreen', fullscreen),
+  getFullscreen: () => ipcRenderer.invoke('get-fullscreen'),
+  setResolution: (width: number, height: number) => ipcRenderer.invoke('set-resolution', width, height),
   platform: 'electron' as const,
 };
 

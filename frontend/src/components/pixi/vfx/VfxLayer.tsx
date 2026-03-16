@@ -114,7 +114,7 @@ export const VfxLayer: React.FC<VfxLayerProps> = ({ onShakeUpdate }) => {
         flashGraphicsRef.current.clear();
         if (flash.alpha > 0.01) {
           flashGraphicsRef.current.beginFill(flash.color, flash.alpha);
-          flashGraphicsRef.current.drawRect(0, 0, 1920, 1080);
+          flashGraphicsRef.current.drawRect(0, 0, 1280, 720);
           flashGraphicsRef.current.endFill();
         }
       }

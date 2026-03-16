@@ -3,10 +3,9 @@ import { createPortal } from 'react-dom';
 import { useDeckStore } from '../../store/useDeckStore';
 import { useBattleStore } from '../../store/useBattleStore';
 import { useCardPlay } from '../../hooks/useCardPlay';
-import { useResponsive } from '../../hooks/useResponsive';
 import { TargetingLine } from './TargetingLine';
 import { CardFrame } from './CardFrame';
-import { enemyPos } from '../pixi/vfx/battleLayout';
+import { DESIGN_WIDTH, DESIGN_HEIGHT, enemyPos } from '../pixi/vfx/battleLayout';
 
 const DRAG_MIN_DIST = 10;
 const PLAY_ZONE_RATIO = 0.78;
@@ -16,9 +15,9 @@ function findNearestEnemyId(sx: number, sy: number): string | null {
   const es = useBattleStore.getState().enemies;
   const w = window.innerWidth;
   const h = window.innerHeight;
-  const scale = (w / h > 16 / 9) ? h / 1080 : w / 1920;
-  const cx = (w - 1920 * scale) / 2;
-  const cy = (h - 1080 * scale) / 2;
+  const scale = (w / h > 16 / 9) ? h / DESIGN_HEIGHT : w / DESIGN_WIDTH;
+  const cx = (w - DESIGN_WIDTH * scale) / 2;
+  const cy = (h - DESIGN_HEIGHT * scale) / 2;
 
   let bestId: string | null = null;
   let bestDist = Infinity;
@@ -48,7 +47,6 @@ export const Hand: React.FC = () => {
   const { targetingCardId, playerStatus } = useBattleStore();
   const { playCard } = useCardPlay();
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
-  const { isMobile, isTablet, width } = useResponsive();
 
   // === Drag-to-play ===
   const [dragState, setDragState] = useState<{
@@ -161,18 +159,18 @@ export const Hand: React.FC = () => {
     }
   }, [inPlayZone, draggingCard]);
 
-  // 레이아웃 계산
-  const cardWidth = isMobile ? 78 : isTablet ? 110 : width >= 1440 ? 160 : 140;
+  // 레이아웃 계산 (1280x720 기준 — zoom이 실제 해상도에 맞게 스케일)
+  const cardWidth = 130;
   const cardHeight = cardWidth * (320 / 220);
-  const baseOverlap = isMobile ? -28 : isTablet ? -40 : width >= 1440 ? -55 : -50;
-  const overlapExtra = hand.length > 6 ? (hand.length - 6) * (isMobile ? -4 : -6) : 0;
+  const baseOverlap = -45;
+  const overlapExtra = hand.length > 6 ? (hand.length - 6) * -6 : 0;
   const cardOverlap = baseOverlap + overlapExtra;
-  const containerHeight = isMobile ? 160 : isTablet ? 210 : width >= 1440 ? 280 : 260;
+  const containerHeight = 240;
 
   return (
     <div style={{
       position: 'absolute',
-      bottom: isMobile ? '-40px' : '-60px',
+      bottom: '-60px',
       left: '50%',
       transform: 'translateX(-50%)',
       display: 'flex',
@@ -180,7 +178,7 @@ export const Hand: React.FC = () => {
       alignItems: 'flex-end',
       pointerEvents: 'none',
       zIndex: 50,
-      width: isMobile ? '95%' : '80%',
+      width: '80%',
       height: `${containerHeight}px`
     }}>
       {hand.map((card, index) => {
@@ -196,8 +194,8 @@ export const Hand: React.FC = () => {
         const totalCards = hand.length;
         const offset = index - (totalCards - 1) / 2;
         const maxOffset = (totalCards - 1) / 2 || 1;
-        const maxEdgeRotation = Math.min(isMobile ? 18 : 25, totalCards * (isMobile ? 3 : 4));
-        const maxYDrop = Math.min(isMobile ? 25 : 40, totalCards * (isMobile ? 5 : 6));
+        const maxEdgeRotation = Math.min(25, totalCards * 4);
+        const maxYDrop = Math.min(40, totalCards * 6);
 
         const rotationStep = maxEdgeRotation / maxOffset;
         const baseRotation = offset * rotationStep;

@@ -11,7 +11,7 @@ import { DamageNumber } from './DamageNumber';
 import { HpBar } from './HpBar';
 import { VfxLayer } from './vfx/VfxLayer';
 import { dispatchVfx } from './vfx/vfxDispatcher';
-import { PLAYER_POS, BATTLE_Y_RATIO, enemyPos } from './vfx/battleLayout';
+import { DESIGN_WIDTH, DESIGN_HEIGHT, PLAYER_POS, BATTLE_Y_RATIO, enemyPos } from './vfx/battleLayout';
 import playerImg from '../../assets/images/characters/player.webp';
 import playerPhysicalAttackImg from '../../assets/images/characters/player_physical_attack.webp';
 import playerSpecialAttackImg from '../../assets/images/characters/player_special_attack.webp';
@@ -52,8 +52,8 @@ export const BattleStage: React.FC = () => {
 
   // 브라우저 리사이즈 대응 및 16:9 비율 유지를 위한 크기 상태
   const [dimensions, setDimensions] = React.useState({
-    width: typeof window !== 'undefined' ? window.innerWidth : 1920,
-    height: typeof window !== 'undefined' ? window.innerHeight : 1080,
+    width: typeof window !== 'undefined' ? window.innerWidth : DESIGN_WIDTH,
+    height: typeof window !== 'undefined' ? window.innerHeight : DESIGN_HEIGHT,
     scale: 1,
   });
 
@@ -67,9 +67,9 @@ export const BattleStage: React.FC = () => {
 
       let scale = 1;
       if (currentRatio > targetRatio) {
-        scale = h / 1080;
+        scale = h / DESIGN_HEIGHT;
       } else {
-        scale = w / 1920;
+        scale = w / DESIGN_WIDTH;
       }
 
       setDimensions({ width: w, height: h, scale });
@@ -230,15 +230,15 @@ export const BattleStage: React.FC = () => {
     >
       <Container
         scale={scale}
-        x={(screenWidth - 1920 * scale) / 2 + shakeX + vfxShakeRef.current.x}
-        y={(screenHeight - 1080 * scale) / 2 + shakeY + vfxShakeRef.current.y}
+        x={(screenWidth - DESIGN_WIDTH * scale) / 2 + shakeX + vfxShakeRef.current.x}
+        y={(screenHeight - DESIGN_HEIGHT * scale) / 2 + shakeY + vfxShakeRef.current.y}
       >
         {/* 허공(배경) 클릭 감지용 투명 레이어 */}
         {targetingCardId !== null && (
           <Sprite
             texture={placeholderTexture}
-            width={1920}
-            height={1080}
+            width={DESIGN_WIDTH}
+            height={DESIGN_HEIGHT}
             alpha={0.001} // 완전 투명이지만 클릭을 잡아냄
             interactive={true}
             pointerdown={() => {
@@ -265,8 +265,8 @@ export const BattleStage: React.FC = () => {
 
         {/* 플레이어 (좌측) 구역을 Container로 묶어 클릭(타겟팅) 상호작용 추가 */}
         <Container
-          x={1920 * 0.25}
-          y={1080 * BATTLE_Y_RATIO + playerHitOffsetY}
+          x={DESIGN_WIDTH * 0.25}
+          y={DESIGN_HEIGHT * BATTLE_Y_RATIO + playerHitOffsetY}
           alpha={playerAlphaFlicker}
           interactive={targetingCardId !== null}
           pointerdown={() => {
@@ -278,8 +278,8 @@ export const BattleStage: React.FC = () => {
         >
           <Sprite
             texture={playerTextures[playerSpriteState]}
-            width={150}
-            height={300}
+            width={100}
+            height={200}
             anchor={0.5}
             x={playerHitOffset} // 🌟 넉백/흔들림 연출
             tint={playerTint} // 🌟 타입별 색상 연출
@@ -288,11 +288,11 @@ export const BattleStage: React.FC = () => {
           <HpBar
             currentHp={playerHp}
             maxHp={playerMaxHp}
-            width={160}
-            height={20}
-            x={-80}
-            y={155}
-            fontSize={15}
+            width={107}
+            height={14}
+            x={-53}
+            y={103}
+            fontSize={11}
             fillColor={0x44ff44}
           />
           {/* 플레이어 방어/버프/디버프 → StatusOverlay(React HTML)로 이전됨 */}
@@ -341,8 +341,8 @@ export const BattleStage: React.FC = () => {
         {/* 중앙 상태 텍스트 (피드백용) */}
         <Text
           text={targetGuideText}
-          x={1920 * 0.5}
-          y={1080 * 0.1}
+          x={DESIGN_WIDTH * 0.5}
+          y={DESIGN_HEIGHT * 0.1}
           anchor={0.5}
           style={turnTextStyle}
         />
@@ -356,7 +356,7 @@ export const BattleStage: React.FC = () => {
           if (enemyIndex === -1) return null;
           const dnPos = enemyPos(enemyIndex, enemies.length);
           const posX = dnPos.x;
-          const posY = dnPos.y - 80;
+          const posY = dnPos.y - 53;
           return (
             <DamageNumber
               key={dn.id}

@@ -4,8 +4,10 @@ import { create } from 'zustand';
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 function saveSettingsDebounced(bgmVolume: number, sfxVolume: number) {
   if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    window.electronAPI?.saveSettings({ bgmVolume, sfxVolume });
+  saveTimer = setTimeout(async () => {
+    // 기존 설정 로드 후 오디오 값만 업데이트 (해상도 등 다른 설정 보존)
+    const existing = (await window.electronAPI?.loadSettings()) as Record<string, any> | null;
+    window.electronAPI?.saveSettings({ ...existing, bgmVolume, sfxVolume });
   }, 500);
 }
 
@@ -53,7 +55,6 @@ function onFirstInteraction() {
   userHasInteracted = true;
   window.removeEventListener('click', onFirstInteraction);
   window.removeEventListener('keydown', onFirstInteraction);
-  window.removeEventListener('touchstart', onFirstInteraction);
   // 대기 중인 BGM 재생
   if (pendingBgmTrack) {
     useAudioStore.getState().playBgm(pendingBgmTrack);
@@ -63,7 +64,6 @@ function onFirstInteraction() {
 if (typeof window !== 'undefined') {
   window.addEventListener('click', onFirstInteraction);
   window.addEventListener('keydown', onFirstInteraction);
-  window.addEventListener('touchstart', onFirstInteraction);
 }
 
 export const useAudioStore = create<AudioState>((set, get) => ({

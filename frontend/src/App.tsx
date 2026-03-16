@@ -91,6 +91,7 @@ function App() {
   useEffect(() => {
     loadRunData();
     // 저장된 오디오 설정 복원
+    // 오디오 설정 복원 (해상도는 main.ts에서 창 생성 시 처리)
     window.electronAPI?.loadSettings().then((data: any) => {
       if (data) {
         if (typeof data.bgmVolume === 'number') useAudioStore.getState().setBgmVolume(data.bgmVolume);

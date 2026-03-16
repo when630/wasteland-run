@@ -9,6 +9,9 @@ export interface ElectronAPI {
   saveSettings: (data: unknown) => Promise<{ success: boolean }>;
   loadSettings: () => Promise<unknown | null>;
   toggleFullscreen: () => Promise<boolean>;
+  setFullscreen: (fullscreen: boolean) => Promise<boolean>;
+  getFullscreen: () => Promise<boolean>;
+  setResolution: (width: number, height: number) => Promise<{ success: boolean; width?: number; height?: number }>;
   platform: 'electron';
 }
 

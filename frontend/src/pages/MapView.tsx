@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import Xarrow from 'react-xarrows';
 import { useRunStore } from '../store/useRunStore';
 import { useMapStore, type NodeType } from '../store/useMapStore';
-import { useResponsive } from '../hooks/useResponsive';
 import mapBg1 from '../assets/images/backgrounds/map_background_zone1.webp';
 import mapBg2 from '../assets/images/backgrounds/map_background_zone2.webp';
 import mapBg3 from '../assets/images/backgrounds/map_background_zone3.webp';
@@ -29,7 +28,6 @@ interface MapViewProps {
 export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) => {
   const { setScene } = useRunStore();
   const { nodes, currentNodeId, visitedNodeIds, generateMap, setPendingNode, commitPendingNode, mapChapter } = useMapStore();
-  const { isMobile } = useResponsive();
 
   // 맵이 없거나 챕터가 변경되었으면 새로 생성
   const { currentChapter } = useRunStore();
@@ -95,14 +93,13 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
       {/* 맵 노드 트리 렌더링 영역 — 양피지 느낌 */}
       <div style={{
         position: 'relative',
-        display: 'flex', flexDirection: 'column-reverse', gap: isMobile ? '28px' : '70px', alignItems: 'center',
-        padding: isMobile ? '20px 8px' : '60px 60px', borderRadius: '8px',
+        display: 'flex', flexDirection: 'column-reverse', gap: '70px', alignItems: 'center',
+        padding: '60px 60px', borderRadius: '8px',
         background: 'linear-gradient(135deg, #d4b896 0%, #e8d5b0 25%, #d9c4a0 50%, #e0cba5 75%, #c8a882 100%)',
-        border: isMobile ? '2px solid #8b6f47' : '3px solid #8b6f47',
+        border: '3px solid #8b6f47',
         boxShadow: '0 0 30px rgba(0,0,0,0.5), inset 0 0 60px rgba(139, 111, 71, 0.3)',
-        minWidth: isMobile ? 'auto' : '850px',
-        width: isMobile ? '95vw' : undefined,
-        marginBottom: isMobile ? '40px' : '100px',
+        minWidth: '850px',
+        marginBottom: '100px',
       }}>
         {/* Zone 배경 이미지 오버레이 (아주 연하게) */}
         <div style={{
@@ -126,11 +123,11 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
         <div style={{
           width: '100%', textAlign: 'center', position: 'relative', zIndex: 4,
           borderBottom: '1px solid rgba(139, 111, 71, 0.3)',
-          paddingBottom: isMobile ? '12px' : '20px',
-          marginBottom: isMobile ? '-12px' : '-30px',
+          paddingBottom: '20px',
+          marginBottom: '-30px',
         }}>
           <div style={{
-            fontSize: isMobile ? '20px' : '32px',
+            fontSize: '32px',
             fontFamily: 'serif', fontWeight: 700,
             color: '#3e2a14',
             textShadow: '1px 1px 0 rgba(196, 169, 106, 0.5)',
@@ -139,7 +136,7 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
             {ZONE_NAMES[currentChapter] || ZONE_NAMES[1]}
           </div>
           <div style={{
-            fontSize: isMobile ? '11px' : '14px',
+            fontSize: '14px',
             fontFamily: 'serif',
             color: '#8b6f47',
             marginTop: '4px',
@@ -154,13 +151,13 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
           if (floorNodes.length === 0) return null;
 
           return (
-            <div key={`floor-${floorNum}`} style={{ display: 'flex', justifyContent: 'center', width: '100%', position: 'relative', zIndex: 1 }}>
+            <div key={`floor-${floorNum}`} style={{ display: 'flex', justifyContent: 'center', gap: '60px', width: '100%', position: 'relative', zIndex: 1 }}>
               {[0, 1, 2, 3, 4, 5, 6].map(pos => {
                 const node = floorNodes.find(n => n.positionX === pos);
-                const cellSize = isMobile ? `${(100 / 7)}%` : '40px';
+                const cellSize = '40px';
 
                 if (!node) {
-                  return <div key={`empty-${floorNum}-${pos}`} style={{ width: cellSize, maxWidth: isMobile ? undefined : '40px', height: isMobile ? '30px' : '40px', flexShrink: isMobile ? 1 : 0 }} />;
+                  return <div key={`empty-${floorNum}-${pos}`} style={{ width: cellSize, maxWidth: '40px', height: '40px', flexShrink: 0 }} />;
                 }
 
                 const isCurrent = node.id === currentNodeId;
@@ -177,13 +174,13 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
                       if (!viewOnly && isNextAvailable) handleNodeClick(node.id, node.type);
                     }}
                     style={{
-                      width: cellSize, maxWidth: isMobile ? undefined : '40px', height: isMobile ? '30px' : '40px',
+                      width: cellSize, maxWidth: '40px', height: '40px',
                       display: 'flex', justifyContent: 'center', alignItems: 'center',
                       cursor: viewOnly ? 'default' : (isNextAvailable ? 'pointer' : 'default'),
                       opacity: (isCurrent || isVisited || isNextAvailable) ? 1 : 0.35,
                       transition: 'all 0.3s',
                       position: 'relative',
-                      flexShrink: isMobile ? 1 : 0,
+                      flexShrink: 0,
                       zIndex: 3,
                       transform: `translate(${node.offsetX}px, ${node.offsetY}px)`,
                       filter: isCurrent

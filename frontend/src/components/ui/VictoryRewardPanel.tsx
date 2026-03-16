@@ -3,7 +3,6 @@ import { CardRewardModal } from './CardRewardModal';
 import { RelicRewardModal } from './RelicRewardModal';
 import { useRunStore } from '../../store/useRunStore';
 import { useRngStore } from '../../store/useRngStore';
-import { useResponsive } from '../../hooks/useResponsive';
 import { iconGold, iconGoldReward, iconCardCount, iconRelicReward, iconBossClear } from '../../assets/images/GUI';
 import type { Card } from '../../types/gameTypes';
 import { ALL_CARDS } from '../../assets/data/cards';
@@ -149,8 +148,6 @@ interface VictoryRewardPanelProps {
 
 export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContinue, currentScene }) => {
   const { addGold, currentChapter } = useRunStore();
-  const { isMobile, height } = useResponsive();
-  const isShortScreen = height < 500;
 
   const [goldClaimed, setGoldClaimed] = useState(false);
   const [cardClaimed, setCardClaimed] = useState(false);
@@ -179,7 +176,7 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
   const isFinalBoss = currentScene === 'BOSS' && currentChapter >= 3;
   const goldAmount = currentScene === 'BOSS' ? 100 : currentScene === 'ELITE' ? 50 : 20;
   const showRelic = !isFinalBoss && (currentScene === 'ELITE' || currentScene === 'BOSS');
-  const iconSize = isShortScreen ? 44 : isMobile ? 52 : 64;
+  const iconSize = 64;
 
   const handleGoldClaim = useCallback(() => {
     if (goldClaimed) return;
@@ -191,7 +188,7 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
     const rect = btn.getBoundingClientRect();
     const startX = rect.left + rect.width / 2;
     const startY = rect.top + rect.height / 2;
-    const targetX = isMobile ? 160 : 240;
+    const targetX = 240;
     const targetY = 30;
 
     const coinCount = Math.min(Math.max(6, Math.floor(goldAmount / 5)), 12);
@@ -216,7 +213,7 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
       popupY: startY - 30,
       startTime: Date.now(),
     });
-  }, [goldClaimed, goldAmount, addGold, isMobile]);
+  }, [goldClaimed, goldAmount, addGold]);
 
   return (
     <div style={{
@@ -230,10 +227,10 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
       animation: 'fadeIn 0.5s ease-out',
     }}>
       {/* 타이틀 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: isShortScreen ? '4px' : '8px', animation: 'slideUp 0.4s ease-out' }}>
-        <img src={iconBossClear} alt="" style={{ width: isShortScreen ? 28 : isMobile ? 36 : 48, height: isShortScreen ? 28 : isMobile ? 36 : 48, objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(100, 255, 100, 0.5))' }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px', animation: 'slideUp 0.4s ease-out' }}>
+        <img src={iconBossClear} alt="" style={{ width: 48, height: 48, objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(100, 255, 100, 0.5))' }} />
         <h1 style={{
-          fontSize: isShortScreen ? '24px' : isMobile ? '32px' : '44px', color: '#66cc88', margin: 0,
+          fontSize: '44px', color: '#66cc88', margin: 0,
           textShadow: '2px 3px 6px rgba(0,0,0,0.8), 0 0 20px rgba(100, 200, 100, 0.3)',
         }}>
           전투 승리!
@@ -244,8 +241,8 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
       {!isFinalBoss && (
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          gap: isShortScreen ? '16px' : '24px',
-          margin: isShortScreen ? '16px 0' : '28px 0',
+          gap: '24px',
+          margin: '28px 0',
           animation: 'slideUp 0.5s ease-out',
         }}>
           {/* 골드 */}
@@ -264,7 +261,7 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
             onMouseLeave={e => { if (!goldClaimed) e.currentTarget.style.transform = 'scale(1)'; }}
           >
             <img src={iconGoldReward} alt="골드" style={{ width: iconSize, height: iconSize, objectFit: 'contain', filter: goldClaimed ? 'grayscale(1)' : 'drop-shadow(0 0 8px rgba(212,168,84,0.5))' }} />
-            <span style={{ fontSize: isShortScreen ? '12px' : '14px', fontWeight: 'bold', color: goldClaimed ? '#666' : '#d4a854' }}>
+            <span style={{ fontSize: '14px', fontWeight: 'bold', color: goldClaimed ? '#666' : '#d4a854' }}>
               {goldAmount}G
             </span>
           </button>
@@ -311,8 +308,8 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
       <button
         onClick={onContinue}
         style={{
-          padding: isShortScreen ? '8px 24px' : '14px 40px',
-          fontSize: isShortScreen ? '14px' : '18px', fontWeight: 'bold',
+          padding: '14px 40px',
+          fontSize: '18px', fontWeight: 'bold',
           background: 'none', color: '#66cc88',
           border: '1px solid rgba(60, 180, 100, 0.4)',
           borderRadius: '6px', cursor: 'pointer',

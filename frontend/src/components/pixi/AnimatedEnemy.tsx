@@ -244,9 +244,9 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
   // 보스 분기 처리
   const isBoss = enemy.tier === 'BOSS';
   const isElite = enemy.tier === 'ELITE';
-  const targetHeight = isBoss ? 450 : (isElite ? 280 : 230);
-  const nameYOffset = isBoss ? -250 : -130;
-  const hpYOffset = isBoss ? 260 : 140;
+  const targetHeight = isBoss ? 300 : (isElite ? 187 : 153);
+  const nameYOffset = isBoss ? -167 : -87;
+  const hpYOffset = isBoss ? 173 : 93;
 
   // 스프라이트 URL이 있으면 상태별 텍스처 전환
   const [spritePhase, setSpritePhase] = useState<'idle' | 'attack' | 'hit'>('idle');
@@ -280,8 +280,8 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
         scale={hasSprite
           ? (targetHeight / currentTexture.height) * scaleModifier
           : undefined}
-        width={hasSprite ? undefined : (isBoss ? 350 : 150) * scaleModifier}
-        height={hasSprite ? undefined : (isBoss ? 450 : 200) * scaleModifier}
+        width={hasSprite ? undefined : (isBoss ? 233 : 100) * scaleModifier}
+        height={hasSprite ? undefined : (isBoss ? 300 : 133) * scaleModifier}
         anchor={0.5}
         tint={tint}
       />
@@ -289,13 +289,13 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
       <HpBar
         currentHp={enemy.currentHp}
         maxHp={enemy.maxHp}
-        width={isBoss ? 240 : 160}
-        height={isBoss ? 20 : 18}
-        x={isBoss ? -120 : -80}
-        y={hpYOffset - 6}
+        width={isBoss ? 160 : 107}
+        height={isBoss ? 14 : 12}
+        x={isBoss ? -80 : -53}
+        y={hpYOffset - 4}
         fillColor={0xff4444}
         previewDamage={previewDamage}
-        fontSize={isBoss ? 15 : 13}
+        fontSize={isBoss ? 11 : 10}
         dynamicColor={false}
       />
     </Container>

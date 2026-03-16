@@ -2,7 +2,6 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useBattleStore } from '../../store/useBattleStore';
 import { useDeckStore } from '../../store/useDeckStore';
 import { useAudioStore } from '../../store/useAudioStore';
-import { useResponsive } from '../../hooks/useResponsive';
 import { iconAp, iconEmptyAp, iconAmmo, iconEmptyAmmo } from '../../assets/images/GUI';
 
 // ── 탄피 이젝션 파티클 ──
@@ -105,7 +104,6 @@ const ApEffectLayer: React.FC<{ particles: ApParticle[] }> = ({ particles }) => 
 export const ResourcePanel: React.FC = () => {
   const { playerActionPoints, playerMaxAp, playerAmmo, endPlayerTurn, currentTurn } = useBattleStore();
   const { discardHand } = useDeckStore();
-  const { isMobile } = useResponsive();
 
   // 이전 값 추적
   const prevAmmoRef = useRef(playerAmmo);
@@ -270,8 +268,8 @@ export const ResourcePanel: React.FC = () => {
     endPlayerTurn();
   };
 
-  const ammoSize = isMobile ? 22 : 28;
-  const apIconSize = isMobile ? 44 : 56;
+  const ammoSize = 28;
+  const apIconSize = 56;
 
   // AP 이펙트 CSS
   const apIconStyle: React.CSSProperties = {
@@ -310,8 +308,8 @@ export const ResourcePanel: React.FC = () => {
       {/* AP + Ammo 패널 */}
       <div style={{
         position: 'absolute',
-        bottom: isMobile ? '40px' : '60px',
-        left: isMobile ? '60px' : '110px',
+        bottom: '60px',
+        left: '110px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -332,7 +330,7 @@ export const ResourcePanel: React.FC = () => {
           />
           <span style={{
             position: 'absolute',
-            fontSize: isMobile ? '14px' : '18px',
+            fontSize: '18px',
             fontWeight: 'bold',
             color: playerActionPoints > 0 ? '#fff' : '#888',
             textShadow: '1px 1px 3px rgba(0,0,0,0.9), -1px -1px 3px rgba(0,0,0,0.9)',
@@ -360,13 +358,13 @@ export const ResourcePanel: React.FC = () => {
                     height: ammoSize,
                     objectFit: 'contain',
                     filter: 'drop-shadow(0 0 3px rgba(200,150,50,0.5))',
-                    marginLeft: i > 0 ? (isMobile ? -6 : -8) : 0,
+                    marginLeft: i > 0 ? -8 : 0,
                   }}
                 />
               ))}
               {playerAmmo > 5 && (
                 <span style={{
-                  fontSize: isMobile ? 12 : 14,
+                  fontSize: 14,
                   fontWeight: 'bold',
                   color: '#d4a854',
                   marginLeft: 4,
@@ -378,7 +376,7 @@ export const ResourcePanel: React.FC = () => {
             </>
           ) : (
             <span style={{
-              fontSize: isMobile ? 10 : 12,
+              fontSize: 12,
               color: '#666',
               fontWeight: 'bold',
               letterSpacing: 1,
@@ -395,15 +393,15 @@ export const ResourcePanel: React.FC = () => {
         disabled={currentTurn !== 'PLAYER'}
         style={{
           position: 'absolute',
-          right: isMobile ? '15px' : '50px',
-          bottom: isMobile ? '100px' : '150px',
-          padding: isMobile ? '8px 18px' : '12px 30px',
+          right: '50px',
+          bottom: '150px',
+          padding: '12px 30px',
           background: 'none',
           color: currentTurn === 'PLAYER' ? '#a2f5df' : '#666',
           border: '1px solid',
           borderColor: currentTurn === 'PLAYER' ? 'rgba(77, 195, 163, 0.5)' : 'rgba(100, 100, 100, 0.3)',
           borderRadius: '6px',
-          fontSize: isMobile ? '14px' : '20px',
+          fontSize: '20px',
           fontWeight: 'bold',
           letterSpacing: '2px',
           textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',

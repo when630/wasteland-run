@@ -3,7 +3,6 @@ import { useDeckStore } from '../../store/useDeckStore';
 import type { Card } from '../../types/gameTypes';
 import { iconCardUpgrade } from '../../assets/images/GUI';
 import { CardFrame } from './CardFrame';
-import { useResponsive } from '../../hooks/useResponsive';
 import { applyUpgrade } from '../../logic/cardUpgrades';
 
 interface UpgradeCardModalProps {
@@ -13,7 +12,6 @@ interface UpgradeCardModalProps {
 
 export const UpgradeCardModal: React.FC<UpgradeCardModalProps> = ({ onClose, onUpgradeComplete }) => {
   const { masterDeck, upgradeCard } = useDeckStore();
-  const { isMobile } = useResponsive();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
   const selectedCard = masterDeck.find(c => c.id === selectedCardId) ?? null;
@@ -33,36 +31,31 @@ export const UpgradeCardModal: React.FC<UpgradeCardModalProps> = ({ onClose, onU
     onUpgradeComplete();
   };
 
-  const { height } = useResponsive();
-  const isShortScreen = height < 500;
-  const cardW = isShortScreen ? 90 : isMobile ? 120 : 200;
-  const previewW = isShortScreen ? 120 : isMobile ? 160 : 220;
+  const cardW = 160;
+  const previewW = 200;
 
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
       backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 10000,
       display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: isShortScreen ? 'flex-start' : 'center',
-      overflowY: 'auto', padding: isShortScreen ? '8px 10px' : isMobile ? '20px 0' : '0',
+      justifyContent: 'center',
+      overflowY: 'auto', padding: '0',
     }}>
-      <h2 style={{ fontSize: isShortScreen ? '16px' : isMobile ? '24px' : '36px', color: '#ffaaaa', marginBottom: isShortScreen ? '4px' : isMobile ? '12px' : '20px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', padding: '0 16px', margin: isShortScreen ? '4px 0' : undefined }}>
-        <img src={iconCardUpgrade} alt="" style={{ width: isShortScreen ? 20 : isMobile ? 28 : 36, height: isShortScreen ? 20 : isMobile ? 28 : 36, objectFit: 'contain' }} /> 카드 강화
+      <h2 style={{ fontSize: '36px', color: '#ffaaaa', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', padding: '0 16px' }}>
+        <img src={iconCardUpgrade} alt="" style={{ width: 36, height: 36, objectFit: 'contain' }} /> 카드 강화
       </h2>
-      {!isShortScreen && (
-        <p style={{ fontSize: isMobile ? '14px' : '18px', color: '#ccc', marginBottom: isMobile ? '20px' : '40px', padding: '0 16px', textAlign: 'center' }}>
-          강화할 카드를 한 장 선택하세요.
-        </p>
-      )}
+      <p style={{ fontSize: '18px', color: '#ccc', marginBottom: '40px', padding: '0 16px', textAlign: 'center' }}>
+        강화할 카드를 한 장 선택하세요.
+      </p>
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: `repeat(6, ${cardW}px)`,
-        gap: isShortScreen ? '6px' : isMobile ? '8px' : '14px',
+        gridTemplateColumns: `repeat(auto-fit, ${cardW}px)`,
+        gap: '14px',
         justifyContent: 'center',
-        padding: isShortScreen ? '8px 12px' : isMobile ? '12px 16px' : '20px 30px',
+        padding: '20px 30px',
         width: '100%', boxSizing: 'border-box',
-        flex: isShortScreen ? 1 : undefined,
         overflowY: 'auto',
         minHeight: 0,
       }}>
@@ -85,8 +78,8 @@ export const UpgradeCardModal: React.FC<UpgradeCardModalProps> = ({ onClose, onU
               <CardFrame card={card} width={cardW} />
               {isUpgraded && (
                 <div style={{
-                  position: 'absolute', bottom: isShortScreen ? 4 : 8, left: '50%', transform: 'translateX(-50%)',
-                  background: 'rgba(0,0,0,0.7)', color: '#88ff88', fontSize: isShortScreen ? '9px' : '11px', fontWeight: 'bold',
+                  position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)',
+                  background: 'rgba(0,0,0,0.7)', color: '#88ff88', fontSize: '11px', fontWeight: 'bold',
                   padding: '2px 6px', borderRadius: '10px', border: '1px solid #3a6b3a',
                   zIndex: 20, whiteSpace: 'nowrap',
                 }}>
@@ -98,11 +91,11 @@ export const UpgradeCardModal: React.FC<UpgradeCardModalProps> = ({ onClose, onU
         })}
       </div>
 
-      <div style={{ display: 'flex', gap: '10px', marginTop: isShortScreen ? '6px' : isMobile ? '24px' : '40px', marginBottom: isShortScreen ? '6px' : undefined, alignItems: 'center', padding: '0 16px', flexShrink: 0 }}>
+      <div style={{ display: 'flex', gap: '10px', marginTop: '40px', alignItems: 'center', padding: '0 16px', flexShrink: 0 }}>
         <button
           onClick={onClose}
           style={{
-            padding: isShortScreen ? '6px 14px' : '12px 30px', fontSize: isShortScreen ? '13px' : '18px',
+            padding: '12px 30px', fontSize: '18px',
             background: 'none', color: '#a09078', border: '1px solid rgba(120, 100, 70, 0.4)',
             borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
             textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
@@ -131,25 +124,25 @@ export const UpgradeCardModal: React.FC<UpgradeCardModalProps> = ({ onClose, onU
             onClick={e => e.stopPropagation()}
             style={{
               display: 'flex', alignItems: 'center',
-              gap: isShortScreen ? '12px' : isMobile ? '16px' : '40px',
+              gap: '40px',
             }}
           >
             <div style={{ textAlign: 'center' }}>
-              <p style={{ color: '#888', fontSize: isShortScreen ? '10px' : '14px', margin: '0 0 4px 0' }}>강화 전</p>
+              <p style={{ color: '#888', fontSize: '14px', margin: '0 0 4px 0' }}>강화 전</p>
               <div style={{ opacity: 0.6 }}>
                 <CardFrame card={selectedCard} width={previewW} />
               </div>
             </div>
 
             <div style={{
-              fontSize: isShortScreen ? '20px' : '36px', color: '#88ff88',
+              fontSize: '36px', color: '#88ff88',
               textShadow: '0 0 10px rgba(136,255,136,0.5)',
             }}>
               {'\u27A4'}
             </div>
 
             <div style={{ textAlign: 'center' }}>
-              <p style={{ color: '#88ff88', fontSize: isShortScreen ? '10px' : '14px', margin: '0 0 4px 0', fontWeight: 'bold' }}>강화 후</p>
+              <p style={{ color: '#88ff88', fontSize: '14px', margin: '0 0 4px 0', fontWeight: 'bold' }}>강화 후</p>
               <div style={{ filter: 'drop-shadow(0 0 15px rgba(136,255,136,0.3))' }}>
                 <CardFrame card={upgradedPreview} width={previewW} />
               </div>
@@ -159,12 +152,12 @@ export const UpgradeCardModal: React.FC<UpgradeCardModalProps> = ({ onClose, onU
           {/* 버튼 */}
           <div
             onClick={e => e.stopPropagation()}
-            style={{ display: 'flex', gap: '10px', marginTop: isShortScreen ? '14px' : '28px' }}
+            style={{ display: 'flex', gap: '10px', marginTop: '28px' }}
           >
             <button
               onClick={() => setSelectedCardId(null)}
               style={{
-                padding: isShortScreen ? '8px 18px' : '12px 30px', fontSize: isShortScreen ? '14px' : '18px',
+                padding: '12px 30px', fontSize: '18px',
                 background: 'none', color: '#a09078', border: '1px solid rgba(120, 100, 70, 0.4)',
                 borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
                 textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
@@ -177,7 +170,7 @@ export const UpgradeCardModal: React.FC<UpgradeCardModalProps> = ({ onClose, onU
             <button
               onClick={handleConfirmUpgrade}
               style={{
-                padding: isShortScreen ? '8px 20px' : '12px 40px', fontSize: isShortScreen ? '14px' : '20px', fontWeight: 'bold',
+                padding: '12px 40px', fontSize: '20px', fontWeight: 'bold',
                 background: 'none', color: '#66cc88',
                 border: '1px solid rgba(60, 180, 100, 0.4)',
                 borderRadius: '6px', cursor: 'pointer',

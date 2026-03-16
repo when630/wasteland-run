@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useRunStore } from '../../store/useRunStore';
 import { useDeckStore } from '../../store/useDeckStore';
 import { useAudioStore } from '../../store/useAudioStore';
-import { useResponsive } from '../../hooks/useResponsive';
 import { SettingsModal } from './SettingsModal';
 import { DebugMenu } from './DebugMenu';
 import { RelicBar } from './RelicBar';
@@ -24,16 +23,15 @@ export const HUD: React.FC = () => {
   };
   const { currentFloor } = useMapStore();
   const { drawPile, hand, discardPile, exhaustPile, setViewingPile } = useDeckStore();
-  const { isMobile } = useResponsive();
   const isMap = currentScene === 'MAP';
   const totalFloor = (currentChapter - 1) * 15 + currentFloor;
 
-  const iconSize = isMobile ? 20 : 26;
+  const iconSize = 26;
   const iconStyle: React.CSSProperties = {
     cursor: 'pointer',
     userSelect: 'none',
-    fontSize: isMobile ? '18px' : '24px',
-    marginRight: isMobile ? '8px' : '15px',
+    fontSize: '24px',
+    marginRight: '15px',
     textShadow: '2px 2px 2px black',
     transition: 'transform 0.2s'
   };
@@ -56,11 +54,11 @@ export const HUD: React.FC = () => {
         zIndex: 10
       }}>
         {/* 좌측 정보 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '20px', fontSize: isMobile ? '14px' : '18px', fontWeight: 'bold', textShadow: '2px 2px 2px black' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', fontSize: '18px', fontWeight: 'bold', textShadow: '2px 2px 2px black' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#8bb8f0' }}>
-            <span style={{ fontSize: isMobile ? '13px' : '16px' }}>{totalFloor}F</span>
+            <span style={{ fontSize: '16px' }}>{totalFloor}F</span>
           </div>
-          {!isMobile && <div style={{ color: '#aaa', fontSize: '14px' }}>{CHAPTER_NAMES[currentChapter] || `챕터 ${currentChapter}`}</div>}
+          <div style={{ color: '#aaa', fontSize: '14px' }}>{CHAPTER_NAMES[currentChapter] || `챕터 ${currentChapter}`}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: colors.accent.red }}>
             {iconImg(iconHeart)}<span>{playerHp} / {playerMaxHp}</span>
           </div>
@@ -80,7 +78,7 @@ export const HUD: React.FC = () => {
         >
           {iconImg(iconRelicReward)}
           {relics.length > 0 && (
-            <span style={{ fontSize: isMobile ? '13px' : '16px', fontWeight: 'bold', color: '#cc8888' }}>
+            <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#cc8888' }}>
               {relics.length}
             </span>
           )}
@@ -102,7 +100,7 @@ export const HUD: React.FC = () => {
             textShadow: '2px 2px 2px black',
             display: 'flex', alignItems: 'center', gap: '5px',
             transition: 'transform 0.2s',
-            marginRight: isMobile ? '8px' : '15px',
+            marginRight: '15px',
           }}
           onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
           onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
