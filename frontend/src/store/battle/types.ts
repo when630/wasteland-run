@@ -45,6 +45,13 @@ export interface PlayerSlice {
   powerPhysicalScalingActive: boolean;
   powerPhysicalScalingBonus: number;
   bonusApNextTurn: number;
+  // 신규 파워
+  powerFortifyAmount: number;         // 요새화: 매 턴 시작 시 방어도
+  powerRageAmount: number;            // 분노: 물리 피격 시 방어도
+  powerFrenzyAmount: number;          // 광기: HP 50% 이하 시 공격 보너스
+  powerPhoenixAmount: number;         // 불사조: 소멸 시 방어도
+  nextAttackBonus: number;            // 무기 개조: 다음 공격 피해 보너스
+  rampageCounts: Record<string, number>; // 폭주: baseId별 사용 횟수
 
   consumeAp: (amount: number) => boolean;
   addAmmo: (amount: number) => void;
@@ -58,6 +65,13 @@ export interface PlayerSlice {
   setPowerPhysicalScaling: (active: boolean) => void;
   addPhysicalScalingBonus: (amount: number) => void;
   setPlayedUtilityThisTurn: (value: boolean) => void;
+  // 신규 파워 세터
+  setPowerFortify: (amount: number) => void;
+  setPowerRage: (amount: number) => void;
+  setPowerFrenzy: (amount: number) => void;
+  setPowerPhoenix: (amount: number) => void;
+  setNextAttackBonus: (amount: number) => void;
+  addRampageCount: (baseId: string) => void;
 }
 
 export interface EnemySlice {

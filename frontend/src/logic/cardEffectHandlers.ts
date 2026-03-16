@@ -32,6 +32,7 @@ export interface ResolveContext {
   playerMaxHp?: number;
   playerShield?: number;
   rampageCounts?: Record<string, number>; // baseId → 전투 중 사용 횟수
+  nextAttackBonus?: number; // 무기 개조: 다음 공격 보너스 피해
 }
 
 /**
@@ -107,6 +108,10 @@ function resolveDamageEffect(
   // 물리 피해 스케일링 보너스 적용 (청테이프 공학)
   if (damageType === 'PHYSICAL' && ctx.physicalScalingBonus > 0) {
     baseAmount += ctx.physicalScalingBonus;
+  }
+  // 무기 개조 보너스 적용
+  if ((ctx.nextAttackBonus ?? 0) > 0) {
+    baseAmount += ctx.nextAttackBonus!;
   }
 
   // [과충전 코일건] 탄약 소모량 비례

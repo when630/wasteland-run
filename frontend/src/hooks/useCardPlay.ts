@@ -135,6 +135,8 @@ export const useCardPlay = () => {
       playerHp: useRunStore.getState().playerHp,
       playerMaxHp: useRunStore.getState().playerMaxHp,
       playerShield: useBattleStore.getState().playerStatus.shield,
+      rampageCounts: useBattleStore.getState().rampageCounts,
+      nextAttackBonus: useBattleStore.getState().nextAttackBonus,
     });
 
     let hasDamage = false;
@@ -252,6 +254,16 @@ export const useCardPlay = () => {
       if (card.type === 'PHYSICAL_ATTACK') {
         useBattleStore.getState().addPhysicalScalingBonus(2);
       }
+    }
+
+    // 폭주(Rampage) 사용 횟수 증가
+    if (card.effects.some(e => e.condition?.startsWith('RAMPAGE_'))) {
+      useBattleStore.getState().addRampageCount(card.baseId);
+    }
+
+    // nextAttackBonus 소비 (무기 개조)
+    if (battleState.nextAttackBonus > 0 && (card.type === 'PHYSICAL_ATTACK' || card.type === 'SPECIAL_ATTACK')) {
+      useBattleStore.getState().setNextAttackBonus(0);
     }
 
     // 유물: [고철 부품 팔찌]
@@ -381,5 +393,49 @@ function executeBuff(condition: string, setToastMessage: (msg: string) => void) 
     useBattleStore.getState().setPowerDefenseAmmo50(true);
   } else if (condition.startsWith('POWER_PHYSICAL_SCALING_')) {
     useBattleStore.getState().setPowerPhysicalScaling(true);
+  } else if (condition.startsWith('POWER_FORTIFY_')) {
+    const amount = parseInt(condition.split('_')[2], 10) || 4;
+    useBattleStore.getState().setPowerFortify(amount);
+  } else if (condition.startsWith('POWER_RAGE_')) {
+    const amount = parseInt(condition.split('_')[2], 10) || 3;
+    useBattleStore.getState().setPowerRage(amount);
+  } else if (condition.startsWith('POWER_FRENZY_')) {
+    const amount = parseInt(condition.split('_')[2], 10) || 5;
+    useBattleStore.getState().setPowerFrenzy(amount);
+  } else if (condition.startsWith('POWER_PHOENIX_')) {
+    const amount = parseInt(condition.split('_')[2], 10) || 5;
+    useBattleStore.getState().setPowerPhoenix(amount);
+  } else if (condition === 'PURIFY_ALL') {
+    // 모든 상태이상 카드 제거
+    const deckState = useDeckStore.getState();
+    const isStatusCard = (c: { type: string }) => c.type === 'STATUS_BURN' || c.type === 'STATUS_RADIATION';
+    const statusCount = [...deckState.drawPile.filter(isStatusCard), ...deckState.discardPile.filter(isStatusCard)].length;
+    useDeckStore.setState((s) => ({
+      drawPile: s.drawPile.filter(c => !isStatusCard(c)),
+      discardPile: s.discardPile.filter(c => !isStatusCard(c)),
+    }));
+    setToastMessage(statusCount > 0 ? `상태이상 카드 ${statusCount}장 전부 정화!` : '정화할 디버프가 없습니다.');
+  } else if (condition.startsWith('EXHAUST_FROM_HAND_FOR_AP_')) {
+    // 손패에서 카드 1장 소멸 → AP 획득 (추후 카드 선택 UI 연결 필요, 현재 랜덤)
+    const apAmount = parseInt(condition.split('_')[5], 10) || 2;
+    const handCards = useDeckStore.getState().hand;
+    if (handCards.length > 1) {
+      const idx = useRngStore.getState().battleRng.nextInt(handCards.length - 1) + 1; // 자기 자신(0) 제외
+      const exhausted = handCards[idx];
+      useDeckStore.getState().exhaustCardFromHand(exhausted.id);
+      useBattleStore.getState().consumeAp(-apAmount);
+      setToastMessage(`[${exhausted.name}] 소멸 → ${apAmount} AP 획득!`);
+    }
+  } else if (condition.startsWith('EXHAUST_FROM_HAND_FOR_DAMAGE_')) {
+    // 손패에서 카드 1장 소멸 → 다음 공격 버프
+    const dmgBonus = parseInt(condition.split('_')[5], 10) || 10;
+    const handCards = useDeckStore.getState().hand;
+    if (handCards.length > 1) {
+      const idx = useRngStore.getState().battleRng.nextInt(handCards.length - 1) + 1;
+      const exhausted = handCards[idx];
+      useDeckStore.getState().exhaustCardFromHand(exhausted.id);
+      useBattleStore.getState().setNextAttackBonus(dmgBonus);
+      setToastMessage(`[${exhausted.name}] 소멸 → 다음 공격 +${dmgBonus}!`);
+    }
   }
 }

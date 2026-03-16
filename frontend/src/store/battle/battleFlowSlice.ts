@@ -43,6 +43,12 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
       powerPhysicalScalingBonus: 0,
       bonusApNextTurn: 0,
       playerDebuffs: {},
+      powerFortifyAmount: 0,
+      powerRageAmount: 0,
+      powerFrenzyAmount: 0,
+      powerPhoenixAmount: 0,
+      nextAttackBonus: 0,
+      rampageCounts: {},
     });
   },
 
@@ -61,11 +67,14 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
         if (val > 1) nextDebuffs[key] = val - 1;
       });
 
+      // 요새화 파워: 매 턴 시작 시 물리 방어도 자동 획득
+      const fortifyShield = state.powerFortifyAmount;
+
       return {
         currentTurn: 'PLAYER',
         playerActionPoints: startingAp,
         turnCount: state.turnCount + 1,
-        playerStatus: { ...DEFAULT_PLAYER_STATUS },
+        playerStatus: { ...DEFAULT_PLAYER_STATUS, shield: fortifyShield },
         targetingCardId: null,
         targetingPosition: null,
         dragPreviewCardId: null,

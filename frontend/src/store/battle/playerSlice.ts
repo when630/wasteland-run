@@ -15,6 +15,12 @@ export const createPlayerSlice: StateCreator<BattleState, [], [], PlayerSlice> =
   powerPhysicalScalingActive: false,
   powerPhysicalScalingBonus: 0,
   bonusApNextTurn: 0,
+  powerFortifyAmount: 0,
+  powerRageAmount: 0,
+  powerFrenzyAmount: 0,
+  powerPhoenixAmount: 0,
+  nextAttackBonus: 0,
+  rampageCounts: {},
 
   consumeAp: (amount: number) => {
     const { playerActionPoints } = get();
@@ -57,4 +63,12 @@ export const createPlayerSlice: StateCreator<BattleState, [], [], PlayerSlice> =
     powerPhysicalScalingBonus: state.powerPhysicalScalingBonus + amount
   })),
   setPlayedUtilityThisTurn: (value: boolean) => set({ hasPlayedUtilityThisTurn: value }),
+  setPowerFortify: (amount) => set({ powerFortifyAmount: amount }),
+  setPowerRage: (amount) => set({ powerRageAmount: amount }),
+  setPowerFrenzy: (amount) => set({ powerFrenzyAmount: amount }),
+  setPowerPhoenix: (amount) => set({ powerPhoenixAmount: amount }),
+  setNextAttackBonus: (amount) => set({ nextAttackBonus: amount }),
+  addRampageCount: (baseId) => set((state) => ({
+    rampageCounts: { ...state.rampageCounts, [baseId]: (state.rampageCounts[baseId] ?? 0) + 1 }
+  })),
 });

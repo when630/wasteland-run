@@ -30,6 +30,7 @@ interface DeckState {
   discardHandWithRetain: (retainCount: number) => void;
   setViewingPile: (pile: PileType) => void;
   addCardToDiscardPile: (cardBlueprint: Omit<Card, 'id'>) => void; // 🌟 몹의 패턴 등에 의해 강제로 카드를 욱여넣을 때 사용
+  exhaustCardFromHand: (cardId: string) => void; // 손패에서 특정 카드를 소멸 파일로 이동
 }
 
 export const useDeckStore = create<DeckState>((set) => ({
@@ -237,5 +238,17 @@ export const useDeckStore = create<DeckState>((set) => ({
       id: `${cardBlueprint.type}-${Date.now()}-${crypto.randomUUID()}`
     };
     return { discardPile: [...state.discardPile, newCard] };
+  }),
+
+  exhaustCardFromHand: (cardId: string) => set((state) => {
+    const cardIndex = state.hand.findIndex(c => c.id === cardId);
+    if (cardIndex === -1) return state;
+    const card = state.hand[cardIndex];
+    const newHand = [...state.hand];
+    newHand.splice(cardIndex, 1);
+    return {
+      hand: newHand,
+      exhaustPile: [...state.exhaustPile, card],
+    };
   }),
 }));
