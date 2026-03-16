@@ -2,7 +2,8 @@ import type { StateCreator } from 'zustand';
 import type { BattleState, BattleFlowSlice } from './types';
 import { DEFAULT_PLAYER_STATUS } from './types';
 import { useRunStore } from '../useRunStore';
-import { onBattleReset } from '../../logic/relicEffects';
+import { onBattleReset, onTurnStart } from '../../logic/relicEffects';
+import { useDeckStore } from '../useDeckStore';
 import { resetVfx } from '../../components/pixi/vfx/vfxDispatcher';
 
 let damageNumberCounter = 0;
@@ -64,6 +65,42 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
 
       // 요새화 파워: 매 턴 시작 시 물리 방어도 자동 획득
       const fortifyShield = state.powerFortifyAmount;
+
+      // 유물: 턴 시작 효과
+      const relics = useRunStore.getState().relics;
+      const turnEffects = onTurnStart(relics, state.turnCount + 1, useRunStore.getState().playerHp, useRunStore.getState().playerMaxHp);
+
+      // 자동 장전기: 탄약 0일 때만
+      let turnAmmo = turnEffects.ammo;
+      if (relics.includes('auto_loader') && state.playerAmmo === 0) {
+        turnAmmo += 1;
+      }
+      // 모래시계: 매 3턴 AP +1
+      if (relics.includes('hourglass') && (state.turnCount + 1) % 3 === 0) {
+        startingAp += 1;
+      }
+      // 아드레날린 자해
+      if (turnEffects.selfDamage > 0) {
+        useRunStore.getState().damagePlayer(turnEffects.selfDamage);
+      }
+      // 돌연변이 발톱: 랜덤 적 피해 (set 후 처리 필요 — 별도 디스패치)
+      // 추가 드로우: drawCards는 set 후 호출
+      const turnExtraDraw = turnEffects.extraDraw;
+
+      // 턴 시작 드로우 예약 (set 이후 setTimeout으로 처리)
+      if (turnExtraDraw > 0 || turnAmmo > 0 || turnEffects.randomEnemyDamage > 0) {
+        setTimeout(() => {
+          if (turnExtraDraw > 0) useDeckStore.getState().drawCards(turnExtraDraw);
+          if (turnAmmo > 0) get().addAmmo(turnAmmo);
+          if (turnEffects.randomEnemyDamage > 0) {
+            const livingEnemies = get().enemies.filter(e => e.currentHp > 0);
+            if (livingEnemies.length > 0) {
+              const targetIdx = Math.floor(Math.random() * livingEnemies.length);
+              get().applyDamageToEnemy(livingEnemies[targetIdx].id, turnEffects.randomEnemyDamage, 'PHYSICAL');
+            }
+          }
+        }, 100);
+      }
 
       return {
         currentTurn: 'PLAYER',

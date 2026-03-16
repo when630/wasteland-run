@@ -238,6 +238,19 @@ export const useCardPlay = () => {
     const relicBonus = onCardPlayed(relics, card);
     if (relicBonus.bonusShield > 0) addPlayerShield(relicBonus.bonusShield);
     if (relicBonus.bonusResist > 0) addPlayerResist(relicBonus.bonusResist);
+    // [가시 어깨받이] 물리 방어 카드 사용 시 랜덤 적에게 피해
+    if (relicBonus.spikedDamage > 0) {
+      const livingEnemies = enemies.filter(e => e.currentHp > 0);
+      if (livingEnemies.length > 0) {
+        const target = livingEnemies[Math.floor(useRngStore.getState().battleRng.next() * livingEnemies.length)];
+        applyDamageToEnemy(target.id, relicBonus.spikedDamage, 'PHYSICAL');
+        setToastMessage(`가시 어깨받이 발동! ${target.name}에게 ${relicBonus.spikedDamage} 피해!`);
+      }
+    }
+    // [재생 연고] 특수 방어 카드 사용 시 힐
+    if (relicBonus.healAmount > 0) {
+      useRunStore.getState().healPlayer(relicBonus.healAmount);
+    }
 
     // 지속 효과(Power) 후처리
     const battleState = useBattleStore.getState();

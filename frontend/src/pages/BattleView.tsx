@@ -15,7 +15,7 @@ import { useBattleStore } from '../store/useBattleStore';
 import { createStartingDeck, STATUS_CARDS } from '../assets/data/cards';
 import { createEnemy, getEnemyIdsByTier } from '../assets/data/enemies';
 import { useRunStore } from '../store/useRunStore';
-import { onBattleStart } from '../logic/relicEffects';
+import { onBattleStart, onBattleEnd } from '../logic/relicEffects';
 import { useRngStore } from '../store/useRngStore';
 import { enemyPos } from '../components/pixi/vfx/battleLayout';
 import battleBg1 from '../assets/images/backgrounds/stage1_battle_backgroung.webp';
@@ -171,6 +171,18 @@ export const BattleView: React.FC = () => {
       setPreviewTargetEnemy(null);
     };
   }, [isPreviewActive, setPreviewTargetEnemy]);
+
+  // 전투 종료 시 유물 효과 (인식표 등)
+  useEffect(() => {
+    if (battleResult === 'VICTORY') {
+      const endEffects = onBattleEnd(useRunStore.getState().relics);
+      if (endEffects.healAmount > 0) {
+        useRunStore.getState().healPlayer(endEffects.healAmount);
+        useRunStore.getState().setToastMessage(`생존자의 인식표 — 체력 ${endEffects.healAmount} 회복!`);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [battleResult]);
 
   const handleVictoryContinue = async () => {
     if (currentScene === 'DEBUG_BATTLE') {
