@@ -105,14 +105,14 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
 
           Promise.all([
             import('../useMapStore'),
-            import('../../api/auth')
-          ]).then(([{ useMapStore }, { authApi }]) => {
+            import('../../api/platform')
+          ]).then(([{ useMapStore }, { platformSubmitLeaderboard }]) => {
             const submitData = {
               score: finalScore,
               clearLayer: useMapStore.getState().currentFloor,
               playTimeSeconds
             };
-            authApi.post('/leaderboard', submitData).catch(err => {
+            platformSubmitLeaderboard(submitData).catch(err => {
               console.error("리더보드 점수 등록 실패", err);
             });
           });

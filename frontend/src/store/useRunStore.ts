@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { authApi } from '../api/auth';
+import { platformSaveRun, platformLoadRun, platformSubmitStats } from '../api/platform';
 
 interface RunState {
   playerHp: number;
@@ -125,7 +125,7 @@ export const useRunStore = create<RunState>((set) => ({
         relicUsageMap[relic] = (relicUsageMap[relic] || 0) + 1;
       });
 
-      await authApi.post('/stats/submit', {
+      await platformSubmitStats({
         enemiesKilled: currentState.enemiesKilled,
         damageDealt: currentState.totalDamageDealt,
         damageTaken: currentState.totalDamageTaken,
@@ -142,7 +142,6 @@ export const useRunStore = create<RunState>((set) => ({
   },
 
   saveRunData: async () => {
-    if (!localStorage.getItem('token')) return;
     try {
       // 덱과 유물 정보 등은 다른 store에서 가져와야 하므로 getState()를 통해 동적으로 취합
       const { useDeckStore } = await import('./useDeckStore');
@@ -160,7 +159,7 @@ export const useRunStore = create<RunState>((set) => ({
         mapChapter: mapState.mapChapter
       });
 
-      await authApi.post('/run', {
+      await platformSaveRun({
         currentHp: currentState.playerHp,
         maxHp: currentState.playerMaxHp,
         currentLayer: currentLayer,
@@ -186,13 +185,8 @@ export const useRunStore = create<RunState>((set) => ({
   },
 
   loadRunData: async () => {
-    // 토큰 없으면 요청 자체를 하지 않음
-    if (!localStorage.getItem('token')) {
-      set({ currentScene: 'MAIN_MENU', isActive: false, enemiesKilled: 0, cardsPlayed: 0, totalDamageDealt: 0, totalDamageTaken: 0, totalGoldEarned: 0 });
-      return;
-    }
     try {
-      const { data } = await authApi.get('/run');
+      const data = await platformLoadRun();
       if (data && data.isActive) {
         set({
           playerHp: data.currentHp,

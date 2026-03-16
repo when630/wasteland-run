@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { authApi } from '../../api/auth';
+import { platformLoadStats } from '../../api/platform';
 import { iconClose } from '../../assets/images/GUI';
 import { useResponsive } from '../../hooks/useResponsive';
 
@@ -30,8 +30,8 @@ export const StatisticsModal: React.FC<StatisticsModalProps> = ({ onClose }) => 
   const isShortScreen = height < 500;
 
   useEffect(() => {
-    authApi.get('/stats')
-      .then(res => setStats(res.data))
+    platformLoadStats()
+      .then(data => setStats(data as UserStatsData))
       .catch(() => setError('통계 데이터를 불러올 수 없습니다.'))
       .finally(() => setLoading(false));
   }, []);

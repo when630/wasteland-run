@@ -1,0 +1,28 @@
+appId: com.wasteland.run
+productName: Wasteland Run
+directories:
+  buildResources: resources
+  output: release
+files:
+  - out/**/*
+  - "!node_modules"
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: resources/icon.ico
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
+  icon: resources/icon.png
+  category: Game
+mac:
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+  icon: resources/icon.icns
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false

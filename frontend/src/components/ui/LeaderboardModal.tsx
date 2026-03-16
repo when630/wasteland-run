@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { authApi } from '../../api/auth';
+import { platformLoadLeaderboard } from '../../api/platform';
 import { iconClose } from '../../assets/images/GUI';
 import { useResponsive } from '../../hooks/useResponsive';
 
@@ -24,8 +24,10 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({ onClose }) =
     const abortController = new AbortController();
     const fetchLeaderboard = async () => {
       try {
-        const res = await authApi.get('/leaderboard', { signal: abortController.signal });
-        setLeaders(res.data);
+        const data = await platformLoadLeaderboard();
+        if (!abortController.signal.aborted) {
+          setLeaders(data as LeaderboardItem[]);
+        }
       } catch (err) {
         if (!abortController.signal.aborted) {
           console.error('리더보드 로드 실패', err);
