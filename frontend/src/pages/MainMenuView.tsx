@@ -176,22 +176,25 @@ export const MainMenuView: React.FC = () => {
           ▶ 설정
         </button>
 
-        <div style={{ marginTop: '20px', borderTop: '1px solid #333', paddingTop: '20px' }}>
-          <button
-            style={{ ...buttonStyle('debug'), fontSize: isMobile ? '14px' : '18px', color: isHovered === 'debug' ? '#ff0' : '#665' }}
-            onMouseEnter={() => setIsHovered('debug')}
-            onMouseLeave={() => setIsHovered(null)}
-            onClick={() => {
-              useAudioStore.getState().playClick();
-              const seed = 'debug_' + Date.now();
-              useRngStore.getState().initialize(seed);
-              useRunStore.setState({ playerHp: 9999, playerMaxHp: 9999, isActive: false });
-              setScene('DEBUG_BATTLE');
-            }}
-          >
-            ▶ 디버그 테스트
-          </button>
-        </div>
+        {/* 디버그 테스트 (개발 모드에서만 표시) */}
+        {import.meta.env.DEV && (
+          <div style={{ marginTop: '20px', borderTop: '1px solid #333', paddingTop: '20px' }}>
+            <button
+              style={{ ...buttonStyle('debug'), fontSize: isMobile ? '14px' : '18px', color: isHovered === 'debug' ? '#ff0' : '#665' }}
+              onMouseEnter={() => setIsHovered('debug')}
+              onMouseLeave={() => setIsHovered(null)}
+              onClick={() => {
+                useAudioStore.getState().playClick();
+                const seed = 'debug_' + Date.now();
+                useRngStore.getState().initialize(seed);
+                useRunStore.setState({ playerHp: 9999, playerMaxHp: 9999, isActive: false });
+                setScene('DEBUG_BATTLE');
+              }}
+            >
+              ▶ 디버그 테스트
+            </button>
+          </div>
+        )}
 
       </div>
 

@@ -1,5 +1,14 @@
 import { create } from 'zustand';
 
+// 설정 로컬 저장 (디바운스)
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
+function saveSettingsDebounced(bgmVolume: number, sfxVolume: number) {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    window.electronAPI?.saveSettings({ bgmVolume, sfxVolume });
+  }, 500);
+}
+
 // BGM 목록 (파일이 없으면 404 에러 로그만 남고 게임은 정상 진행됨)
 const BGM_TRACKS = {
   MAIN: '/assets/sounds/bgm_main.mp3',
@@ -65,13 +74,17 @@ export const useAudioStore = create<AudioState>((set, get) => ({
 
   setBgmVolume: (vol: number) => {
     set({ bgmVolume: vol });
-    const { currentBgmAudio } = get();
+    const { currentBgmAudio, sfxVolume } = get();
     if (currentBgmAudio) {
       currentBgmAudio.volume = vol;
     }
+    saveSettingsDebounced(vol, sfxVolume);
   },
 
-  setSfxVolume: (vol: number) => set({ sfxVolume: vol }),
+  setSfxVolume: (vol: number) => {
+    set({ sfxVolume: vol });
+    saveSettingsDebounced(get().bgmVolume, vol);
+  },
 
   playBgm: (track) => {
     // 사용자 상호작용 전이면 대기열에 저장

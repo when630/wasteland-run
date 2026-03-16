@@ -6,9 +6,10 @@ import { ShopView } from './pages/ShopView';
 import { StartingEventView } from './pages/StartingEventView';
 import { useRunStore } from './store/useRunStore';
 import { ToastMessage } from './components/ui/ToastMessage';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { MainMenuView } from './pages/MainMenuView';
 import { LeaderboardModal } from './components/ui/LeaderboardModal';
+import { SettingsModal } from './components/ui/SettingsModal';
 
 import { useAudioStore } from './store/useAudioStore';
 import { HUD } from './components/ui/HUD';
@@ -21,7 +22,7 @@ function SceneManager() {
     const audioStore = useAudioStore.getState();
     switch (currentScene) {
       case 'MAIN_MENU':
-        audioStore.playBgm('MAP'); // 임시로 MAP bgm 사용. 나중에 TITLE 추가 시 변경
+        audioStore.playBgm('MAP');
         break;
       case 'MAP':
       case 'REST':
@@ -79,16 +80,39 @@ function SceneManager() {
 }
 
 function App() {
-  const { loadRunData, isLeaderboardOpen, setIsLeaderboardOpen } = useRunStore();
+  const { loadRunData, isLeaderboardOpen, setIsLeaderboardOpen, currentScene } = useRunStore();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  // 앱 시작 시 세이브 데이터 + 저장된 설정 로드
   useEffect(() => {
     loadRunData();
+    // 저장된 오디오 설정 복원
+    window.electronAPI?.loadSettings().then((data: any) => {
+      if (data) {
+        if (typeof data.bgmVolume === 'number') useAudioStore.getState().setBgmVolume(data.bgmVolume);
+        if (typeof data.sfxVolume === 'number') useAudioStore.getState().setSfxVolume(data.sfxVolume);
+      }
+    });
   }, [loadRunData]);
+
+  // ESC 키 → 설정 모달 토글
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsSettingsOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const showQuitButton = currentScene !== 'MAIN_MENU' && currentScene !== 'DEBUG_BATTLE';
 
   return (
     <>
       <ToastMessage />
       {isLeaderboardOpen && <LeaderboardModal onClose={() => setIsLeaderboardOpen(false)} />}
+      {isSettingsOpen && <SettingsModal onClose={() => setIsSettingsOpen(false)} showQuitButton={showQuitButton} />}
       <SceneManager />
     </>
   );

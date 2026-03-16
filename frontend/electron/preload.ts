@@ -6,6 +6,8 @@ const electronAPI = {
   deleteRun: () => ipcRenderer.invoke('delete-run'),
   saveStats: (data: unknown) => ipcRenderer.invoke('save-stats', data),
   loadStats: () => ipcRenderer.invoke('load-stats'),
+  saveSettings: (data: unknown) => ipcRenderer.invoke('save-settings', data),
+  loadSettings: () => ipcRenderer.invoke('load-settings'),
   toggleFullscreen: () => ipcRenderer.invoke('toggle-fullscreen'),
   platform: 'electron' as const,
 };

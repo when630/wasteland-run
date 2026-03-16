@@ -6,6 +6,8 @@ export interface ElectronAPI {
   deleteRun: () => Promise<{ success: boolean }>;
   saveStats: (data: unknown) => Promise<{ success: boolean }>;
   loadStats: () => Promise<unknown | null>;
+  saveSettings: (data: unknown) => Promise<{ success: boolean }>;
+  loadSettings: () => Promise<unknown | null>;
   toggleFullscreen: () => Promise<boolean>;
   platform: 'electron';
 }

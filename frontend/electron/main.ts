@@ -77,6 +77,15 @@ ipcMain.handle('load-stats', () => {
   return loadJson('stats');
 });
 
+ipcMain.handle('save-settings', (_event, data: unknown) => {
+  saveJson('settings', data);
+  return { success: true };
+});
+
+ipcMain.handle('load-settings', () => {
+  return loadJson('settings');
+});
+
 ipcMain.handle('toggle-fullscreen', () => {
   if (mainWindow) {
     mainWindow.setFullScreen(!mainWindow.isFullScreen());

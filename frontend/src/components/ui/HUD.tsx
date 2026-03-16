@@ -111,8 +111,8 @@ export const HUD: React.FC = () => {
           {iconImg(iconCardCount)} <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{drawPile.length + hand.length + discardPile.length + exhaustPile.length}</span>
         </div>
 
-        {/* 디버그 메뉴 */}
-        <DebugMenu />
+        {/* 디버그 메뉴 (개발 모드에서만 표시) */}
+        {import.meta.env.DEV && <DebugMenu />}
 
         {/* 환경 설정 */}
         <div onClick={() => { useAudioStore.getState().playClick(); setIsSettingsOpen(true); }}
