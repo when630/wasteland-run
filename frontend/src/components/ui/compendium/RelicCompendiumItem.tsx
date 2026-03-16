@@ -34,7 +34,10 @@ export const RelicCompendiumItem: React.FC<Props> = ({ relic }) => {
       onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
       onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
     >
-      <img src={relic.image} alt={relic.name} style={{ width: imgSize, height: imgSize, objectFit: 'contain', filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.2))' }} />
+      {relic.image
+        ? <img src={relic.image} alt={relic.name} style={{ width: imgSize, height: imgSize, objectFit: 'contain', filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.2))' }} />
+        : <span style={{ fontSize: `${parseInt(imgSize) * 0.7}px`, lineHeight: imgSize, display: 'block', width: imgSize, height: imgSize, textAlign: 'center' }}>{relic.icon || '❓'}</span>
+      }
       <div>
         <h4 style={{ margin: '0 0 3px 0', fontSize: isShortScreen ? '13px' : isMobile ? '15px' : '18px', color: tierColor }}>{relic.name}</h4>
         <span style={{ fontSize: isShortScreen ? '10px' : '12px', color: '#6b7280' }}>[{relic.tier}]</span>
