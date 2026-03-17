@@ -242,7 +242,6 @@ export const BattleStage: React.FC = () => {
       width={screenWidth}
       height={screenHeight}
       options={{ backgroundAlpha: 0 }}
-      onMount={app => { app.ticker.maxFPS = 60; }}
     >
       <Container
         scale={scale}
