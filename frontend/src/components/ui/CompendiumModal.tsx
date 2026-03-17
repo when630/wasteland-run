@@ -101,8 +101,12 @@ export const CompendiumModal: React.FC<CompendiumModalProps> = ({ onClose }) => 
       chapterMap.get(ch)!.push(id);
     }
     const sortedChapters = [...chapterMap.keys()].sort((a, b) => a - b);
+    const tierOrder: Record<string, number> = { NORMAL: 0, ELITE: 1, BOSS: 2 };
     for (const ch of sortedChapters) {
-      groups.push({ chapter: ch, ids: chapterMap.get(ch)! });
+      const sorted = chapterMap.get(ch)!.sort((a, b) =>
+        (tierOrder[BASE_ENEMIES[a].tier] ?? 9) - (tierOrder[BASE_ENEMIES[b].tier] ?? 9)
+      );
+      groups.push({ chapter: ch, ids: sorted });
     }
     return groups;
   }, [enemyFilter]);
