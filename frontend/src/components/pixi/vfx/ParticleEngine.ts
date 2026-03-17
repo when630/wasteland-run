@@ -8,7 +8,7 @@ import type { VfxProfile } from './types';
 
 const POOL_SIZE = 150;
 /** 전체 파티클/이펙트 시각 배율 — 1.0이 기본, 높을수록 크고 굵게 */
-const VFX_SCALE = 1.8;
+const VFX_SCALE = 2.0;
 
 export class ParticleEngine {
   private particles: Particle[];
@@ -312,55 +312,31 @@ export class ParticleEngine {
   // === 새 카테고리 스폰 메서드 ===
 
   spawnBladeSlash(x: number, y: number, profile: VfxProfile) {
-    // 대각선 슬래시 아크 — 빠른 백색 선 2~3줄
-    const slashCount = 2 + Math.floor(Math.random() * 2); // 2~3
-    for (let i = 0; i < slashCount; i++) {
-      const p = this.acquire();
-      if (!p) break;
-      const baseAngle = (-120 + i * 35 + Math.random() * 20) * Math.PI / 180;
+    // 대각선 한 줄 베기 — 적 중심을 가로지르는 단일 슬래시
+    const p = this.acquire();
+    if (p) {
+      const angle = (-135 + Math.random() * 30) * Math.PI / 180;
+      const len = 80;
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
       p.active = true;
-      p.x = x + (Math.random() - 0.5) * 20;
-      p.y = y + (Math.random() - 0.5) * 20;
-      p.vx = Math.cos(baseAngle) * 3;
-      p.vy = Math.sin(baseAngle) * 3;
+      // 슬래시 중점이 적 중심(x,y)에 오도록 시작점 역산
+      p.x = x - cos * len / 2;
+      p.y = y - sin * len / 2;
+      p.vx = 0;
+      p.vy = 0;
       p.life = 0;
-      p.maxLife = 150 + Math.random() * 100;
+      p.maxLife = 450;
       p.size = 2;
       p.color = 0xffffff;
-      p.alpha = 0.95;
-      p.rotation = baseAngle;
+      p.alpha = 1;
+      p.rotation = angle;
       p.rotationSpeed = 0;
-      p.friction = 0.94;
+      p.friction = 1;
       p.gravity = 0;
       p.shape = 'LINE';
-      p.width = 25 + Math.random() * 20;
-      p.height = 2.5;
-    }
-
-    // 미세 파편
-    const debrisCount = 4 + Math.floor(Math.random() * 4);
-    for (let i = 0; i < debrisCount; i++) {
-      const p = this.acquire();
-      if (!p) break;
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 1 + Math.random() * 2.5;
-      p.active = true;
-      p.x = x + (Math.random() - 0.5) * 15;
-      p.y = y + (Math.random() - 0.5) * 15;
-      p.vx = Math.cos(angle) * speed;
-      p.vy = Math.sin(angle) * speed;
-      p.life = 0;
-      p.maxLife = 250 + Math.random() * 200;
-      p.size = 2 + Math.random() * 3;
-      p.color = this.darken(profile.color, 0.6 + Math.random() * 0.4);
-      p.alpha = 0.8;
-      p.rotation = Math.random() * Math.PI * 2;
-      p.rotationSpeed = (Math.random() - 0.5) * 0.15;
-      p.friction = 0.95;
-      p.gravity = 0.08;
-      p.shape = 'RECT';
-      p.width = 2 + Math.random() * 3;
-      p.height = 1 + Math.random() * 2;
+      p.width = len;
+      p.height = 5;
     }
 
     const sp = profile.shakeProfile;
@@ -1174,19 +1150,22 @@ export class ParticleEngine {
           g.closePath();
         }
         g.endFill();
-      } else { // LINE — 뾰족한 테이퍼 형태 (날카로운 시작 → 넓은 끝)
+      } else { // LINE — 뾰족한 테이퍼 형태 (날카로운 시작 → 넓은 끝) + 성장 애니메이션
         const cos = Math.cos(p.rotation);
         const sin = Math.sin(p.rotation);
-        const len = p.width * S;
+        // 처음 35% 동안 길이가 0→100%로 성장 (긋는 느낌)
+        const progress = p.life / p.maxLife;
+        const growFactor = progress < 0.35 ? progress / 0.35 : 1.0;
+        const len = p.width * S * growFactor;
         const half = p.height * S * 0.6;
         const px = -sin * half;
         const py = cos * half;
         const endX = p.x + cos * len;
         const endY = p.y + sin * len;
         g.beginFill(p.color, p.alpha);
-        g.moveTo(p.x, p.y);              // 뾰족한 시작점
-        g.lineTo(endX + px, endY + py);  // 끝 좌
-        g.lineTo(endX - px, endY - py);  // 끝 우
+        g.moveTo(p.x, p.y);              // 시작 (뾰족)
+        g.lineTo(endX + px, endY + py);  // 끝 좌 (넓음)
+        g.lineTo(endX - px, endY - py);  // 끝 우 (넓음)
         g.closePath();
         g.endFill();
       }
