@@ -5,7 +5,7 @@ import type { Enemy } from '../../types/enemyTypes';
 import { DESIGN_WIDTH, DESIGN_HEIGHT, BATTLE_Y_RATIO, enemyPos } from '../pixi/vfx/battleLayout';
 import {
   iconPhysicalDefense, iconSpecialDefense,
-  iconIntentPhysical, iconIntentSpecial,
+  iconIntentPhysical, iconIntentSpecial, iconIntentBuff, iconIntentDebuff, iconIntentDefend, iconIntentUnknown,
   iconBurn, iconVulnerable, iconWeaken, iconPoison,
   iconBuffFreePhysical, iconBuffNoPhysical, iconBuffRetain, iconBuffReflect,
   iconBuffApOnDefend, iconBuffAmmoOnDefend, iconBuffMarkOfFate, iconBuffDefenseAmmo, iconBuffPhysicalScaling,
@@ -211,8 +211,14 @@ const IntentDisplay: React.FC<{ enemy: Enemy; scale: number; masked: boolean }> 
   let intentIcon: string | null = null;
   if (intentType === 'ATTACK') {
     intentIcon = damageType === 'SPECIAL' ? iconIntentSpecial : iconIntentPhysical;
+  } else if (intentType === 'DEFEND') {
+    intentIcon = iconIntentDefend;
   } else if (intentType === 'BUFF') {
-    intentIcon = iconPhysicalDefense;
+    intentIcon = iconIntentBuff;
+  } else if (intentType === 'DEBUFF') {
+    intentIcon = iconIntentDebuff;
+  } else if (intentType === 'UNKNOWN') {
+    intentIcon = iconIntentUnknown;
   }
 
   // 숫자 표시: 유물 마스킹 시 '?', 아니면 amount
