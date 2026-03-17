@@ -28,5 +28,8 @@ logs
 *.sln
 *.sw?
 
+# Claude Code
+.claude/
+
 # OS
 .DS_Store
