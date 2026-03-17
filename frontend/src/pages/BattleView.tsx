@@ -10,6 +10,7 @@ import { GameOverModal } from '../components/ui/GameOverModal';
 import { ChapterTransitionModal } from '../components/ui/ChapterTransitionModal';
 import { StatusOverlay } from '../components/ui/StatusOverlay';
 import { DebugTestPanel } from '../components/ui/DebugTestPanel';
+import { BossRelicPickModal } from '../components/ui/BossRelicPickModal';
 import { useDeckStore } from '../store/useDeckStore';
 import { useBattleStore } from '../store/useBattleStore';
 import { createStartingDeck, STATUS_CARDS } from '../assets/data/cards';
@@ -30,6 +31,7 @@ export const BattleView: React.FC = () => {
   const { setScene, currentScene, currentChapter, relics } = useRunStore();
 
   const [showBossClear, setShowBossClear] = useState(false);
+  const [showBossRelicPick, setShowBossRelicPick] = useState(false);
 
   // 게임(전투 뷰) 진입 시 초기 덱과 몬스터를 세팅
   useEffect(() => {
@@ -224,12 +226,11 @@ export const BattleView: React.FC = () => {
       return;
     }
     if (currentScene === 'BOSS') {
-      const maxChapter = 3; // 현재 최대 챕터
-      if (currentChapter < maxChapter) {
-        // 다음 챕터로 전환
-        setShowBossClear(true);
+      if (currentChapter < 3) {
+        // 1~2막 보스: 유물 선택방 → 챕터 전환
+        setShowBossRelicPick(true);
       } else {
-        // 최종 챕터 클리어
+        // 3막 보스: 게임 클리어
         setShowBossClear(true);
       }
     } else {
@@ -269,8 +270,13 @@ export const BattleView: React.FC = () => {
       {/* 타겟팅 선은 드래그 시에만 Hand.tsx 포탈에서 표시 */}
 
       {/* 승리 보상 패널 */}
-      {battleResult === 'VICTORY' && !showBossClear && (
+      {battleResult === 'VICTORY' && !showBossClear && !showBossRelicPick && (
         <VictoryRewardPanel onContinue={handleVictoryContinue} currentScene={currentScene} />
+      )}
+
+      {/* 보스 유물 선택방 (1~2막) */}
+      {showBossRelicPick && !showBossClear && (
+        <BossRelicPickModal onComplete={() => { setShowBossRelicPick(false); setShowBossClear(true); }} />
       )}
 
       {battleResult === 'DEFEAT' && <GameOverModal result="DEFEAT" />}

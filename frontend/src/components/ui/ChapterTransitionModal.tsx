@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRunStore } from '../../store/useRunStore';
 import { useMapStore } from '../../store/useMapStore';
 
@@ -17,12 +17,27 @@ const CHAPTER_DATA: Record<number, { title: string; subtitle: string; descriptio
   },
 };
 
+type Phase = 'CLEAR' | 'TRANSITION' | 'REVEAL' | 'READY';
+
 export const ChapterTransitionModal: React.FC = () => {
   const { currentChapter, setChapter, setScene, saveRunData } = useRunStore();
   const nextChapter = currentChapter + 1;
   const data = CHAPTER_DATA[nextChapter] || { title: `챕터 ${nextChapter}`, subtitle: '???', description: '미지의 영역으로...', color: '#aaa' };
 
+  const [phase, setPhase] = useState<Phase>('CLEAR');
+  const [fadeOut, setFadeOut] = useState(false);
+
+  // 단계별 자동 진행
+  useEffect(() => {
+    const t1 = setTimeout(() => setPhase('TRANSITION'), 2000);
+    const t2 = setTimeout(() => setPhase('REVEAL'), 3500);
+    const t3 = setTimeout(() => setPhase('READY'), 5500);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []);
+
   const handleProceed = async () => {
+    setFadeOut(true);
+    await new Promise(r => setTimeout(r, 600));
     setChapter(nextChapter);
     useMapStore.setState({ currentFloor: 1, nodes: [], currentNodeId: null, visitedNodeIds: [], pendingNodeId: null, mapChapter: nextChapter });
     setScene('MAP');
@@ -32,55 +47,97 @@ export const ChapterTransitionModal: React.FC = () => {
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.95)', zIndex: 999,
+      backgroundColor: '#000', zIndex: 999,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      animation: 'fadeIn 1.5s ease-in-out', color: '#fff'
+      color: '#fff',
+      opacity: fadeOut ? 0 : 1,
+      transition: 'opacity 0.6s ease-out',
     }}>
+      {/* Phase 1: 클리어 메시지 */}
       <div style={{
-        fontSize: '36px', color: '#fbbf24', fontWeight: 'bold',
-        marginBottom: '10px',
-        textShadow: '0 0 20px rgba(251, 191, 36, 0.5)'
+        opacity: phase === 'CLEAR' ? 1 : 0,
+        transform: phase === 'CLEAR' ? 'scale(1)' : 'scale(0.9)',
+        transition: 'opacity 1s ease-out, transform 1s ease-out',
+        position: 'absolute',
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
       }}>
-        챕터 {currentChapter} 클리어!
+        <div style={{
+          fontSize: '48px', color: '#fbbf24', fontWeight: 'bold',
+          textShadow: '0 0 30px rgba(251, 191, 36, 0.6)',
+          animation: 'fadeIn 1s ease-out',
+        }}>
+          챕터 {currentChapter} 클리어!
+        </div>
+        <div style={{
+          width: '300px', height: '2px', marginTop: '16px',
+          background: 'linear-gradient(to right, transparent, rgba(251, 191, 36, 0.5), transparent)',
+        }} />
       </div>
 
-      <div style={{ width: '300px', height: '2px', background: 'linear-gradient(to right, transparent, #555, transparent)', margin: '20px 0' }} />
-
+      {/* Phase 2: 전환 연출 (암전 후 새 챕터) */}
       <div style={{
-        fontSize: '20px', color: '#9ca3af',
-        letterSpacing: '5px', marginBottom: '8px'
+        opacity: phase === 'TRANSITION' ? 1 : 0,
+        transition: 'opacity 1.2s ease-in-out',
+        position: 'absolute',
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
       }}>
-        {data.title}
+        <div style={{
+          fontSize: '18px', color: '#666',
+          letterSpacing: '8px',
+        }}>
+          · · ·
+        </div>
       </div>
-      <div style={{
-        fontSize: '48px', color: data.color, fontWeight: 'bold',
-        marginBottom: '20px',
-        textShadow: `0 0 25px ${data.color}50`, letterSpacing: '3px'
-      }}>
-        {data.subtitle}
-      </div>
-      <p style={{
-        fontSize: '18px', color: '#d1d5db', textAlign: 'center', lineHeight: '1.8',
-        maxWidth: '500px', marginBottom: '40px', whiteSpace: 'pre-line'
-      }}>
-        {data.description}
-      </p>
 
-      <button
-        onClick={handleProceed}
-        style={{
-          padding: '18px 60px',
-          fontSize: '22px', fontWeight: 'bold',
-          background: 'none', color: data.color,
-          border: `1px solid ${data.color}60`, borderRadius: '6px', cursor: 'pointer',
-          textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
-          transition: 'all 0.2s'
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${data.color}99`; }}
-        onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${data.color}60`; }}
-      >
-        다음 구역으로 진입
-      </button>
+      {/* Phase 3-4: 새 챕터 정보 */}
+      <div style={{
+        opacity: (phase === 'REVEAL' || phase === 'READY') ? 1 : 0,
+        transform: (phase === 'REVEAL' || phase === 'READY') ? 'translateY(0)' : 'translateY(20px)',
+        transition: 'opacity 1.2s ease-out, transform 1.2s ease-out',
+        position: 'absolute',
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+      }}>
+        <div style={{
+          fontSize: '18px', color: '#9ca3af',
+          letterSpacing: '6px', marginBottom: '8px',
+        }}>
+          {data.title}
+        </div>
+        <div style={{
+          fontSize: '52px', color: data.color, fontWeight: 'bold',
+          marginBottom: '20px',
+          textShadow: `0 0 30px ${data.color}60`,
+          letterSpacing: '4px',
+        }}>
+          {data.subtitle}
+        </div>
+        <p style={{
+          fontSize: '16px', color: '#d1d5db', textAlign: 'center', lineHeight: '1.8',
+          maxWidth: '500px', marginBottom: '40px', whiteSpace: 'pre-line',
+          opacity: phase === 'READY' ? 1 : 0.6,
+          transition: 'opacity 0.8s ease-out',
+        }}>
+          {data.description}
+        </p>
+
+        {phase === 'READY' && (
+          <button
+            onClick={handleProceed}
+            style={{
+              padding: '16px 56px',
+              fontSize: '20px', fontWeight: 'bold',
+              background: 'none', color: data.color,
+              border: `1px solid ${data.color}60`, borderRadius: '6px', cursor: 'pointer',
+              transition: 'all 0.2s',
+              animation: 'fadeIn 0.8s ease-out',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${data.color}99`; e.currentTarget.style.transform = 'scale(1.05)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${data.color}60`; e.currentTarget.style.transform = 'scale(1)'; }}
+          >
+            다음 구역으로 진입
+          </button>
+        )}
+      </div>
     </div>
   );
 };

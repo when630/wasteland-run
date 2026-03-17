@@ -6,6 +6,7 @@ import { useRngStore } from '../../store/useRngStore';
 import { iconGold, iconGoldReward, iconCardCount, iconRelicReward, iconBossClear } from '../../assets/images/GUI';
 import type { Card } from '../../types/gameTypes';
 import { ALL_CARDS } from '../../assets/data/cards';
+import { useDeckStore } from '../../store/useDeckStore';
 
 // ── 골드 이펙트 (Canvas 기반, 렉 없음) ──
 interface CoinData {
@@ -170,6 +171,11 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
     const lootRng = useRngStore.getState().lootRng;
     const allNonBasic = ALL_CARDS.filter(c => c.tier !== 'BASIC') as Card[];
 
+    // 덱 내 카드 보유 수 집계 (중복 방지용)
+    const masterDeck: Card[] = useDeckStore.getState().masterDeck;
+    const deckCounts: Record<string, number> = {};
+    masterDeck.forEach((c: Card) => { deckCounts[c.baseId] = (deckCounts[c.baseId] || 0) + 1; });
+
     // map.md 스펙: 전투 유형별 카드 등급 확률
     const tierProb = currentScene === 'BOSS'
       ? { COMMON: 0, UNCOMMON: 0, RARE: 100 }      // 보스: 희귀 100%
@@ -185,8 +191,17 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
       else if (roll < tierProb.COMMON + tierProb.UNCOMMON) tier = 'UNCOMMON';
       else tier = 'RARE';
 
-      let pool = allNonBasic.filter(c => c.tier === tier && !cards.some(picked => picked.baseId === c.baseId));
-      if (pool.length === 0) pool = allNonBasic.filter(c => !cards.some(picked => picked.baseId === c.baseId));
+      // 같은 등급 카드 중 보상 내 중복 제거, 덱 내 2장 이상 보유 카드 우선 제외
+      const alreadyPicked = cards.map(c => c.baseId);
+      let pool = allNonBasic.filter(c =>
+        c.tier === tier &&
+        !alreadyPicked.includes(c.baseId!) &&
+        (deckCounts[c.baseId!] || 0) < 2
+      );
+      // fallback: 등급 맞되 보상 내 중복만 제거
+      if (pool.length === 0) pool = allNonBasic.filter(c => c.tier === tier && !alreadyPicked.includes(c.baseId!));
+      // fallback: 등급 무관
+      if (pool.length === 0) pool = allNonBasic.filter(c => !alreadyPicked.includes(c.baseId!));
       if (pool.length === 0) pool = allNonBasic;
 
       const picked = pool[lootRng.nextInt(pool.length)];
