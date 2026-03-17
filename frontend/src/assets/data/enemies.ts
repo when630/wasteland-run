@@ -91,6 +91,50 @@ import derailedTrainHitImg from '../images/characters/derailed_train_hit.webp';
 import undergroundLordImg from '../images/characters/underground_lord.webp';
 import undergroundLordAttackImg from '../images/characters/underground_lord_attack.webp';
 import undergroundLordHitImg from '../images/characters/underground_lord_hit.webp';
+// 챕터 3 스프라이트
+import securityDroneImg from '../images/characters/security_drone.webp';
+import securityDroneAttackImg from '../images/characters/security_drone_attack.webp';
+import securityDroneHitImg from '../images/characters/security_drone_hit.webp';
+import bioExperimentImg from '../images/characters/bio_experiment.webp';
+import bioExperimentAttackImg from '../images/characters/bio_experiment_attack.webp';
+import bioExperimentHitImg from '../images/characters/bio_experiment_hit.webp';
+import corporateGuardImg from '../images/characters/corporate_guard.webp';
+import corporateGuardAttackImg from '../images/characters/corporate_guard_attack.webp';
+import corporateGuardHitImg from '../images/characters/corporate_guard_hit.webp';
+import nanoSwarmImg from '../images/characters/nano_swarm.webp';
+import nanoSwarmAttackImg from '../images/characters/nano_swarm_attack.webp';
+import nanoSwarmHitImg from '../images/characters/nano_swarm_hit.webp';
+import cryoSentinelImg from '../images/characters/cryo_sentinel.webp';
+import cryoSentinelAttackImg from '../images/characters/cryo_sentinel_attack.webp';
+import cryoSentinelHitImg from '../images/characters/cryo_sentinel_hit.webp';
+import hazmatWorkerImg from '../images/characters/hazmat_worker.webp';
+import hazmatWorkerAttackImg from '../images/characters/hazmat_worker_attack.webp';
+import hazmatWorkerHitImg from '../images/characters/hazmat_worker_hit.webp';
+import chiefScientistImg from '../images/characters/chief_scientist.webp';
+import chiefScientistAttackImg from '../images/characters/chief_scientist_attack.webp';
+import chiefScientistHitImg from '../images/characters/chief_scientist_hit.webp';
+import warMachineImg from '../images/characters/war_machine.webp';
+import warMachineAttackImg from '../images/characters/war_machine_attack.webp';
+import warMachineHitImg from '../images/characters/war_machine_hit.webp';
+import directorOmegaImg from '../images/characters/director_omega.webp';
+import directorOmegaAttackImg from '../images/characters/director_omega_attack.webp';
+import directorOmegaHitImg from '../images/characters/director_omega_hit.webp';
+// 챕터 3 신규 스프라이트
+import cleaningDroneImg from '../images/characters/cleaning_drone.webp';
+import cleaningDroneAttackImg from '../images/characters/cleaning_drone_attack.webp';
+import cleaningDroneHitImg from '../images/characters/cleaning_drone_hit.webp';
+import experimentX7Img from '../images/characters/experiment_x7.webp';
+import experimentX7AttackImg from '../images/characters/experiment_x7_attack.webp';
+import experimentX7HitImg from '../images/characters/experiment_x7_hit.webp';
+import prototypeFighterImg from '../images/characters/prototype_fighter.webp';
+import prototypeFighterAttackImg from '../images/characters/prototype_fighter_attack.webp';
+import prototypeFighterHitImg from '../images/characters/prototype_fighter_hit.webp';
+import centralAiImg from '../images/characters/central_ai.webp';
+import centralAiAttackImg from '../images/characters/central_ai_attack.webp';
+import centralAiHitImg from '../images/characters/central_ai_hit.webp';
+import finalWeaponImg from '../images/characters/final_weapon.webp';
+import finalWeaponAttackImg from '../images/characters/final_weapon_attack.webp';
+import finalWeaponHitImg from '../images/characters/final_weapon_hit.webp';
 
 type BaseEnemy = Omit<Enemy, 'id' | 'currentHp' | 'shield' | 'resist' | 'currentIntent'> & { initialShield?: number };
 
@@ -323,6 +367,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '기업 경비 드론',
     maxHp: 40,
     chapter: 3,
+    spriteUrl: securityDroneImg,
+    spriteAttackUrl: securityDroneAttackImg,
+    spriteHitUrl: securityDroneHitImg,
   },
   bio_experiment: {
     baseId: 'bio_experiment',
@@ -330,6 +377,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '생체 실험체',
     maxHp: 55,
     chapter: 3,
+    spriteUrl: bioExperimentImg,
+    spriteAttackUrl: bioExperimentAttackImg,
+    spriteHitUrl: bioExperimentHitImg,
   },
   corporate_guard: {
     baseId: 'corporate_guard',
@@ -337,6 +387,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '기업 경비원',
     maxHp: 42,
     chapter: 3,
+    spriteUrl: corporateGuardImg,
+    spriteAttackUrl: corporateGuardAttackImg,
+    spriteHitUrl: corporateGuardHitImg,
   },
   nano_swarm: {
     baseId: 'nano_swarm',
@@ -344,6 +397,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '나노 군집',
     maxHp: 30,
     chapter: 3,
+    spriteUrl: nanoSwarmImg,
+    spriteAttackUrl: nanoSwarmAttackImg,
+    spriteHitUrl: nanoSwarmHitImg,
   },
   cryo_sentinel: {
     baseId: 'cryo_sentinel',
@@ -351,6 +407,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '냉동 감시자',
     maxHp: 50,
     chapter: 3,
+    spriteUrl: cryoSentinelImg,
+    spriteAttackUrl: cryoSentinelAttackImg,
+    spriteHitUrl: cryoSentinelHitImg,
   },
   hazmat_worker: {
     baseId: 'hazmat_worker',
@@ -358,6 +417,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '방호복 작업자',
     maxHp: 38,
     chapter: 3,
+    spriteUrl: hazmatWorkerImg,
+    spriteAttackUrl: hazmatWorkerAttackImg,
+    spriteHitUrl: hazmatWorkerHitImg,
   },
   // 챕터 3 엘리트
   chief_scientist: {
@@ -366,6 +428,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '수석 과학자',
     maxHp: 110,
     chapter: 3,
+    spriteUrl: chiefScientistImg,
+    spriteAttackUrl: chiefScientistAttackImg,
+    spriteHitUrl: chiefScientistHitImg,
   },
   war_machine: {
     baseId: 'war_machine',
@@ -373,6 +438,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '전쟁 기계',
     maxHp: 120,
     chapter: 3,
+    spriteUrl: warMachineImg,
+    spriteAttackUrl: warMachineAttackImg,
+    spriteHitUrl: warMachineHitImg,
   },
   // 챕터 3 최종 보스
   director_omega: {
@@ -382,10 +450,13 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     maxHp: 220,
     chapter: 3,
     initialShield: 30,
+    spriteUrl: directorOmegaImg,
+    spriteAttackUrl: directorOmegaAttackImg,
+    spriteHitUrl: directorOmegaHitImg,
   },
 
   // ═══════════════════════════════════════
-  // 신규 몬스터 (스프라이트 미제작)
+  // 신규 몬스터
   // ═══════════════════════════════════════
 
   // ── 1막 신규 일반 ──
@@ -483,6 +554,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '방주 청소 드론',
     maxHp: 22,
     chapter: 3,
+    spriteUrl: cleaningDroneImg,
+    spriteAttackUrl: cleaningDroneAttackImg,
+    spriteHitUrl: cleaningDroneHitImg,
   },
   experiment_x7: {
     baseId: 'experiment_x7',
@@ -490,6 +564,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '실험체 X-7',
     maxHp: 45,
     chapter: 3,
+    spriteUrl: experimentX7Img,
+    spriteAttackUrl: experimentX7AttackImg,
+    spriteHitUrl: experimentX7HitImg,
   },
   // ── 3막 신규 엘리트 ──
   prototype_fighter: {
@@ -498,6 +575,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '프로토타입 전투기',
     maxHp: 100,
     chapter: 3,
+    spriteUrl: prototypeFighterImg,
+    spriteAttackUrl: prototypeFighterAttackImg,
+    spriteHitUrl: prototypeFighterHitImg,
   },
   // ── 3막 신규 보스 ──
   central_ai: {
@@ -507,6 +587,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     maxHp: 180,
     chapter: 3,
     initialShield: 25,
+    spriteUrl: centralAiImg,
+    spriteAttackUrl: centralAiAttackImg,
+    spriteHitUrl: centralAiHitImg,
   },
   final_weapon: {
     baseId: 'final_weapon',
@@ -514,6 +597,9 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     name: '최종 병기 프로젝트',
     maxHp: 250,
     chapter: 3,
+    spriteUrl: finalWeaponImg,
+    spriteAttackUrl: finalWeaponAttackImg,
+    spriteHitUrl: finalWeaponHitImg,
   },
 };
 
