@@ -225,9 +225,9 @@ const IntentDisplay: React.FC<{ enemy: Enemy; scale: number; masked: boolean }> 
   const tooltipLine1 = typeLabel;
   const tooltipLine2 = masked ? description.replace(/\d+/g, '?') : description;
 
-  const iconSize = Math.max(32, 48 * scale);
-  const fontSize = Math.max(14, 18 * scale);
-  const tooltipFontSize = Math.max(10, 12 * scale);
+  const iconSize = Math.max(22, 32 * scale);
+  const fontSize = Math.max(11, 14 * scale);
+  const tooltipFontSize = Math.max(9, 10 * scale);
 
   return (
     <div

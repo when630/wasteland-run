@@ -33,7 +33,7 @@ export const CardViewerModal: React.FC = () => {
       break;
   }
 
-  const cardW = 180;
+  const cardW = 140;
 
   return (
     <div style={{
@@ -49,12 +49,12 @@ export const CardViewerModal: React.FC = () => {
       />
 
       <div style={{ position: 'relative', zIndex: 101, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '900px', height: '100%' }}>
-        <h1 style={{ color: '#fff', margin: '0 0 15px 0', fontSize: '32px', flexShrink: 0 }}>
+        <h1 style={{ color: '#fff', margin: '0 0 10px 0', fontSize: '24px', flexShrink: 0 }}>
           {title} ({cardsToShow.length}장)
         </h1>
 
         <div style={{
-          display: 'flex', flexWrap: 'wrap', gap: '16px',
+          display: 'flex', flexWrap: 'wrap', gap: '10px',
           justifyContent: 'center',
           flex: 1, overflowY: 'auto',
           padding: '20px',
