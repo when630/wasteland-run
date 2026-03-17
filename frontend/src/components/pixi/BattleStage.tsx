@@ -240,7 +240,8 @@ export const BattleStage: React.FC = () => {
     <Stage
       width={screenWidth}
       height={screenHeight}
-      options={{ backgroundAlpha: 0 }} // 배경 이미지를 투과시키기 위해 투명도 0으로 설정
+      options={{ backgroundAlpha: 0 }}
+      onMount={app => { app.ticker.maxFPS = 60; }}
     >
       <Container
         scale={scale}
