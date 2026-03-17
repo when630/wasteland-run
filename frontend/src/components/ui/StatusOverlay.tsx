@@ -375,7 +375,11 @@ const EnemyOverlay: React.FC<{ enemy: Enemy; index: number; total: number; scale
 const PlayerOverlay: React.FC<{
   scale: number; ox: number; oy: number;
 }> = ({ scale, ox, oy }) => {
-  const { playerStatus, playerDebuffs, powerDefenseAmmo50, powerPhysicalScalingActive, powerPhysicalScalingBonus } = useBattleStore();
+  const playerStatus = useBattleStore(s => s.playerStatus);
+  const playerDebuffs = useBattleStore(s => s.playerDebuffs);
+  const powerDefenseAmmo50 = useBattleStore(s => s.powerDefenseAmmo50);
+  const powerPhysicalScalingActive = useBattleStore(s => s.powerPhysicalScalingActive);
+  const powerPhysicalScalingBonus = useBattleStore(s => s.powerPhysicalScalingBonus);
 
   const cx = DESIGN_WIDTH * 0.25 * scale + ox;
   const cy = DESIGN_HEIGHT * BATTLE_Y_RATIO * scale + oy;
@@ -451,8 +455,8 @@ const PlayerOverlay: React.FC<{
 };
 
 export const StatusOverlay: React.FC = () => {
-  const { enemies } = useBattleStore();
-  const { relics } = useRunStore();
+  const enemies = useBattleStore(s => s.enemies);
+  const relics = useRunStore(s => s.relics);
   const { scale, ox, oy } = useScreenLayout();
 
   const masked = relics.includes('red_eye_surveillance_module');

@@ -26,47 +26,52 @@ import battleBg3 from '../assets/images/backgrounds/stage3_battle_backgroung.web
 const BATTLE_BGS: Record<number, string> = { 1: battleBg1, 2: battleBg2, 3: battleBg3 };
 
 export const BattleView: React.FC = () => {
-  const { initDeck, drawCards, masterDeck, setMasterDeck } = useDeckStore();
-  const { currentTurn, battleResult, startPlayerTurn, spawnEnemies, executeOneEnemyTurn, setActiveEnemyIndex, resetBattle, addAmmo, targetingCardId, dragPreviewCardId, setPreviewTargetEnemy } = useBattleStore();
-  const { setScene, currentScene, currentChapter, relics } = useRunStore();
+  // Render-driving state — individual selectors to avoid unnecessary re-renders
+  const currentTurn = useBattleStore(s => s.currentTurn);
+  const battleResult = useBattleStore(s => s.battleResult);
+  const targetingCardId = useBattleStore(s => s.targetingCardId);
+  const dragPreviewCardId = useBattleStore(s => s.dragPreviewCardId);
+  const currentScene = useRunStore(s => s.currentScene);
+  const currentChapter = useRunStore(s => s.currentChapter);
+  const relics = useRunStore(s => s.relics);
 
   const [showBossClear, setShowBossClear] = useState(false);
   const [showBossRelicPick, setShowBossRelicPick] = useState(false);
 
   // 게임(전투 뷰) 진입 시 초기 덱과 몬스터를 세팅
   useEffect(() => {
-    resetBattle();
+    useBattleStore.getState().resetBattle();
 
     if (currentScene === 'DEBUG_BATTLE') {
       // 연습 모드: 기본 덱 + 훈련용 허수아비, 일반 턴제
-      setMasterDeck(createStartingDeck());
-      initDeck();
-      drawCards(5);
+      useDeckStore.getState().setMasterDeck(createStartingDeck());
+      useDeckStore.getState().initDeck();
+      useDeckStore.getState().drawCards(5);
       const dummy = createEnemy('training_dummy');
       dummy.currentIntent = { type: 'DEFEND', description: '대기 중' };
-      spawnEnemies([dummy]);
+      useBattleStore.getState().spawnEnemies([dummy]);
     } else {
       // 일반 전투
-      if (masterDeck.length === 0) {
-        setMasterDeck(createStartingDeck());
+      if (useDeckStore.getState().masterDeck.length === 0) {
+        useDeckStore.getState().setMasterDeck(createStartingDeck());
       }
 
-      initDeck();
-      drawCards(5);
+      useDeckStore.getState().initDeck();
+      useDeckStore.getState().drawCards(5);
 
       // 씬에 따른 몬스터 소환 (챕터별 필터링)
       const battleRng = useRngStore.getState().battleRng;
       const chapter = useRunStore.getState().currentChapter;
       if (currentScene === 'BOSS') {
         const bossIds = getEnemyIdsByTier('BOSS', chapter);
-        spawnEnemies([createEnemy(bossIds[battleRng.nextInt(bossIds.length)], battleRng)]);
+        useBattleStore.getState().spawnEnemies([createEnemy(bossIds[battleRng.nextInt(bossIds.length)], battleRng)]);
       } else if (currentScene === 'ELITE') {
         const eliteIds = getEnemyIdsByTier('ELITE', chapter);
-        spawnEnemies([createEnemy(eliteIds[battleRng.nextInt(eliteIds.length)], battleRng)]);
+        useBattleStore.getState().spawnEnemies([createEnemy(eliteIds[battleRng.nextInt(eliteIds.length)], battleRng)]);
       } else {
         const normalIds = getEnemyIdsByTier('NORMAL', chapter);
         const shuffled = battleRng.shuffle(normalIds);
-        spawnEnemies(shuffled.slice(0, 2).map(id => createEnemy(id, battleRng)));
+        useBattleStore.getState().spawnEnemies(shuffled.slice(0, 2).map(id => createEnemy(id, battleRng)));
       }
 
       // 예언의 수정구: 초기 nextIntent 설정
@@ -82,7 +87,7 @@ export const BattleView: React.FC = () => {
 
       // 유물 효과 일괄 적용
       const fx = onBattleStart(relics, currentScene);
-      if (fx.ammo > 0) addAmmo(fx.ammo);
+      if (fx.ammo > 0) useBattleStore.getState().addAmmo(fx.ammo);
       if (fx.shield > 0) useBattleStore.getState().addPlayerShield(fx.shield);
       if (fx.resist > 0) useBattleStore.getState().addPlayerResist(fx.resist);
       if (fx.extraAp > 0) useBattleStore.getState().consumeAp(-fx.extraAp);
@@ -127,21 +132,21 @@ export const BattleView: React.FC = () => {
       .filter(i => i >= 0);
 
     if (aliveIndices.length === 0) {
-      startPlayerTurn();
-      drawCards(5);
+      useBattleStore.getState().startPlayerTurn();
+      useDeckStore.getState().drawCards(5);
       return;
     }
 
     const ENEMY_ACTION_DELAY = 800;
 
     aliveIndices.forEach((enemyIdx, seqIdx) => {
-      const highlightTimer = setTimeout(() => setActiveEnemyIndex(enemyIdx), seqIdx * ENEMY_ACTION_DELAY);
+      const highlightTimer = setTimeout(() => useBattleStore.getState().setActiveEnemyIndex(enemyIdx), seqIdx * ENEMY_ACTION_DELAY);
       enemyTurnTimersRef.current.push(highlightTimer);
 
       const actionTimer = setTimeout(() => {
-        executeOneEnemyTurn(enemyIdx);
+        useBattleStore.getState().executeOneEnemyTurn(enemyIdx);
         // 연습 모드: 적 턴 후 의도를 대기 상태로 복원 (determineNextIntent 덮어쓰기)
-        if (currentScene === 'DEBUG_BATTLE') {
+        if (useRunStore.getState().currentScene === 'DEBUG_BATTLE') {
           useBattleStore.setState(s => ({
             enemies: s.enemies.map((e, i) => i !== enemyIdx ? e : {
               ...e, currentIntent: { type: 'DEFEND' as const, description: '대기 중' },
@@ -154,12 +159,12 @@ export const BattleView: React.FC = () => {
 
     const totalTime = aliveIndices.length * ENEMY_ACTION_DELAY + 500;
     const turnEndTimer = setTimeout(() => {
-      setActiveEnemyIndex(null);
-      startPlayerTurn();
-      drawCards(5);
+      useBattleStore.getState().setActiveEnemyIndex(null);
+      useBattleStore.getState().startPlayerTurn();
+      useDeckStore.getState().drawCards(5);
     }, totalTime);
     enemyTurnTimersRef.current.push(turnEndTimer);
-  }, [startPlayerTurn, drawCards, executeOneEnemyTurn, setActiveEnemyIndex, currentScene]);
+  }, []);
 
   useEffect(() => {
     if (currentTurn === 'ENEMY') {
@@ -177,7 +182,7 @@ export const BattleView: React.FC = () => {
   const isPreviewActive = targetingCardId !== null || dragPreviewCardId !== null;
   useEffect(() => {
     if (!isPreviewActive) {
-      setPreviewTargetEnemy(null);
+      useBattleStore.getState().setPreviewTargetEnemy(null);
       return;
     }
     const onPointerMove = (e: PointerEvent) => {
@@ -199,14 +204,14 @@ export const BattleView: React.FC = () => {
         if (d < bestDist) { bestDist = d; bestId = enemy.id; }
       });
 
-      setPreviewTargetEnemy(bestDist < Math.max(140, 200 * scale) ? bestId : null);
+      useBattleStore.getState().setPreviewTargetEnemy(bestDist < Math.max(140, 200 * scale) ? bestId : null);
     };
     window.addEventListener('pointermove', onPointerMove);
     return () => {
       window.removeEventListener('pointermove', onPointerMove);
-      setPreviewTargetEnemy(null);
+      useBattleStore.getState().setPreviewTargetEnemy(null);
     };
-  }, [isPreviewActive, setPreviewTargetEnemy]);
+  }, [isPreviewActive]);
 
   // 전투 종료 시 유물 효과 (인식표 등)
   useEffect(() => {
@@ -222,7 +227,7 @@ export const BattleView: React.FC = () => {
 
   const handleVictoryContinue = async () => {
     if (currentScene === 'DEBUG_BATTLE') {
-      setScene('MAIN_MENU');
+      useRunStore.getState().setScene('MAIN_MENU');
       return;
     }
     if (currentScene === 'BOSS') {
@@ -234,7 +239,7 @@ export const BattleView: React.FC = () => {
         setShowBossClear(true);
       }
     } else {
-      setScene('MAP');
+      useRunStore.getState().setScene('MAP');
     }
   };
 
@@ -287,14 +292,14 @@ export const BattleView: React.FC = () => {
       {currentScene === 'DEBUG_BATTLE' && (
         <DebugTestPanel
           onReset={() => {
-            resetBattle();
-            setMasterDeck(createStartingDeck());
-            initDeck();
-            drawCards(5);
-            spawnEnemies([createEnemy('training_dummy')]);
+            useBattleStore.getState().resetBattle();
+            useDeckStore.getState().setMasterDeck(createStartingDeck());
+            useDeckStore.getState().initDeck();
+            useDeckStore.getState().drawCards(5);
+            useBattleStore.getState().spawnEnemies([createEnemy('training_dummy')]);
             useBattleStore.setState({ playerMaxAp: 99, playerActionPoints: 99, playerAmmo: 99 });
           }}
-          onExit={() => setScene('MAIN_MENU')}
+          onExit={() => useRunStore.getState().setScene('MAIN_MENU')}
         />
       )}
 

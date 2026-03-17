@@ -3,7 +3,7 @@ import { useRunStore } from '../../store/useRunStore';
 import { iconToast } from '../../assets/images/GUI';
 
 export const ToastMessage: React.FC = () => {
-  const { toastMessage, setToastMessage } = useRunStore();
+  const toastMessage = useRunStore(s => s.toastMessage);
   const [isVisible, setIsVisible] = useState(false);
   const [displayMsg, setDisplayMsg] = useState('');
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -25,7 +25,7 @@ export const ToastMessage: React.FC = () => {
     }, 3000);
 
     clearTimerRef.current = setTimeout(() => {
-      setToastMessage(null);
+      useRunStore.getState().setToastMessage(null);
       clearTimerRef.current = null;
     }, 3400);
 

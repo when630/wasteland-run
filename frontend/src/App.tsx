@@ -17,7 +17,7 @@ import { HUD } from './components/ui/HUD';
 import { CardViewerModal } from './components/ui/CardViewerModal';
 
 function SceneManager() {
-  const { currentScene } = useRunStore();
+  const currentScene = useRunStore(s => s.currentScene);
 
   useEffect(() => {
     const audioStore = useAudioStore.getState();
@@ -84,12 +84,13 @@ function SceneManager() {
 }
 
 function App() {
-  const { loadRunData, isLeaderboardOpen, setIsLeaderboardOpen, currentScene } = useRunStore();
+  const isLeaderboardOpen = useRunStore(s => s.isLeaderboardOpen);
+  const currentScene = useRunStore(s => s.currentScene);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // 앱 시작 시 세이브 데이터 + 저장된 설정 로드
   useEffect(() => {
-    loadRunData();
+    useRunStore.getState().loadRunData();
     // 저장된 오디오 설정 복원
     // 오디오 설정 복원 (해상도는 main.ts에서 창 생성 시 처리)
     window.electronAPI?.loadSettings().then((data: any) => {
@@ -98,7 +99,7 @@ function App() {
         if (typeof data.sfxVolume === 'number') useAudioStore.getState().setSfxVolume(data.sfxVolume);
       }
     });
-  }, [loadRunData]);
+  }, []);
 
   // ESC 키 → 설정 모달 토글
   useEffect(() => {
@@ -116,7 +117,7 @@ function App() {
   return (
     <>
       <ToastMessage />
-      {isLeaderboardOpen && <LeaderboardModal onClose={() => setIsLeaderboardOpen(false)} />}
+      {isLeaderboardOpen && <LeaderboardModal onClose={() => useRunStore.getState().setIsLeaderboardOpen(false)} />}
       {isSettingsOpen && <SettingsModal onClose={() => setIsSettingsOpen(false)} showQuitButton={showQuitButton} />}
       <SceneManager />
     </>

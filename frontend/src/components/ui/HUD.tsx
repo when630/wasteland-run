@@ -14,15 +14,23 @@ export const HUD: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isMapOverlayOpen, setIsMapOverlayOpen] = useState(false);
   const [isRelicBagOpen, setIsRelicBagOpen] = useState(false);
-  const { playerHp, playerMaxHp, gold, currentScene, currentChapter, relics } = useRunStore();
+  const playerHp = useRunStore(s => s.playerHp);
+  const playerMaxHp = useRunStore(s => s.playerMaxHp);
+  const gold = useRunStore(s => s.gold);
+  const currentScene = useRunStore(s => s.currentScene);
+  const currentChapter = useRunStore(s => s.currentChapter);
+  const relics = useRunStore(s => s.relics);
 
   const CHAPTER_NAMES: Record<number, string> = {
     1: '오염된 외곽 도시',
     2: '무너진 지하철도',
     3: '거대 기업의 방주',
   };
-  const { currentFloor } = useMapStore();
-  const { drawPile, hand, discardPile, exhaustPile, setViewingPile } = useDeckStore();
+  const currentFloor = useMapStore(s => s.currentFloor);
+  const drawPile = useDeckStore(s => s.drawPile);
+  const hand = useDeckStore(s => s.hand);
+  const discardPile = useDeckStore(s => s.discardPile);
+  const exhaustPile = useDeckStore(s => s.exhaustPile);
   const isMap = currentScene === 'MAP';
   const totalFloor = (currentChapter - 1) * 15 + currentFloor;
 
@@ -94,7 +102,7 @@ export const HUD: React.FC = () => {
 
         {/* 덱 카운트 */}
         <div
-          onClick={() => setViewingPile('DECK')}
+          onClick={() => useDeckStore.getState().setViewingPile('DECK')}
           style={{
             cursor: 'pointer', userSelect: 'none', fontSize: '24px',
             textShadow: '2px 2px 2px black',

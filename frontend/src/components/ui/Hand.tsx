@@ -43,8 +43,9 @@ function cardNeedsEnemyTarget(card: { effects: Array<{ type: string; target?: st
 }
 
 export const Hand: React.FC = () => {
-  const { hand } = useDeckStore();
-  const { targetingCardId, playerStatus } = useBattleStore();
+  const hand = useDeckStore(s => s.hand);
+  const targetingCardId = useBattleStore(s => s.targetingCardId);
+  const playerStatus = useBattleStore(s => s.playerStatus);
   const { playCard } = useCardPlay();
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
 

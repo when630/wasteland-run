@@ -102,8 +102,10 @@ const ApEffectLayer: React.FC<{ particles: ApParticle[] }> = ({ particles }) => 
 );
 
 export const ResourcePanel: React.FC = () => {
-  const { playerActionPoints, playerMaxAp, playerAmmo, endPlayerTurn, currentTurn } = useBattleStore();
-  const { discardHand } = useDeckStore();
+  const playerActionPoints = useBattleStore(s => s.playerActionPoints);
+  const playerMaxAp = useBattleStore(s => s.playerMaxAp);
+  const playerAmmo = useBattleStore(s => s.playerAmmo);
+  const currentTurn = useBattleStore(s => s.currentTurn);
 
   // 이전 값 추적
   const prevAmmoRef = useRef(playerAmmo);
@@ -263,9 +265,9 @@ export const ResourcePanel: React.FC = () => {
     if (retainCount > 0) {
       useDeckStore.getState().discardHandWithRetain(retainCount);
     } else {
-      discardHand();
+      useDeckStore.getState().discardHand();
     }
-    endPlayerTurn();
+    useBattleStore.getState().endPlayerTurn();
   };
 
   const ammoSize = 28;

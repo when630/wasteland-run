@@ -45,7 +45,9 @@ const PileButton: React.FC<{
 );
 
 export const DeckPiles: React.FC = () => {
-  const { drawPile, discardPile, exhaustPile, setViewingPile } = useDeckStore();
+  const drawPile = useDeckStore(s => s.drawPile);
+  const discardPile = useDeckStore(s => s.discardPile);
+  const exhaustPile = useDeckStore(s => s.exhaustPile);
   const size = 52;
 
   return (
@@ -58,7 +60,7 @@ export const DeckPiles: React.FC = () => {
         <PileButton
           icon={iconDrawPile} alt="뽑을 덱"
           count={drawPile.length} badgeColor="#4488cc"
-          onClick={() => setViewingPile('DRAW')} size={size}
+          onClick={() => useDeckStore.getState().setViewingPile('DRAW')} size={size}
         />
       </div>
 
@@ -71,12 +73,12 @@ export const DeckPiles: React.FC = () => {
         <PileButton
           icon={iconDiscardPile} alt="버린 덱"
           count={discardPile.length} badgeColor="#cc4444"
-          onClick={() => setViewingPile('DISCARD')} size={size}
+          onClick={() => useDeckStore.getState().setViewingPile('DISCARD')} size={size}
         />
         <PileButton
           icon={iconExhaustPile} alt="소멸 덱"
           count={exhaustPile.length} badgeColor="#666666"
-          onClick={() => setViewingPile('EXHAUST')} size={size}
+          onClick={() => useDeckStore.getState().setViewingPile('EXHAUST')} size={size}
         />
       </div>
     </>

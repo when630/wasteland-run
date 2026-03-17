@@ -20,10 +20,22 @@ import playerSpecialHitImg from '../../assets/images/characters/player_special_h
 import type { PlayerSpriteState } from '../../store/battle/types';
 
 export const BattleStage: React.FC = () => {
-  // 스토어에서 런 상태 및 전투 상태 가져오기
-  const { playerHp, playerMaxHp } = useRunStore();
-  const { currentTurn, enemies, targetingCardId, dragPreviewCardId, playerAmmo, playerHitQueue, consumePlayerHitQueue, activeEnemyIndex, damageNumbers, clearExpiredDamageNumbers, powerPhysicalScalingBonus, playerSpriteState, setPlayerSpriteState } = useBattleStore();
-  const { hand } = useDeckStore();
+  // 스토어에서 런 상태 및 전투 상태 가져오기 — individual selectors to avoid unnecessary re-renders
+  const playerHp = useRunStore(s => s.playerHp);
+  const playerMaxHp = useRunStore(s => s.playerMaxHp);
+
+  const currentTurn = useBattleStore(s => s.currentTurn);
+  const enemies = useBattleStore(s => s.enemies);
+  const targetingCardId = useBattleStore(s => s.targetingCardId);
+  const dragPreviewCardId = useBattleStore(s => s.dragPreviewCardId);
+  const playerAmmo = useBattleStore(s => s.playerAmmo);
+  const playerHitQueue = useBattleStore(s => s.playerHitQueue);
+  const activeEnemyIndex = useBattleStore(s => s.activeEnemyIndex);
+  const damageNumbers = useBattleStore(s => s.damageNumbers);
+  const powerPhysicalScalingBonus = useBattleStore(s => s.powerPhysicalScalingBonus);
+  const playerSpriteState = useBattleStore(s => s.playerSpriteState);
+
+  const hand = useDeckStore(s => s.hand);
   const { playCard } = useCardPlay();
 
   // 타입 충돌을 피하기 위해 useMemo로 텍스처와 스타일 인스턴스 생성
@@ -125,7 +137,7 @@ export const BattleStage: React.FC = () => {
 
       if (hitType === 'DAMAGE') {
         // 🌟 직접 피격: 넉백 + 붉은 번쩍 + 화면 흔들림
-        setPlayerSpriteState('PHYSICAL_HIT');
+        useBattleStore.getState().setPlayerSpriteState('PHYSICAL_HIT');
         setPlayerTint(0xff2222);
         setPlayerHitOffset(-20);
         // 화면 흔들림 (300ms 감쇄 진동)
@@ -147,13 +159,13 @@ export const BattleStage: React.FC = () => {
         safeTimeout(() => setPlayerHitOffset(-4), 180);
         safeTimeout(() => {
           resetVisuals();
-          setPlayerSpriteState('IDLE');
+          useBattleStore.getState().setPlayerSpriteState('IDLE');
           isAnimatingRef.current = false;
-          consumePlayerHitQueue(); // 다음 큐 아이템으로
+          useBattleStore.getState().consumePlayerHitQueue(); // 다음 큐 아이템으로
         }, 300);
       } else if (hitType === 'BURN') {
         // 🌟 화상 틱: 오렌지 점멸 + Y 떨림 + Pixi VFX
-        setPlayerSpriteState('SPECIAL_HIT');
+        useBattleStore.getState().setPlayerSpriteState('SPECIAL_HIT');
         try {
           dispatchVfx({
             cardBaseId: '__enemy_burn_tick__',
@@ -172,13 +184,13 @@ export const BattleStage: React.FC = () => {
         safeTimeout(() => {
           clearInterval(burnInterval);
           resetVisuals();
-          setPlayerSpriteState('IDLE');
+          useBattleStore.getState().setPlayerSpriteState('IDLE');
           isAnimatingRef.current = false;
-          consumePlayerHitQueue();
+          useBattleStore.getState().consumePlayerHitQueue();
         }, 350);
       } else if (hitType === 'POISON') {
         // 🌟 맹독 틱: 녹색 점멸 + 투명도 깜빡 + Pixi VFX
-        setPlayerSpriteState('SPECIAL_HIT');
+        useBattleStore.getState().setPlayerSpriteState('SPECIAL_HIT');
         try {
           dispatchVfx({
             cardBaseId: '__enemy_poison_tick__',
@@ -197,23 +209,23 @@ export const BattleStage: React.FC = () => {
         safeTimeout(() => {
           clearInterval(poisonInterval);
           resetVisuals();
-          setPlayerSpriteState('IDLE');
+          useBattleStore.getState().setPlayerSpriteState('IDLE');
           isAnimatingRef.current = false;
-          consumePlayerHitQueue();
+          useBattleStore.getState().consumePlayerHitQueue();
         }, 350);
       } else {
         isAnimatingRef.current = false;
-        consumePlayerHitQueue();
+        useBattleStore.getState().consumePlayerHitQueue();
       }
     }
-  }, [playerHitQueue, consumePlayerHitQueue, safeTimeout, resetVisuals, setPlayerSpriteState]);
+  }, [playerHitQueue, safeTimeout, resetVisuals]);
 
   // 데미지 넘버 정리 타이머
   useEffect(() => {
     if (damageNumbers.length === 0) return;
-    const cleanupTimer = setTimeout(() => clearExpiredDamageNumbers(), 1200);
+    const cleanupTimer = setTimeout(() => useBattleStore.getState().clearExpiredDamageNumbers(), 1200);
     return () => clearTimeout(cleanupTimer);
-  }, [damageNumbers, clearExpiredDamageNumbers]);
+  }, [damageNumbers]);
 
   // 🌟 컴포넌트 언마운트 시 모든 타이머 정리
   useEffect(() => {

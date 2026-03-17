@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useMemo, useRef, useEffect, useCallback } from 'react';
 import { Container, Sprite, Text, useTick } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import type { Enemy } from '../../types/enemyTypes';
@@ -50,13 +50,20 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
   physicalScalingBonus = 0,
   playerAmmo = 0,
 }) => {
-  // 애니메이션용 로컬 오프셋 및 색상
-  const [offsetX, setOffsetX] = useState(0);
-  const [offsetY, setOffsetY] = useState(0);
   const hasSprite = !!enemy.spriteUrl;
-  const [tint, setTint] = useState<number>(hasSprite ? 0xffffff : 0xff0000);
-  const [alpha, setAlpha] = useState(1);
-  const [scaleModifier, setScaleModifier] = useState(1);
+  const defaultTint = hasSprite ? 0xffffff : 0xff0000;
+
+  // 애니메이션 값을 ref로 관리 (매 프레임 React 렌더 방지)
+  const offsetXRef = useRef(0);
+  const offsetYRef = useRef(0);
+  const tintRef = useRef<number>(defaultTint);
+  const alphaRef = useRef(1);
+  const scaleModifierRef = useRef(1);
+
+  // Pixi 디스플레이 오브젝트 직접 참조
+  const containerRef = useRef<PIXI.Container>(null);
+  const spriteRef = useRef<PIXI.Sprite>(null);
+
   // DOM 레벨 마우스 추적 기반 호버 (Pixi pointerover 대신)
   const previewTargetEnemyId = useBattleStore(s => s.previewTargetEnemyId);
   const isPreviewHovered = previewTargetEnemyId === enemy.id;
@@ -80,20 +87,19 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
   // 합산 예상 데미지
   const previewDamage = cardPreviewDamage + statusPreviewDamage;
 
-  const defaultTint = hasSprite ? 0xffffff : 0xff0000;
-
   // 타겟 가능 해제 시 금색 tint/scale 즉시 초기화
   useEffect(() => {
     if (!canBeTargeted) {
-      setTint(defaultTint);
-      setScaleModifier(1);
+      tintRef.current = defaultTint;
+      scaleModifierRef.current = 1;
+      applyToPixi();
     }
   }, [canBeTargeted, defaultTint]);
 
   // 활성 상태(공격 모션) 연출용
-  const activeTimerRef = React.useRef<number>(0);
+  const activeTimerRef = useRef<number>(0);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isActive && enemy.currentHp > 0) {
       activeTimerRef.current = Date.now();
     } else {
@@ -101,9 +107,40 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
     }
   }, [isActive, enemy.currentHp]);
 
-  // PIXI Ticker 루프 - 컴포넌트 마운트 및 매 프레임마다 실행
+  // 스프라이트 페이즈 (텍스처 전환은 React 렌더 필요하므로 useState 유지)
+  const [spritePhase, setSpritePhase] = React.useState<'idle' | 'attack' | 'hit'>('idle');
+  const spritePhaseRef = useRef(spritePhase);
+
+  // ref 값을 Pixi 오브젝트에 직접 적용
+  const applyToPixi = useCallback(() => {
+    const container = containerRef.current;
+    const sprite = spriteRef.current;
+    if (container) {
+      container.x = baseX + offsetXRef.current;
+      container.y = baseY + offsetYRef.current;
+      container.alpha = alphaRef.current;
+    }
+    if (sprite) {
+      sprite.tint = tintRef.current;
+      // scaleModifier는 텍스처 높이 기반 계산이 필요하므로 직접 설정
+      if (hasSprite) {
+        const tex = sprite.texture;
+        const targetHeight = enemy.tier === 'BOSS' ? 300 : (enemy.tier === 'ELITE' ? 187 : 153);
+        const s = (targetHeight / tex.height) * scaleModifierRef.current;
+        sprite.scale.set(s, s);
+      } else {
+        const isBoss = enemy.tier === 'BOSS';
+        const w = (isBoss ? 233 : 100) * scaleModifierRef.current;
+        const h = (isBoss ? 300 : 133) * scaleModifierRef.current;
+        sprite.width = w;
+        sprite.height = h;
+      }
+    }
+  }, [baseX, baseY, hasSprite, enemy.tier]);
+
+  // PIXI Ticker 루프 - 매 프레임마다 실행, ref만 변경하고 Pixi에 직접 적용
   useTick(() => {
-    // 스프라이트 페이즈 업데이트 (텍스처 전환용)
+    // 스프라이트 페이즈 업데이트 (텍스처 전환용 — 실제 텍스처 변경은 React 필요)
     if (hasSprite && enemy.visualEffect) {
       const elapsed = Date.now() - enemy.visualEffect.tick;
       if (enemy.visualEffect.type === 'ATTACKING' && elapsed < 600) {
@@ -119,11 +156,12 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
 
     // ── 최우선: 사망 페이드아웃 ──
     if (enemy.currentHp <= 0) {
-      setAlpha((prev) => Math.max(0, prev - 0.05));
-      setTint(0x555555);
-      setOffsetX(0);
-      setOffsetY(0);
-      setScaleModifier(1);
+      alphaRef.current = Math.max(0, alphaRef.current - 0.05);
+      tintRef.current = 0x555555;
+      offsetXRef.current = 0;
+      offsetYRef.current = 0;
+      scaleModifierRef.current = 1;
+      applyToPixi();
       return;
     }
 
@@ -134,20 +172,18 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
 
       if (enemy.visualEffect.type === 'DAMAGE') {
         if (elapsed < 100) {
-          setOffsetX(20 * (1 - elapsed / 100));
-          setTint(0xff2222);
+          offsetXRef.current = 20 * (1 - elapsed / 100);
+          tintRef.current = 0xff2222;
         } else if (elapsed < 200) {
           const t = (elapsed - 100) / 100;
-          setOffsetX(-8 * (1 - t));
-          setTint(0xff6666);
-        } else if (elapsed < 300) {
-          setOffsetX(0);
-          setTint(defaultTint);
+          offsetXRef.current = -8 * (1 - t);
+          tintRef.current = 0xff6666;
         } else {
-          setOffsetX(0);
-          setTint(defaultTint);
+          offsetXRef.current = 0;
+          tintRef.current = defaultTint;
         }
-        setScaleModifier(1);
+        scaleModifierRef.current = 1;
+        applyToPixi();
         return;
       }
 
@@ -155,52 +191,56 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
         if (elapsed < 400) {
           const pulse = Math.sin(elapsed * 0.03) * 0.5 + 0.5;
           const g = Math.floor(0x44 + pulse * 0x44);
-          setTint((0xff << 16) | (g << 8) | 0x00);
-          setOffsetY(Math.sin(elapsed * 0.08) * 4);
-          setOffsetX(0);
+          tintRef.current = (0xff << 16) | (g << 8) | 0x00;
+          offsetYRef.current = Math.sin(elapsed * 0.08) * 4;
+          offsetXRef.current = 0;
         } else {
-          setTint(defaultTint);
-          setOffsetY(0);
-          setOffsetX(0);
+          tintRef.current = defaultTint;
+          offsetYRef.current = 0;
+          offsetXRef.current = 0;
         }
-        setScaleModifier(1);
+        scaleModifierRef.current = 1;
+        applyToPixi();
         return;
       }
 
       if (enemy.visualEffect.type === 'POISON_TICK') {
         if (elapsed < 400) {
           const t = elapsed / 400;
-          setTint(0x22ff44);
-          setScaleModifier(0.92 + 0.08 * t);
-          setOffsetX(0);
-          setOffsetY(0);
+          tintRef.current = 0x22ff44;
+          scaleModifierRef.current = 0.92 + 0.08 * t;
+          offsetXRef.current = 0;
+          offsetYRef.current = 0;
         } else {
-          setTint(defaultTint);
-          setScaleModifier(1);
+          tintRef.current = defaultTint;
+          scaleModifierRef.current = 1;
         }
+        applyToPixi();
         return;
       }
 
       if (enemy.visualEffect.type === 'BURN_POISON_TICK') {
         if (elapsed < 500) {
           const cycle = Math.floor(elapsed / 80) % 2;
-          setTint(cycle === 0 ? 0xff6600 : 0x22ff44);
-          setOffsetY(Math.sin(elapsed * 0.08) * 4);
-          setScaleModifier(0.94 + 0.06 * (elapsed / 500));
+          tintRef.current = cycle === 0 ? 0xff6600 : 0x22ff44;
+          offsetYRef.current = Math.sin(elapsed * 0.08) * 4;
+          scaleModifierRef.current = 0.94 + 0.06 * (elapsed / 500);
         } else {
-          setTint(defaultTint);
-          setOffsetY(0);
-          setScaleModifier(1);
+          tintRef.current = defaultTint;
+          offsetYRef.current = 0;
+          scaleModifierRef.current = 1;
         }
+        applyToPixi();
         return;
       }
 
       if (enemy.visualEffect.type === 'BUFF') {
         if (elapsed < 500) {
-          setTint(0x4444ff);
+          tintRef.current = 0x4444ff;
         } else {
-          setTint(defaultTint);
+          tintRef.current = defaultTint;
         }
+        applyToPixi();
         return;
       }
 
@@ -213,10 +253,11 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
     if (isActive && activeTimerRef.current > 0) {
       const elapsed = Date.now() - activeTimerRef.current;
       const shake = Math.sin(elapsed * 0.05) * 6 * Math.max(0, 1 - elapsed / 600);
-      setOffsetX(shake);
-      setTint(defaultTint);
-      setScaleModifier(1.05);
-      setOffsetY(0);
+      offsetXRef.current = shake;
+      tintRef.current = defaultTint;
+      scaleModifierRef.current = 1.05;
+      offsetYRef.current = 0;
+      applyToPixi();
       return;
     }
 
@@ -227,18 +268,23 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
       const r = 0xff;
       const g = Math.floor(0x88 + pulse * 0x44);
       const b = Math.floor(0x00 + pulse * 0x33);
-      setTint((r << 16) | (g << 8) | b);
-      setScaleModifier(1.02 + Math.sin(t) * 0.03);
-      setOffsetX(0);
-      setOffsetY(0);
+      tintRef.current = (r << 16) | (g << 8) | b;
+      scaleModifierRef.current = 1.02 + Math.sin(t) * 0.03;
+      offsetXRef.current = 0;
+      offsetYRef.current = 0;
+      applyToPixi();
       return;
     }
 
-    // ── 기본 상태: 초기화 ──
-    setOffsetX(0);
-    setOffsetY(0);
-    setTint(defaultTint);
-    setScaleModifier(1);
+    // ── 기본 상태: 초기화 (값이 다를 때만 적용) ──
+    if (offsetXRef.current !== 0 || offsetYRef.current !== 0 ||
+        tintRef.current !== defaultTint || scaleModifierRef.current !== 1) {
+      offsetXRef.current = 0;
+      offsetYRef.current = 0;
+      tintRef.current = defaultTint;
+      scaleModifierRef.current = 1;
+      applyToPixi();
+    }
   });
 
   // 보스 분기 처리
@@ -247,10 +293,6 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
   const targetHeight = isBoss ? 300 : (isElite ? 187 : 153);
   const nameYOffset = isBoss ? -167 : -87;
   const hpYOffset = isBoss ? 173 : 93;
-
-  // 스프라이트 URL이 있으면 상태별 텍스처 전환
-  const [spritePhase, setSpritePhase] = useState<'idle' | 'attack' | 'hit'>('idle');
-  const spritePhaseRef = useRef(spritePhase);
 
   const currentTexture = useMemo(() => {
     if (!hasSprite) return texture;
@@ -261,9 +303,10 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
 
   return (
     <Container
-      x={baseX + offsetX}
-      y={baseY + offsetY}
-      alpha={alpha}
+      ref={containerRef}
+      x={baseX + offsetXRef.current}
+      y={baseY + offsetYRef.current}
+      alpha={alphaRef.current}
       interactive={isTargeting && enemy.currentHp > 0}
       pointerdown={onPointerDown}
     >
@@ -276,14 +319,15 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
         style={defaultTextStyle}
       />
       <Sprite
+        ref={spriteRef}
         texture={currentTexture}
         scale={hasSprite
-          ? (targetHeight / currentTexture.height) * scaleModifier
+          ? (targetHeight / currentTexture.height) * scaleModifierRef.current
           : undefined}
-        width={hasSprite ? undefined : (isBoss ? 233 : 100) * scaleModifier}
-        height={hasSprite ? undefined : (isBoss ? 300 : 133) * scaleModifier}
+        width={hasSprite ? undefined : (isBoss ? 233 : 100) * scaleModifierRef.current}
+        height={hasSprite ? undefined : (isBoss ? 300 : 133) * scaleModifierRef.current}
         anchor={0.5}
-        tint={tint}
+        tint={tintRef.current}
       />
       {/* 적 체력 바 */}
       <HpBar
