@@ -110,6 +110,7 @@ export const BattleStage: React.FC = () => {
   const [shakeX, setShakeX] = useState(0);
   const [shakeY, setShakeY] = useState(0);
   const vfxShakeRef = React.useRef({ x: 0, y: 0 });
+  const handleShakeUpdate = React.useCallback((x: number, y: number) => { vfxShakeRef.current.x = x; vfxShakeRef.current.y = y; }, []);
   const isAnimatingRef = React.useRef(false); // 🌟 useRef로 락 관리 (React 배칭 문제 방지)
   const timersRef = React.useRef<ReturnType<typeof setTimeout>[]>([]); // 🌟 클린업용 타이머 추적
   const shakeIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
@@ -363,7 +364,7 @@ export const BattleStage: React.FC = () => {
         />
 
         {/* VFX 레이어 — 적 뒤, 데미지넘버 앞 */}
-        <VfxLayer onShakeUpdate={(x, y) => { vfxShakeRef.current.x = x; vfxShakeRef.current.y = y; }} />
+        <VfxLayer onShakeUpdate={handleShakeUpdate} />
 
         {/* 떠다니는 데미지 넘버 */}
         {damageNumbers.map((dn) => {

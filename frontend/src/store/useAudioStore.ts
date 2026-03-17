@@ -39,11 +39,24 @@ interface AudioState {
 
 // 오디오 컨텍스트 지연 초기화 (상호작용 전 생성 시 경고 방지)
 let audioCtx: AudioContext | null = null;
+let hitNoiseBuffer: AudioBuffer | null = null;
+
 const getAudioCtx = () => {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
   }
   return audioCtx;
+};
+
+const getHitNoiseBuffer = () => {
+  const ctx = getAudioCtx();
+  if (!hitNoiseBuffer || hitNoiseBuffer.sampleRate !== ctx.sampleRate) {
+    const bufferSize = Math.floor(ctx.sampleRate * 0.2);
+    hitNoiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = hitNoiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  }
+  return hitNoiseBuffer;
 };
 
 // 사용자 상호작용 감지 — 브라우저 자동재생 정책 우회
@@ -146,15 +159,8 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   // 둔탁한 타격음 (금속/살점 타격 연출용 노이즈)
   playHit: () => {
     const ctx = getAudioCtx();
-    const bufferSize = ctx.sampleRate * 0.2; // 0.2초
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = Math.random() * 2 - 1; // 화이트 노이즈
-    }
-
     const noise = ctx.createBufferSource();
-    noise.buffer = buffer;
+    noise.buffer = getHitNoiseBuffer();
 
     // 로우패스 필터로 둔탁하게 깎음
     const filter = ctx.createBiquadFilter();

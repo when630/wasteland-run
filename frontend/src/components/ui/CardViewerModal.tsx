@@ -4,9 +4,12 @@ import { CardFrame } from './CardFrame';
 import type { Card } from '../../types/gameTypes';
 
 export const CardViewerModal: React.FC = () => {
-  const { viewingPile, setViewingPile, drawPile, hand, discardPile, exhaustPile } = useDeckStore();
+  const viewingPile = useDeckStore(s => s.viewingPile);
 
   if (viewingPile === 'NONE') return null;
+
+  // 모달이 열렸을 때만 나머지 상태 읽기
+  const { drawPile, hand, discardPile, exhaustPile } = useDeckStore.getState();
 
   let title = '';
   let cardsToShow: Card[] = [];
@@ -42,7 +45,7 @@ export const CardViewerModal: React.FC = () => {
       {/* 닫기 영역 */}
       <div
         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', cursor: 'pointer' }}
-        onClick={() => setViewingPile('NONE')}
+        onClick={() => useDeckStore.getState().setViewingPile('NONE')}
       />
 
       <div style={{ position: 'relative', zIndex: 101, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '900px', height: '100%' }}>
@@ -70,7 +73,7 @@ export const CardViewerModal: React.FC = () => {
         </div>
 
         <button
-          onClick={() => setViewingPile('NONE')}
+          onClick={() => useDeckStore.getState().setViewingPile('NONE')}
           style={{
             marginTop: '30px', padding: '10px 40px', fontSize: '18px', fontWeight: 'bold',
             background: 'none', color: '#a09078', border: '1px solid rgba(120, 100, 70, 0.4)',
