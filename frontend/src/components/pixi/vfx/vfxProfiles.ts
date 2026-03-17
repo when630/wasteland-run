@@ -3,16 +3,41 @@
 
 import type { VfxProfile } from './types';
 
+const NO_SHAKE = { intensity: 0, axis: 'XY' as const, durationMs: 0, decayRate: 1 };
+
 export const VFX_PROFILES: Record<string, VfxProfile> = {
-  // === Heavy Kinetic — 둔탁한 파편 + 강한 Y축 쉐이크 + 힛스탑 ===
-  old_pipe: {
-    category: 'HEAVY_KINETIC',
-    color: 0x887766,
-    hitStopMs: 60,
-    shakeProfile: { intensity: 10, axis: 'Y', durationMs: 250, decayRate: 0.85 },
+
+  // ═══════════════════════════════════════════════════
+  // 물리 공격 — Blade Slash (빠른 슬래시 아크)
+  // ═══════════════════════════════════════════════════
+  strike: {
+    category: 'BLADE_SLASH',
+    color: 0x99aabb,
+    hitStopMs: 40,
+    shakeProfile: { intensity: 6, axis: 'Y', durationMs: 180, decayRate: 0.88 },
     isAoe: false,
     multiHitCount: 1,
   },
+  flurry: {
+    category: 'BLADE_SLASH',
+    color: 0xccccdd,
+    hitStopMs: 25,
+    shakeProfile: { intensity: 4, axis: 'XY', durationMs: 120, decayRate: 0.9 },
+    isAoe: false,
+    multiHitCount: 2,
+  },
+  iron_fist: {
+    category: 'BLADE_SLASH',
+    color: 0xaabbcc,
+    hitStopMs: 30,
+    shakeProfile: { intensity: 5, axis: 'Y', durationMs: 150, decayRate: 0.89 },
+    isAoe: false,
+    multiHitCount: 1,
+  },
+
+  // ═══════════════════════════════════════════════════
+  // 물리 공격 — Heavy Kinetic (둔탁한 파편 + 강한 Y축 쉐이크)
+  // ═══════════════════════════════════════════════════
   sledgehammer_smash: {
     category: 'HEAVY_KINETIC',
     color: 0x999988,
@@ -70,7 +95,49 @@ export const VFX_PROFILES: Record<string, VfxProfile> = {
     multiHitCount: 1,
   },
 
-  // === High RPM Friction — 부채꼴 스파크 + 고주파 미세진동 × 3연타 ===
+  // ═══════════════════════════════════════════════════
+  // 물리 공격 — Ground Pound (지면 충격파 + 먼지)
+  // ═══════════════════════════════════════════════════
+  crush: {
+    category: 'GROUND_POUND',
+    color: 0xaa8866,
+    hitStopMs: 80,
+    shakeProfile: { intensity: 12, axis: 'Y', durationMs: 280, decayRate: 0.83 },
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  storm_barrage: {
+    category: 'GROUND_POUND',
+    color: 0x998877,
+    hitStopMs: 90,
+    shakeProfile: { intensity: 14, axis: 'Y', durationMs: 320, decayRate: 0.82 },
+    isAoe: true,
+    multiHitCount: 1,
+  },
+
+  // ═══════════════════════════════════════════════════
+  // 물리 공격 — Berserk (분노 폭발 + 붉은 플래시)
+  // ═══════════════════════════════════════════════════
+  berserker_strike: {
+    category: 'BERSERK',
+    color: 0xff3333,
+    hitStopMs: 70,
+    shakeProfile: { intensity: 12, axis: 'XY', durationMs: 280, decayRate: 0.83 },
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  rampage: {
+    category: 'BERSERK',
+    color: 0xff6622,
+    hitStopMs: 60,
+    shakeProfile: { intensity: 10, axis: 'XY', durationMs: 250, decayRate: 0.85 },
+    isAoe: false,
+    multiHitCount: 1,
+  },
+
+  // ═══════════════════════════════════════════════════
+  // 물리 공격 — High RPM Friction (부채꼴 스파크)
+  // ═══════════════════════════════════════════════════
   chainsaw_grind: {
     category: 'HIGH_RPM_FRICTION',
     color: 0xff8800,
@@ -80,46 +147,38 @@ export const VFX_PROFILES: Record<string, VfxProfile> = {
     multiHitCount: 3,
   },
 
-  // === Thermal/Chemical AoE — 팽창 충격파 원 + 아지랑이 상승 파티클 ===
-  makeshift_napalm: {
-    category: 'THERMAL_AOE',
-    color: 0xff3300,
-    hitStopMs: 40,
-    shakeProfile: { intensity: 8, axis: 'XY', durationMs: 300, decayRate: 0.88 },
-    isAoe: true,
-    multiHitCount: 1,
-  },
-  toxic_gas_grenade: {
-    category: 'THERMAL_AOE',
-    color: 0x44ff44,
-    hitStopMs: 30,
-    shakeProfile: { intensity: 6, axis: 'XY', durationMs: 250, decayRate: 0.9 },
-    isAoe: true,
-    multiHitCount: 1,
-  },
-  emp_overload: {
-    category: 'THERMAL_AOE',
-    color: 0x44ccff,
-    hitStopMs: 50,
-    shakeProfile: { intensity: 10, axis: 'XY', durationMs: 300, decayRate: 0.85 },
-    isAoe: true,
-    multiHitCount: 1,
-  },
-  seismic_charge: {
-    category: 'THERMAL_AOE',
-    color: 0xffaa22,
-    hitStopMs: 60,
-    shakeProfile: { intensity: 12, axis: 'Y', durationMs: 350, decayRate: 0.83 },
-    isAoe: true,
-    multiHitCount: 1,
-  },
-
-  // === Electromagnetic — 즉발 선 궤적 + 1프레임 화면 플래시 + X축 반동 쉐이크 ===
+  // ═══════════════════════════════════════════════════
+  // 특수 공격 — Electromagnetic (선 궤적 + X축 반동)
+  // ═══════════════════════════════════════════════════
   rusty_pistol: {
     category: 'ELECTROMAGNETIC',
     color: 0xffff44,
     hitStopMs: 30,
     shakeProfile: { intensity: 6, axis: 'X', durationMs: 150, decayRate: 0.9 },
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  rapid_fire: {
+    category: 'ELECTROMAGNETIC',
+    color: 0xffaa22,
+    hitStopMs: 25,
+    shakeProfile: { intensity: 5, axis: 'X', durationMs: 120, decayRate: 0.91 },
+    isAoe: false,
+    multiHitCount: 2,
+  },
+  piercing_round: {
+    category: 'ELECTROMAGNETIC',
+    color: 0xddcc44,
+    hitStopMs: 40,
+    shakeProfile: { intensity: 8, axis: 'X', durationMs: 180, decayRate: 0.87 },
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  aimed_shot: {
+    category: 'ELECTROMAGNETIC',
+    color: 0xeedd33,
+    hitStopMs: 35,
+    shakeProfile: { intensity: 7, axis: 'X', durationMs: 170, decayRate: 0.88 },
     isAoe: false,
     multiHitCount: 1,
   },
@@ -172,20 +231,62 @@ export const VFX_PROFILES: Record<string, VfxProfile> = {
     multiHitCount: 1,
   },
 
-  // === Shield Barrier — 물리 방어 카드 (파란 육각 파편 배리어) ===
-  take_cover: {
-    category: 'SHIELD_BARRIER',
-    color: 0x4488ff,
-    hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
-    isAoe: false,
+  // ═══════════════════════════════════════════════════
+  // 특수 공격 — Scatter Shot (산탄 부채꼴 다중 궤적)
+  // ═══════════════════════════════════════════════════
+  shotgun_blast: {
+    category: 'SCATTER_SHOT',
+    color: 0xff8844,
+    hitStopMs: 40,
+    shakeProfile: { intensity: 8, axis: 'X', durationMs: 200, decayRate: 0.87 },
+    isAoe: true,
     multiHitCount: 1,
   },
-  spiked_barricade: {
+
+  // ═══════════════════════════════════════════════════
+  // 특수 공격 — Thermal/Chemical AoE (팽창 충격파 + 아지랑이)
+  // ═══════════════════════════════════════════════════
+  makeshift_napalm: {
+    category: 'THERMAL_AOE',
+    color: 0xff3300,
+    hitStopMs: 40,
+    shakeProfile: { intensity: 8, axis: 'XY', durationMs: 300, decayRate: 0.88 },
+    isAoe: true,
+    multiHitCount: 1,
+  },
+  toxic_gas_grenade: {
+    category: 'THERMAL_AOE',
+    color: 0x44ff44,
+    hitStopMs: 30,
+    shakeProfile: { intensity: 6, axis: 'XY', durationMs: 250, decayRate: 0.9 },
+    isAoe: true,
+    multiHitCount: 1,
+  },
+  emp_overload: {
+    category: 'THERMAL_AOE',
+    color: 0x44ccff,
+    hitStopMs: 50,
+    shakeProfile: { intensity: 10, axis: 'XY', durationMs: 300, decayRate: 0.85 },
+    isAoe: true,
+    multiHitCount: 1,
+  },
+  seismic_charge: {
+    category: 'THERMAL_AOE',
+    color: 0xffaa22,
+    hitStopMs: 60,
+    shakeProfile: { intensity: 12, axis: 'Y', durationMs: 350, decayRate: 0.83 },
+    isAoe: true,
+    multiHitCount: 1,
+  },
+
+  // ═══════════════════════════════════════════════════
+  // 물리 방어 — Shield Barrier (파란 육각 파편 배리어)
+  // ═══════════════════════════════════════════════════
+  defend: {
     category: 'SHIELD_BARRIER',
-    color: 0x5599ff,
+    color: 0x3388dd,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
@@ -193,7 +294,7 @@ export const VFX_PROFILES: Record<string, VfxProfile> = {
     category: 'SHIELD_BARRIER',
     color: 0x3377ee,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
@@ -201,15 +302,7 @@ export const VFX_PROFILES: Record<string, VfxProfile> = {
     category: 'SHIELD_BARRIER',
     color: 0x6699cc,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
-    isAoe: false,
-    multiHitCount: 1,
-  },
-  last_stand: {
-    category: 'SHIELD_BARRIER',
-    color: 0x4466ff,
-    hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
@@ -217,7 +310,23 @@ export const VFX_PROFILES: Record<string, VfxProfile> = {
     category: 'SHIELD_BARRIER',
     color: 0x5588dd,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  spiked_barricade: {
+    category: 'SHIELD_BARRIER',
+    color: 0x5599ff,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  last_stand: {
+    category: 'SHIELD_BARRIER',
+    color: 0x4466ff,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
@@ -225,7 +334,7 @@ export const VFX_PROFILES: Record<string, VfxProfile> = {
     category: 'SHIELD_BARRIER',
     color: 0x7799ee,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
@@ -233,17 +342,71 @@ export const VFX_PROFILES: Record<string, VfxProfile> = {
     category: 'SHIELD_BARRIER',
     color: 0x4477dd,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  shield_bash: {
+    category: 'SHIELD_BARRIER',
+    color: 0x4488cc,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  makeshift_armor: {
+    category: 'SHIELD_BARRIER',
+    color: 0x5588cc,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
 
-  // === Resist Ward — 특수 방어 카드 (보라/시안 에너지 워드) ===
-  wet_cloth: {
-    category: 'RESIST_WARD',
-    color: 0xaa66ff,
+  // ═══════════════════════════════════════════════════
+  // 물리 방어 — Fortress (다층 배리어, 희귀 전용)
+  // ═══════════════════════════════════════════════════
+  iron_wall: {
+    category: 'FORTRESS',
+    color: 0x5599ee,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  counter_stance: {
+    category: 'FORTRESS',
+    color: 0x6688dd,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+
+  // ═══════════════════════════════════════════════════
+  // 특수 방어 — Resist Ward (보라/시안 에너지 워드)
+  // ═══════════════════════════════════════════════════
+  protect: {
+    category: 'RESIST_WARD',
+    color: 0x9966ee,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  contamination_block: {
+    category: 'RESIST_WARD',
+    color: 0x77aadd,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  debris_cover: {
+    category: 'RESIST_WARD',
+    color: 0x8899bb,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
@@ -251,7 +414,7 @@ export const VFX_PROFILES: Record<string, VfxProfile> = {
     category: 'RESIST_WARD',
     color: 0x9955ee,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
@@ -259,7 +422,7 @@ export const VFX_PROFILES: Record<string, VfxProfile> = {
     category: 'RESIST_WARD',
     color: 0x55ccff,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
@@ -267,7 +430,7 @@ export const VFX_PROFILES: Record<string, VfxProfile> = {
     category: 'RESIST_WARD',
     color: 0x66ffaa,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
@@ -275,7 +438,7 @@ export const VFX_PROFILES: Record<string, VfxProfile> = {
     category: 'RESIST_WARD',
     color: 0x44ddff,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
@@ -283,7 +446,7 @@ export const VFX_PROFILES: Record<string, VfxProfile> = {
     category: 'RESIST_WARD',
     color: 0x88bb66,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
@@ -291,33 +454,91 @@ export const VFX_PROFILES: Record<string, VfxProfile> = {
     category: 'RESIST_WARD',
     color: 0xbb88ff,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  energy_convert: {
+    category: 'RESIST_WARD',
+    color: 0x55ddee,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
 
-  // === Buff Aura — 유틸 카드 (금빛 상승 스파클) ===
+  // ═══════════════════════════════════════════════════
+  // 특수 방어 — Heal Pulse (초록 힐링 파티클)
+  // ═══════════════════════════════════════════════════
+  first_aid: {
+    category: 'HEAL_PULSE',
+    color: 0x44cc88,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+
+  // ═══════════════════════════════════════════════════
+  // 특수 방어 — Purify Burst (백색 정화 폭발)
+  // ═══════════════════════════════════════════════════
+  full_purify: {
+    category: 'PURIFY_BURST',
+    color: 0xeeffff,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+
+  // ═══════════════════════════════════════════════════
+  // 유틸리티 — Buff Aura (금빛 상승 스파클)
+  // ═══════════════════════════════════════════════════
   scavenge: {
     category: 'BUFF_AURA',
     color: 0xffcc44,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
-  illegal_stimulant: {
+  ammo_maintenance: {
     category: 'BUFF_AURA',
-    color: 0xff6644,
+    color: 0xccaa33,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
-  scrap_recycling: {
+  alertness: {
     category: 'BUFF_AURA',
-    color: 0xaacc44,
+    color: 0xdddd66,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  loot_search: {
+    category: 'BUFF_AURA',
+    color: 0xddbb44,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  battle_meditation: {
+    category: 'BUFF_AURA',
+    color: 0xaabb88,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  plunder: {
+    category: 'BUFF_AURA',
+    color: 0xddaa33,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
@@ -325,15 +546,7 @@ export const VFX_PROFILES: Record<string, VfxProfile> = {
     category: 'BUFF_AURA',
     color: 0xff8844,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
-    isAoe: false,
-    multiHitCount: 1,
-  },
-  duct_tape_engineering: {
-    category: 'BUFF_AURA',
-    color: 0x88ccaa,
-    hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
@@ -341,15 +554,7 @@ export const VFX_PROFILES: Record<string, VfxProfile> = {
     category: 'BUFF_AURA',
     color: 0xddaa44,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
-    isAoe: false,
-    multiHitCount: 1,
-  },
-  nano_repair: {
-    category: 'BUFF_AURA',
-    color: 0x44ffcc,
-    hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
@@ -357,7 +562,115 @@ export const VFX_PROFILES: Record<string, VfxProfile> = {
     category: 'BUFF_AURA',
     color: 0xffdd66,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+
+  // ═══════════════════════════════════════════════════
+  // 유틸리티 — Heal Pulse (힐링 이펙트)
+  // ═══════════════════════════════════════════════════
+  emergency_repair: {
+    category: 'HEAL_PULSE',
+    color: 0x44dd88,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  nano_repair: {
+    category: 'HEAL_PULSE',
+    color: 0x44ffcc,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+
+  // ═══════════════════════════════════════════════════
+  // 유틸리티 — Blood Sacrifice (자해 + 금빛 이득)
+  // ═══════════════════════════════════════════════════
+  blood_price: {
+    category: 'BLOOD_SACRIFICE',
+    color: 0xff2222,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  sacrifice: {
+    category: 'BLOOD_SACRIFICE',
+    color: 0xcc3333,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  weapon_mod: {
+    category: 'BLOOD_SACRIFICE',
+    color: 0xdd4422,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  illegal_stimulant: {
+    category: 'BLOOD_SACRIFICE',
+    color: 0xff4433,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+
+  // ═══════════════════════════════════════════════════
+  // 유틸리티 — Power Surge (파워업 나선 오라)
+  // ═══════════════════════════════════════════════════
+  rage: {
+    category: 'POWER_SURGE',
+    color: 0xff4444,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  fortify: {
+    category: 'POWER_SURGE',
+    color: 0x4488ff,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  frenzy: {
+    category: 'POWER_SURGE',
+    color: 0xff3344,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  phoenix_ash: {
+    category: 'POWER_SURGE',
+    color: 0xff6644,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  duct_tape_engineering: {
+    category: 'POWER_SURGE',
+    color: 0x88ccaa,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
+    isAoe: false,
+    multiHitCount: 1,
+  },
+  scrap_recycling: {
+    category: 'POWER_SURGE',
+    color: 0xaacc44,
+    hitStopMs: 0,
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },
@@ -388,7 +701,7 @@ export const ENEMY_VFX: Record<string, VfxProfile> = {
     category: 'ENEMY_BUFF',
     color: 0x4488ff,
     hitStopMs: 0,
-    shakeProfile: { intensity: 0, axis: 'XY', durationMs: 0, decayRate: 1 },
+    shakeProfile: NO_SHAKE,
     isAoe: false,
     multiHitCount: 1,
   },

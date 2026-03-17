@@ -49,6 +49,12 @@ export const VfxLayer: React.FC<VfxLayerProps> = ({ onShakeUpdate }) => {
         }
         if (!profile) continue;
 
+        // SCATTER_SHOT은 타겟 전체를 한 번에 처리 (per-target 루프 불필요)
+        if (profile.category === 'SCATTER_SHOT') {
+          engineRef.current.spawnScatterShot(cmd.sourceX, cmd.sourceY, cmd.targetPositions, profile);
+          continue;
+        }
+
         for (const target of cmd.targetPositions) {
           switch (profile.category) {
             case 'HEAVY_KINETIC':
@@ -61,7 +67,6 @@ export const VfxLayer: React.FC<VfxLayerProps> = ({ onShakeUpdate }) => {
               engineRef.current.spawnThermalAoe(target.x, target.y, profile);
               break;
             case 'ELECTROMAGNETIC':
-              // 총알은 발사 높이와 동일한 수평 직선으로 날아감
               engineRef.current.spawnElectromagnetic(cmd.sourceX, cmd.sourceY, target.x, cmd.sourceY, profile);
               break;
             case 'SHIELD_BARRIER':
@@ -72,6 +77,30 @@ export const VfxLayer: React.FC<VfxLayerProps> = ({ onShakeUpdate }) => {
               break;
             case 'BUFF_AURA':
               engineRef.current.spawnBuffAura(target.x, target.y, profile);
+              break;
+            case 'BLADE_SLASH':
+              engineRef.current.spawnBladeSlash(target.x, target.y, profile);
+              break;
+            case 'GROUND_POUND':
+              engineRef.current.spawnGroundPound(target.x, target.y, profile);
+              break;
+            case 'BERSERK':
+              engineRef.current.spawnBerserk(target.x, target.y, profile);
+              break;
+            case 'HEAL_PULSE':
+              engineRef.current.spawnHealPulse(target.x, target.y, profile);
+              break;
+            case 'BLOOD_SACRIFICE':
+              engineRef.current.spawnBloodSacrifice(target.x, target.y, profile);
+              break;
+            case 'POWER_SURGE':
+              engineRef.current.spawnPowerSurge(target.x, target.y, profile);
+              break;
+            case 'PURIFY_BURST':
+              engineRef.current.spawnPurifyBurst(target.x, target.y, profile);
+              break;
+            case 'FORTRESS':
+              engineRef.current.spawnFortress(target.x, target.y, profile);
               break;
             case 'ENEMY_MELEE':
               engineRef.current.spawnEnemyMelee(target.x, target.y, profile);
