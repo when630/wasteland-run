@@ -114,8 +114,16 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
             종합 리포트
           </h3>
           <div style={reportItemStyle}>
+            <span style={{ color: '#9ca3af' }}>챕터</span>
+            <span style={{ fontWeight: 'bold' }}>{currentChapter}막</span>
+          </div>
+          <div style={reportItemStyle}>
             <span style={{ color: '#9ca3af' }}>도달한 층수</span>
-            <span style={{ fontWeight: 'bold' }}>{currentFloor} 층</span>
+            <span style={{ fontWeight: 'bold' }}>{currentFloor} / {currentChapter * 15} 층</span>
+          </div>
+          <div style={reportItemStyle}>
+            <span style={{ color: '#9ca3af' }}>남은 체력</span>
+            <span style={{ fontWeight: 'bold', color: playerHp > playerMaxHp * 0.5 ? '#34d399' : playerHp > 0 ? '#fb923c' : '#ef4444' }}>{playerHp} / {playerMaxHp}</span>
           </div>
           <div style={reportItemStyle}>
             <span style={{ color: '#9ca3af' }}>처치한 적 수</span>
@@ -193,9 +201,18 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
               최종 덱 ({masterDeck.length}장)
             </h3>
             {(() => {
+              const TYPE_LABELS: Record<string, string> = {
+                PHYSICAL_ATTACK: '물리 공격',
+                SPECIAL_ATTACK: '특수 공격',
+                PHYSICAL_DEFENSE: '물리 방어',
+                SPECIAL_DEFENSE: '특수 방어',
+                UTILITY: '변화',
+                STATUS_BURN: '화상',
+                STATUS_RADIATION: '방사능',
+              };
               const typeCounts: Record<string, number> = {};
               masterDeck.forEach(card => {
-                const label = card.type.replace(/_/g, ' ');
+                const label = TYPE_LABELS[card.type] || card.type;
                 typeCounts[label] = (typeCounts[label] || 0) + 1;
               });
               return (
