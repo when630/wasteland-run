@@ -325,7 +325,7 @@ const EnemyOverlay: React.FC<{ enemy: Enemy; index: number; total: number; scale
   const defaultHeight = isBoss ? 300 : (isElite ? 187 : 153);
   const targetHeight = defaultHeight;
   const halfH = targetHeight / 2;
-  const intentY = -(halfH + 28) * scale;            // 이름 위
+  const intentY = -(halfH + 45) * scale;            // 이름 위
   const hpBarY = (halfH + 8) * scale;               // 스프라이트 하단
   const hpBarRight = (isBoss ? 80 : 53) * scale;
   const statusY = hpBarY + (isBoss ? 16 : 15) * scale;
