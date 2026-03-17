@@ -1,3 +1,19 @@
+@font-face {
+  font-family: 'Galmuri11';
+  src: url('./assets/fonts/Galmuri11.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Galmuri11';
+  src: url('./assets/fonts/Galmuri11-Bold.woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -5,7 +21,7 @@ body {
   height: 100vh;
   overflow: hidden;
   background-color: #000;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: 'Galmuri11', 'Courier New', Courier, monospace;
   user-select: none;
 }
 
@@ -14,8 +30,19 @@ body {
   height: 100%;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+}
+
+button,
+input,
+select,
+textarea,
+h1, h2, h3, h4, h5, h6,
+p, span, div, a, label {
+  font-family: inherit;
 }
 
 /* ── 공용 애니메이션 ── */

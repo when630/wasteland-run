@@ -37,7 +37,7 @@ export const StatisticsModal: React.FC<StatisticsModalProps> = ({ onClose }) => 
     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.90)', zIndex: 1000,
     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start',
-    fontFamily: '"Courier New", Courier, monospace', color: '#fff',
+    fontFamily: '"Galmuri11", "Courier New", Courier, monospace', color: '#fff',
     animation: 'fadeIn 0.3s ease-out'
   };
 

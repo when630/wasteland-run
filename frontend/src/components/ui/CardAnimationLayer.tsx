@@ -131,7 +131,7 @@ export const CardAnimationLayer: React.FC = () => {
             0 8px 24px rgba(0,0,0,0.8),
             0 0 16px rgba(0,0,0,0.5),
             0 0 20px ${theme.accent}1a inset;
-          font-family:'Rajdhani',sans-serif;
+          font-family:'Rajdhani','Galmuri11',sans-serif;
         `;
 
         // cf-accent-top (4px → 2px)
@@ -158,13 +158,13 @@ export const CardAnimationLayer: React.FC = () => {
         header.style.cssText = `position:absolute;top:3px;left:4px;right:4px;z-index:6;display:flex;align-items:center;justify-content:space-between;gap:2px;`;
 
         const nameEl = document.createElement('div');
-        nameEl.style.cssText = `font-family:'Cinzel',serif;font-size:7px;font-weight:700;color:#e8e0cc;letter-spacing:0.02em;line-height:1.15;text-shadow:0 1px 4px rgba(0,0,0,0.9);flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;`;
+        nameEl.style.cssText = `font-family:'Cinzel','Galmuri11',serif;font-size:7px;font-weight:700;color:#e8e0cc;letter-spacing:0.02em;line-height:1.15;text-shadow:0 1px 4px rgba(0,0,0,0.9);flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;`;
         nameEl.textContent = a.cardName;
 
         const costPill = document.createElement('div');
         costPill.style.cssText = `display:flex;align-items:center;gap:1px;background:rgba(0,0,0,0.72);border:1px solid ${theme.costBorder};border-radius:10px;padding:1px 4px 1px 3px;flex-shrink:0;backdrop-filter:blur(4px);`;
         const costVal = document.createElement('span');
-        costVal.style.cssText = `font-family:'Cinzel',serif;font-size:8px;font-weight:900;color:#e8e0cc;line-height:1;`;
+        costVal.style.cssText = `font-family:'Cinzel','Galmuri11',serif;font-size:8px;font-weight:900;color:#e8e0cc;line-height:1;`;
         costVal.textContent = `${a.cardCostAp}`;
         const costLbl = document.createElement('span');
         costLbl.style.cssText = `font-size:4px;letter-spacing:0.06em;text-transform:uppercase;opacity:0.75;line-height:1;color:${theme.accentLight};margin-top:1px;`;
@@ -197,7 +197,7 @@ export const CardAnimationLayer: React.FC = () => {
         const typeBadge = document.createElement('div');
         typeBadge.style.cssText = `position:absolute;bottom:4px;left:50%;transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:2px;background:rgba(0,0,0,0.65);border:1px solid ${theme.accent};border-radius:10px;padding:1px 5px;white-space:nowrap;`;
         const typeLabel = document.createElement('span');
-        typeLabel.style.cssText = `font-family:'Cinzel',serif;font-size:4px;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;color:${theme.accentLight};`;
+        typeLabel.style.cssText = `font-family:'Cinzel','Galmuri11',serif;font-size:4px;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;color:${theme.accentLight};`;
         typeLabel.textContent = (ANIM_THEMES[a.cardType] ? a.cardType : 'STATUS').replace(/_/g, ' ');
         typeBadge.appendChild(typeLabel);
 

@@ -404,10 +404,9 @@ const UPGRADE_TABLE: Record<string, UpgradeEntry> = {
 /**
  * 카드에 업그레이드를 적용하여 새 카드 객체를 반환
  */
-export function applyUpgrade(card: Card): Card {
+export function applyUpgrade(card: Card, relics?: string[]): Card {
   const entry = UPGRADE_TABLE[card.baseId];
   if (!entry) {
-    // 테이블에 없는 카드는 isUpgraded만 표시
     return { ...card, isUpgraded: true };
   }
 
@@ -423,6 +422,16 @@ export function applyUpgrade(card: Card): Card {
   }
   if (entry.costAp !== undefined) {
     upgraded.costAp = entry.costAp;
+  }
+
+  // [정밀 공구] 카드 강화 시 피해/방어 수치 +1
+  if (relics?.includes('precision_tools') && upgraded.effects) {
+    upgraded.effects = upgraded.effects.map(e => {
+      if ((e.type === 'DAMAGE' || e.type === 'SHIELD' || e.type === 'RESIST') && e.amount) {
+        return { ...e, amount: e.amount + 1 };
+      }
+      return e;
+    });
   }
 
   return upgraded;

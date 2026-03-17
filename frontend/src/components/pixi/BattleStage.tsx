@@ -40,11 +40,13 @@ export const BattleStage: React.FC = () => {
   }, []);
 
   const defaultTextStyle = useMemo(() => new PIXI.TextStyle({
+    fontFamily: 'Galmuri11',
     fill: 0xffffff,
     fontSize: 18,
   }), []);
 
   const turnTextStyle = useMemo(() => new PIXI.TextStyle({
+    fontFamily: 'Galmuri11',
     fill: currentTurn === 'PLAYER' ? 0xffff00 : 0xff5555,
     fontSize: 32,
     fontWeight: 'bold',

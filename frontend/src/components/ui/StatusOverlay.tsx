@@ -280,6 +280,29 @@ const IntentDisplay: React.FC<{ enemy: Enemy; scale: number; masked: boolean }> 
           }}>
             {tooltipLine2}
           </div>
+          {enemy.nextIntent && (
+            <div style={{
+              marginTop: 4 * scale,
+              paddingTop: 3 * scale,
+              borderTop: '1px solid rgba(180, 140, 255, 0.3)',
+            }}>
+              <div style={{
+                fontSize: tooltipFontSize * 0.9, fontWeight: 'bold',
+                color: '#b088ff',
+                marginBottom: 1 * scale,
+              }}>
+                {'🔮 다음 턴'}
+              </div>
+              <div style={{
+                fontSize: tooltipFontSize * 0.9, color: '#aaa',
+              }}>
+                {masked
+                  ? enemy.nextIntent.description.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{2B55}\u{FE00}-\u{FE0F}\u{200D}]/gu, '').trim().replace(/\d+/g, '?')
+                  : enemy.nextIntent.description.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{2B55}\u{FE00}-\u{FE0F}\u{200D}]/gu, '').trim()
+                }
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -6,7 +6,7 @@ import { useAudioStore } from '../store/useAudioStore';
 
 type ChestSize = 'SMALL' | 'MEDIUM' | 'LARGE';
 
-interface ChestOption {
+interface ChestVisual {
   size: ChestSize;
   label: string;
   color: string;
@@ -19,11 +19,19 @@ interface TreasureReward {
   gold: number;
 }
 
-const CHEST_OPTIONS: ChestOption[] = [
-  { size: 'SMALL', label: '낡은 상자', color: '#8b7355', borderColor: '#a0845c', glowColor: 'rgba(160, 132, 92, 0.3)' },
-  { size: 'MEDIUM', label: '철제 상자', color: '#5a7a9a', borderColor: '#6a9aba', glowColor: 'rgba(106, 154, 186, 0.3)' },
-  { size: 'LARGE', label: '황금 상자', color: '#b8860b', borderColor: '#ffd700', glowColor: 'rgba(255, 215, 0, 0.3)' },
-];
+const CHEST_VISUALS: Record<ChestSize, ChestVisual> = {
+  SMALL: { size: 'SMALL', label: '낡은 상자', color: '#8b7355', borderColor: '#a0845c', glowColor: 'rgba(160, 132, 92, 0.3)' },
+  MEDIUM: { size: 'MEDIUM', label: '철제 상자', color: '#5a7a9a', borderColor: '#6a9aba', glowColor: 'rgba(106, 154, 186, 0.3)' },
+  LARGE: { size: 'LARGE', label: '황금 상자', color: '#b8860b', borderColor: '#ffd700', glowColor: 'rgba(255, 215, 0, 0.3)' },
+};
+
+function rollChestSize(): ChestSize {
+  const rng = useRngStore.getState().lootRng;
+  const roll = rng.next(); // 0~1
+  if (roll < 0.50) return 'SMALL';       // 50%
+  if (roll < 0.83) return 'MEDIUM';      // 33%
+  return 'LARGE';                         // 17%
+}
 
 function rollReward(chestSize: ChestSize, ownedRelics: string[]): TreasureReward | null {
   const rng = useRngStore.getState().lootRng;
@@ -67,39 +75,33 @@ function rollReward(chestSize: ChestSize, ownedRelics: string[]): TreasureReward
 
 export const TreasureRoomView: React.FC = () => {
   const { relics, addRelic, addGold, setScene, setToastMessage } = useRunStore();
-  const [phase, setPhase] = useState<'CHOOSE' | 'REVEAL'>('CHOOSE');
+  const [opened, setOpened] = useState(false);
   const [reward, setReward] = useState<TreasureReward | null>(null);
-  const [chosenChest, setChosenChest] = useState<ChestOption | null>(null);
   const [claimed, setClaimed] = useState(false);
-  const [hoveredChest, setHoveredChest] = useState<ChestSize | null>(null);
+  const [isHovered, setIsHovered] = useState(false);
 
-  // 3개의 상자 배치 결정 (랜덤 순서)
-  const chests = useMemo(() => {
-    const rng = useRngStore.getState().lootRng;
-    const shuffled = [...CHEST_OPTIONS];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(rng.next() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
+  // 랜덤 1개 상자 결정
+  const chest = useMemo(() => {
+    const size = rollChestSize();
+    return CHEST_VISUALS[size];
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleOpenChest = (chest: ChestOption) => {
+  const handleOpenChest = () => {
     useAudioStore.getState().playClick();
     const result = rollReward(chest.size, relics);
-    setChosenChest(chest);
     setReward(result);
-    setPhase('REVEAL');
+    setOpened(true);
   };
 
-  const handleClaim = () => {
+  const handleClaim = async () => {
     if (!reward || claimed) return;
     useAudioStore.getState().playClick();
     addRelic(reward.relic.id);
     if (reward.gold > 0) addGold(reward.gold);
     setClaimed(true);
     setToastMessage(`[${reward.relic.name}] 유물 획득!${reward.gold > 0 ? ` 골드 ${reward.gold}도 발견!` : ''}`);
+    await useRunStore.getState().saveRunData();
   };
 
   const handleLeave = () => {
@@ -114,7 +116,7 @@ export const TreasureRoomView: React.FC = () => {
       width: '100vw', height: '100vh',
       background: 'radial-gradient(circle at center, #2a1f0a 0%, #0a0a0a 80%)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      fontFamily: '"Courier New", Courier, monospace', color: '#fff',
+      fontFamily: '"Galmuri11", "Courier New", Courier, monospace', color: '#fff',
       gap: '24px',
     }}>
       <h1 style={{
@@ -125,67 +127,59 @@ export const TreasureRoomView: React.FC = () => {
         보물방
       </h1>
 
-      {phase === 'CHOOSE' && (
+      {!opened && (
         <>
           <p style={{ fontSize: '16px', color: '#888', margin: 0 }}>
-            상자를 하나 선택하세요
+            상자를 열어보세요
           </p>
 
-          <div style={{ display: 'flex', gap: '24px', marginTop: '8px' }}>
-            {chests.map((chest) => {
-              const isHovered = hoveredChest === chest.size;
-              return (
-                <div
-                  key={chest.size}
-                  onClick={() => handleOpenChest(chest)}
-                  onMouseEnter={() => setHoveredChest(chest.size)}
-                  onMouseLeave={() => setHoveredChest(null)}
-                  style={{
-                    width: '180px',
-                    padding: '28px 20px',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px',
-                    border: `2px solid ${isHovered ? chest.borderColor : 'rgba(100,100,100,0.4)'}`,
-                    borderRadius: '12px',
-                    backgroundColor: isHovered ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.4)',
-                    cursor: 'pointer',
-                    transition: 'all 0.25s',
-                    transform: isHovered ? 'translateY(-6px) scale(1.03)' : 'translateY(0) scale(1)',
-                    boxShadow: isHovered ? `0 8px 30px ${chest.glowColor}` : '0 2px 8px rgba(0,0,0,0.5)',
-                  }}
-                >
-                  <div style={{
-                    width: '64px', height: '64px',
-                    borderRadius: '8px',
-                    backgroundColor: chest.color,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: `inset 0 -3px 6px rgba(0,0,0,0.4), 0 0 12px ${chest.glowColor}`,
-                    transition: 'box-shadow 0.25s',
-                  }}>
-                    <div style={{
-                      width: '20px', height: '14px',
-                      borderRadius: '3px',
-                      backgroundColor: 'rgba(255,255,255,0.25)',
-                      border: '2px solid rgba(255,255,255,0.15)',
-                    }} />
-                  </div>
-                  <span style={{
-                    fontSize: '16px', fontWeight: 'bold',
-                    color: isHovered ? chest.borderColor : '#888',
-                    transition: 'color 0.2s',
-                  }}>
-                    {chest.label}
-                  </span>
-                </div>
-              );
-            })}
+          <div
+            onClick={handleOpenChest}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            style={{
+              width: '200px',
+              padding: '32px 20px',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px',
+              border: `2px solid ${isHovered ? chest.borderColor : 'rgba(100,100,100,0.4)'}`,
+              borderRadius: '12px',
+              backgroundColor: isHovered ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.4)',
+              cursor: 'pointer',
+              transition: 'all 0.25s',
+              transform: isHovered ? 'translateY(-6px) scale(1.05)' : 'translateY(0) scale(1)',
+              boxShadow: isHovered ? `0 8px 30px ${chest.glowColor}` : '0 2px 8px rgba(0,0,0,0.5)',
+            }}
+          >
+            <div style={{
+              width: '72px', height: '72px',
+              borderRadius: '8px',
+              backgroundColor: chest.color,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: `inset 0 -3px 6px rgba(0,0,0,0.4), 0 0 12px ${chest.glowColor}`,
+              transition: 'box-shadow 0.25s',
+            }}>
+              <div style={{
+                width: '22px', height: '16px',
+                borderRadius: '3px',
+                backgroundColor: 'rgba(255,255,255,0.25)',
+                border: '2px solid rgba(255,255,255,0.15)',
+              }} />
+            </div>
+            <span style={{
+              fontSize: '18px', fontWeight: 'bold',
+              color: isHovered ? chest.borderColor : '#888',
+              transition: 'color 0.2s',
+            }}>
+              {chest.label}
+            </span>
           </div>
         </>
       )}
 
-      {phase === 'REVEAL' && chosenChest && (
+      {opened && (
         <div style={{ textAlign: 'center', animation: 'fadeIn 0.4s ease-out' }}>
-          <p style={{ fontSize: '18px', color: chosenChest.borderColor, margin: '0 0 20px 0' }}>
-            {chosenChest.label}을 열었습니다!
+          <p style={{ fontSize: '18px', color: chest.borderColor, margin: '0 0 20px 0' }}>
+            {chest.label}을 열었습니다!
           </p>
 
           {reward ? (

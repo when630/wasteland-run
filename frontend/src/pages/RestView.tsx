@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useRunStore } from '../store/useRunStore';
 import { UpgradeCardModal } from '../components/ui/UpgradeCardModal';
+import { RemoveCardModal } from '../components/ui/RemoveCardModal';
 import { onRestOrEventEnter } from '../logic/relicEffects';
 import restBg from '../assets/images/backgrounds/campfire_map_background.webp';
-import { iconCampfire, iconCardUpgrade, iconHeart, iconBurn } from '../assets/images/GUI';
+import { iconCampfire, iconCardUpgrade, iconHeart, iconBurn, iconCardRemove } from '../assets/images/GUI';
 
 export const RestView: React.FC = () => {
   const { playerHp, playerMaxHp, healPlayer, setScene, relics } = useRunStore();
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [healResult, setHealResult] = useState<number | null>(null);
 
   const relicEffects = onRestOrEventEnter(relics, playerMaxHp);
   const canUpgrade = relicEffects.canUpgrade;
+  const canRemoveCard = relicEffects.canRemoveCard;
+  const hasManual = relics.includes('forgotten_manual');
+  const [upgradeCount, setUpgradeCount] = useState(0);
+  const maxUpgrades = hasManual ? 2 : 1;
 
   useEffect(() => {
     if (relicEffects.healAmount > 0) {
@@ -22,7 +28,8 @@ export const RestView: React.FC = () => {
   }, []);
 
   const handleHeal = async () => {
-    const healAmount = Math.ceil(playerMaxHp * 0.3);
+    const baseRate = 0.3 + relicEffects.restHealBonus; // 통조림 식량: +0.3
+    const healAmount = Math.ceil(playerMaxHp * baseRate);
     const actualHeal = Math.min(healAmount, playerMaxHp - playerHp);
     healPlayer(healAmount);
     setHealResult(actualHeal);
@@ -94,7 +101,7 @@ export const RestView: React.FC = () => {
               <img src={iconCampfire} alt="" style={{ width: 56, height: 56, objectFit: 'contain', marginBottom: '12px', filter: 'drop-shadow(0 0 10px rgba(232, 164, 68, 0.6))' }} />
               <h2 style={{ margin: '0 0 6px 0', color: '#88dd88', fontSize: '20px', textShadow: txtShadow }}>휴식</h2>
               <p style={{ margin: 0, color: '#8a9a8a', textAlign: 'center', fontSize: '14px', lineHeight: '1.4', textShadow: txtShadowSub }}>
-                최대 체력의 30%({Math.ceil(playerMaxHp * 0.3)})를 회복합니다.
+                최대 체력의 {Math.round((0.3 + relicEffects.restHealBonus) * 100)}%({Math.ceil(playerMaxHp * (0.3 + relicEffects.restHealBonus))})를 회복합니다.
               </p>
             </button>
 
@@ -125,6 +132,35 @@ export const RestView: React.FC = () => {
                 {canUpgrade ? '덱의 카드 한 장을 선택하여 업그레이드 합니다.' : '균열된 태양석 반응로에 의해 강화할 수 없습니다.'}
               </p>
             </button>
+
+            {/* 카드 제거 (만능 수리 도구 유물) */}
+            {canRemoveCard && (
+              <>
+                <div style={{
+                  width: '1px',
+                  height: '80px',
+                  background: 'linear-gradient(180deg, transparent, rgba(160, 120, 60, 0.3), transparent)',
+                }} />
+                <button
+                  onClick={() => setIsRemoveModalOpen(true)}
+                  style={{
+                    background: 'none', border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    padding: '16px 28px',
+                    transition: 'all 0.25s', opacity: 1,
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+                >
+                  <img src={iconCardRemove} alt="" style={{ width: 56, height: 56, objectFit: 'contain', marginBottom: '12px', filter: 'drop-shadow(0 0 10px rgba(220, 80, 80, 0.6))' }} />
+                  <h2 style={{ margin: '0 0 6px 0', color: '#dd8888', fontSize: '20px', textShadow: txtShadow }}>카드 제거</h2>
+                  <p style={{ margin: 0, color: '#9a8a8a', textAlign: 'center', fontSize: '14px', lineHeight: '1.4', textShadow: txtShadowSub }}>
+                    덱의 카드 한 장을 영구 제거합니다.
+                  </p>
+                </button>
+              </>
+            )}
           </>
         ) : (
           <div style={{
@@ -161,7 +197,28 @@ export const RestView: React.FC = () => {
         <UpgradeCardModal
           onClose={() => setIsUpgradeModalOpen(false)}
           onUpgradeComplete={() => {
+            const newCount = upgradeCount + 1;
+            setUpgradeCount(newCount);
             setIsUpgradeModalOpen(false);
+            if (hasManual && newCount < maxUpgrades) {
+              // 잊혀진 기술서: 2번째 강화 가능
+              useRunStore.getState().setToastMessage(`잊혀진 기술서 — 강화 ${newCount}/${maxUpgrades} 완료! 한 번 더 강화 가능!`);
+              setTimeout(() => setIsUpgradeModalOpen(true), 300);
+            } else {
+              if (hasManual) {
+                useRunStore.getState().removeRelic('forgotten_manual');
+                useRunStore.getState().setToastMessage('잊혀진 기술서 소모 — 2장 강화 완료!');
+              }
+              setScene('MAP');
+            }
+          }}
+        />
+      )}
+      {isRemoveModalOpen && (
+        <RemoveCardModal
+          onClose={() => setIsRemoveModalOpen(false)}
+          onRemoveComplete={() => {
+            setIsRemoveModalOpen(false);
             setScene('MAP');
           }}
         />

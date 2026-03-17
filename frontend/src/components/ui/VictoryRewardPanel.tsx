@@ -106,7 +106,7 @@ const GoldEffect: React.FC<{
 
         ctx.save();
         ctx.globalAlpha = Math.max(0, popOpacity);
-        ctx.font = `bold ${Math.round(24 * popScale)}px sans-serif`;
+        ctx.font = `bold ${Math.round(24 * popScale)}px Galmuri11, sans-serif`;
         ctx.fillStyle = '#ffd700';
         ctx.strokeStyle = 'rgba(0,0,0,0.9)';
         ctx.lineWidth = 3;

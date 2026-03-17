@@ -138,7 +138,7 @@ const EnemyDetailModal: React.FC<{ baseId: string; onClose: () => void }> = ({ b
           maxWidth: '600px', width: '90%',
           display: 'flex', flexDirection: 'column', gap: '20px',
           boxShadow: `0 0 40px ${tierColor}33`,
-          fontFamily: '"Courier New", Courier, monospace',
+          fontFamily: '"Galmuri11", "Courier New", Courier, monospace',
           color: '#fff',
         }}
       >
@@ -157,7 +157,7 @@ const EnemyDetailModal: React.FC<{ baseId: string; onClose: () => void }> = ({ b
           <button onClick={onClose} style={{
             background: 'none', border: '1px solid #555', borderRadius: '4px',
             color: '#888', cursor: 'pointer', padding: '4px 10px', fontSize: '14px',
-            fontFamily: 'monospace',
+            fontFamily: '"Galmuri11", monospace',
           }}>
             닫기
           </button>

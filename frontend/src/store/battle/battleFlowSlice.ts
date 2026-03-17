@@ -59,6 +59,12 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
       return;
     }
 
+    // [불안정한 텔레포터] 매 턴 드로우 전 덱 셔플
+    const relicsForShuffle = useRunStore.getState().relics;
+    if (relicsForShuffle.includes('unstable_teleporter')) {
+      useDeckStore.getState().shuffleDrawPile();
+    }
+
     set((state) => {
       let startingAp = state.playerMaxAp;
       startingAp += state.bonusApNextTurn;
@@ -79,9 +85,12 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
       if (relics.includes('hourglass') && (state.turnCount + 1) % 3 === 0) {
         startingAp += 1;
       }
-      // 아드레날린 자해
+      // 아드레날린 자해 ([혈압 조절기] 보유 시 50% 감소)
       if (turnEffects.selfDamage > 0) {
-        useRunStore.getState().damagePlayer(turnEffects.selfDamage);
+        const selfDmg = relics.includes('blood_regulator')
+          ? Math.floor(turnEffects.selfDamage * 0.5)
+          : turnEffects.selfDamage;
+        if (selfDmg > 0) useRunStore.getState().damagePlayer(selfDmg);
       }
       // 돌연변이 발톱: 랜덤 적 피해 (set 후 처리 필요 — 별도 디스패치)
       // 추가 드로우: drawCards는 set 후 호출
@@ -122,14 +131,46 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
     });
   },
 
-  endPlayerTurn: () => set((state) => {
-    // 플레이어 턴 종료 시 디버프 1턴 감소 (0 이하면 제거)
-    const nextDebuffs: Record<string, number> = {};
-    Object.entries(state.playerDebuffs).forEach(([key, val]) => {
-      if (val > 1) nextDebuffs[key] = val - 1;
+  endPlayerTurn: () => {
+    const relics = useRunStore.getState().relics;
+    const currentState = get();
+    const hand = useDeckStore.getState().hand;
+
+    // [전술 조끼] 턴 종료 시 손패 0장이면 다음 턴 드로우 +2
+    let bonusDraw = 0;
+    if (relics.includes('tactical_vest') && hand.length === 0) {
+      bonusDraw += 2;
+    }
+    // [영구 운동 장치] 턴 종료 시 손패 4장 이상(≈카드 1장 이하 사용)이면 다음 턴 드로우 2
+    if (relics.includes('perpetual_engine') && hand.length >= 4) {
+      bonusDraw += 2;
+    }
+    // [자기장 코일] 턴 종료 시 미사용 AP 1당 물리+특수 방어도 3
+    if (relics.includes('magnetic_coil') && currentState.playerActionPoints > 0) {
+      const shieldAmount = currentState.playerActionPoints * 3;
+      get().addPlayerShield(shieldAmount);
+      get().addPlayerResist(shieldAmount);
+    }
+    // [양자 코어] 턴 종료 시 손패 1장 랜덤 소멸
+    if (relics.includes('quantum_core') && hand.length > 0) {
+      const idx = Math.floor(Math.random() * hand.length);
+      useDeckStore.getState().exhaustCardFromHand(hand[idx].id);
+    }
+
+    // 다음 턴 추가 드로우 예약
+    if (bonusDraw > 0) {
+      setTimeout(() => useDeckStore.getState().drawCards(bonusDraw), 200);
+    }
+
+    // 디버프 1턴 감소
+    set((state) => {
+      const nextDebuffs: Record<string, number> = {};
+      Object.entries(state.playerDebuffs).forEach(([key, val]) => {
+        if (val > 1) nextDebuffs[key] = val - 1;
+      });
+      return { currentTurn: 'ENEMY' as const, playerDebuffs: nextDebuffs };
     });
-    return { currentTurn: 'ENEMY' as const, playerDebuffs: nextDebuffs };
-  }),
+  },
 
   setTargetingCard: (cardId) => set({
     targetingCardId: cardId,

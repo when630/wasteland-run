@@ -90,7 +90,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showQuitB
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    fontFamily: '"Courier New", Courier, monospace',
+    fontFamily: '"Galmuri11", "Courier New", Courier, monospace',
     color: '#fff',
     animation: 'fadeIn 0.2s ease-out'
   };
@@ -160,7 +160,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showQuitB
     width: '100%',
     padding: '8px 12px',
     fontSize: '16px',
-    fontFamily: '"Courier New", Courier, monospace',
+    fontFamily: '"Galmuri11", "Courier New", Courier, monospace',
     backgroundColor: '#222',
     color: '#ddd',
     border: '1px solid #555',
@@ -187,7 +187,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, showQuitB
 
         {isActive && runSeed && (
           <div style={{ textAlign: 'center', color: '#ffaaaa', fontSize: '14px', marginBottom: '-10px' }}>
-            현재 시드 (Seed): <span style={{ fontFamily: 'monospace', padding: '2px 6px', background: '#333', borderRadius: '4px' }}>{runSeed}</span>
+            현재 시드 (Seed): <span style={{ fontFamily: '"Galmuri11", monospace', padding: '2px 6px', background: '#333', borderRadius: '4px' }}>{runSeed}</span>
           </div>
         )}
 

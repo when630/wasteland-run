@@ -63,7 +63,7 @@ export const CompendiumModal: React.FC<CompendiumModalProps> = ({ onClose }) => 
     padding: '4px 12px',
     fontSize: '12px',
     fontWeight: active ? 'bold' : 'normal',
-    fontFamily: 'monospace',
+    fontFamily: '"Galmuri11", monospace',
     backgroundColor: active ? (color || '#555') : 'transparent',
     color: active ? '#000' : (color || '#aaa'),
     border: `1px solid ${color || '#555'}`,
@@ -124,7 +124,7 @@ export const CompendiumModal: React.FC<CompendiumModalProps> = ({ onClose }) => 
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
       backgroundColor: 'rgba(0, 0, 0, 0.90)', zIndex: 1000,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start',
-      fontFamily: '"Courier New", Courier, monospace', color: '#fff',
+      fontFamily: '"Galmuri11", "Courier New", Courier, monospace', color: '#fff',
       animation: 'fadeIn 0.3s ease-out',
     }}>
       {/* Header */}

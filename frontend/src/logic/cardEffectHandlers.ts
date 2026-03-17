@@ -34,6 +34,9 @@ export interface ResolveContext {
   rampageCounts?: Record<string, number>; // baseId → 전투 중 사용 횟수
   nextAttackBonus?: number; // 무기 개조: 다음 공격 보너스 피해
   powerFrenzyAmount?: number; // 광기: HP 50% 이하 시 추가 피해
+  relicPhysicalBonus?: number; // 유물 패시브 물리 보너스
+  relicSpecialBonus?: number;  // 유물 패시브 특수 보너스
+  relicSingleTargetBonus?: number; // 유물 패시브 단일 타겟 보너스
 }
 
 /**
@@ -109,6 +112,16 @@ function resolveDamageEffect(
   // 물리 피해 스케일링 보너스 적용 (청테이프 공학)
   if (damageType === 'PHYSICAL' && ctx.physicalScalingBonus > 0) {
     baseAmount += ctx.physicalScalingBonus;
+  }
+  // 유물 패시브 피해 보너스
+  if (damageType === 'PHYSICAL' && (ctx.relicPhysicalBonus ?? 0) > 0) {
+    baseAmount += ctx.relicPhysicalBonus!;
+  }
+  if (damageType === 'SPECIAL' && (ctx.relicSpecialBonus ?? 0) > 0) {
+    baseAmount += ctx.relicSpecialBonus!;
+  }
+  if (effect.target !== 'ALL_ENEMIES' && (ctx.relicSingleTargetBonus ?? 0) > 0) {
+    baseAmount += ctx.relicSingleTargetBonus!;
   }
   // 무기 개조 보너스 적용
   if ((ctx.nextAttackBonus ?? 0) > 0) {

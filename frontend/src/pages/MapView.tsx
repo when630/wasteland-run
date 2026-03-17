@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import Xarrow from 'react-xarrows';
 import { useRunStore } from '../store/useRunStore';
 import { useMapStore, type NodeType } from '../store/useMapStore';
+import { useRngStore } from '../store/useRngStore';
 import mapBg1 from '../assets/images/backgrounds/map_background_zone1.webp';
 import mapBg2 from '../assets/images/backgrounds/map_background_zone2.webp';
 import mapBg3 from '../assets/images/backgrounds/map_background_zone3.webp';
@@ -18,7 +19,8 @@ import restBadge from '../assets/images/map/campfire_badge.webp';
 import shopBadge from '../assets/images/map/shop_badge.webp';
 import eventBadge from '../assets/images/map/event_badge.webp';
 import bossBadge from '../assets/images/map/boss_badge.webp';
-import { iconClose, iconLoot } from '../assets/images/GUI';
+import relicBadge from '../assets/images/map/relic_badge.webp';
+import { iconClose } from '../assets/images/GUI';
 
 interface MapViewProps {
   viewOnly?: boolean;
@@ -54,12 +56,23 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
     SHOP: shopBadge,
     EVENT: eventBadge,
     BOSS: bossBadge,
-    TREASURE: iconLoot,
+    TREASURE: relicBadge,
   };
 
-  const handleNodeClick = (nodeId: string, type: NodeType) => {
+  const handleNodeClick = async (nodeId: string, type: NodeType) => {
     setPendingNode(nodeId);
-    setScene(type);
+    if (type === 'EVENT') {
+      // 미지 노드: 동적으로 인카운터 결정 (적/상인/보물/이벤트)
+      const roll = useRngStore.getState().eventRng.nextInt(100);
+      const currentFloor = useMapStore.getState().currentFloor;
+      const resolvedScene = useRunStore.getState().resolveUnknownEncounter(roll, currentFloor);
+      setScene(resolvedScene);
+      await useRunStore.getState().saveRunData();
+    } else {
+      // EVENT가 아닌 노드는 lastVisitedNodeType 업데이트
+      useRunStore.setState({ lastVisitedNodeType: type });
+      setScene(type);
+    }
   };
 
   return (
@@ -128,7 +141,7 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
         }}>
           <div style={{
             fontSize: '32px',
-            fontFamily: 'serif', fontWeight: 700,
+            fontFamily: '"Galmuri11", serif', fontWeight: 700,
             color: '#3e2a14',
             textShadow: '1px 1px 0 rgba(196, 169, 106, 0.5)',
             letterSpacing: '0.08em',
@@ -137,7 +150,7 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
           </div>
           <div style={{
             fontSize: '14px',
-            fontFamily: 'serif',
+            fontFamily: '"Galmuri11", serif',
             color: '#8b6f47',
             marginTop: '4px',
           }}>

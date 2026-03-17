@@ -10,7 +10,7 @@ import type { Card } from '../../types/gameTypes';
 // ── 공용 스타일 ──
 const tabBtnStyle = (active: boolean): React.CSSProperties => ({
   padding: '5px 12px', fontSize: '12px', fontWeight: 'bold',
-  fontFamily: 'monospace', cursor: 'pointer', border: 'none',
+  fontFamily: '"Galmuri11", monospace', cursor: 'pointer', border: 'none',
   borderBottom: active ? '2px solid #ffd700' : '2px solid transparent',
   background: active ? 'rgba(255, 215, 0, 0.08)' : 'transparent',
   color: active ? '#ffd700' : '#777',
@@ -24,7 +24,7 @@ const sectionLabel: React.CSSProperties = {
 };
 
 const selectStyle: React.CSSProperties = {
-  width: '100%', padding: '5px 8px', fontSize: '12px', fontFamily: 'monospace',
+  width: '100%', padding: '5px 8px', fontSize: '12px', fontFamily: '"Galmuri11", monospace',
   background: '#1a1a2a', color: '#ddd', border: '1px solid #555',
   borderRadius: '4px', cursor: 'pointer', outline: 'none',
 };
@@ -43,7 +43,7 @@ const Btn: React.FC<{
       borderRadius: '4px', cursor: 'pointer',
       flex: flex ? '1' : undefined,
       whiteSpace: 'nowrap', transition: 'filter 0.15s',
-      fontFamily: 'monospace',
+      fontFamily: '"Galmuri11", monospace',
     }}
     onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.3)'}
     onMouseLeave={e => e.currentTarget.style.filter = 'brightness(1)'}
@@ -60,9 +60,9 @@ const NumRow: React.FC<{
 }> = ({ label, value, onMinus, onPlus, minusLabel = '-', plusLabel = '+', color = '#ccc' }) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '26px' }}>
     <span style={{ fontSize: '12px', color, flex: 1 }}>{label}</span>
-    <button onClick={onMinus} style={{ width: 28, height: 24, fontSize: '13px', fontWeight: 'bold', background: '#422', color: '#f88', border: '1px solid #644', borderRadius: '3px', cursor: 'pointer', fontFamily: 'monospace' }}>{minusLabel}</button>
+    <button onClick={onMinus} style={{ width: 28, height: 24, fontSize: '13px', fontWeight: 'bold', background: '#422', color: '#f88', border: '1px solid #644', borderRadius: '3px', cursor: 'pointer', fontFamily: '"Galmuri11", monospace' }}>{minusLabel}</button>
     <span style={{ fontSize: '13px', color: '#fff', fontWeight: 'bold', width: '32px', textAlign: 'center' }}>{value}</span>
-    <button onClick={onPlus} style={{ width: 28, height: 24, fontSize: '13px', fontWeight: 'bold', background: '#242', color: '#8f8', border: '1px solid #464', borderRadius: '3px', cursor: 'pointer', fontFamily: 'monospace' }}>{plusLabel}</button>
+    <button onClick={onPlus} style={{ width: 28, height: 24, fontSize: '13px', fontWeight: 'bold', background: '#242', color: '#8f8', border: '1px solid #464', borderRadius: '3px', cursor: 'pointer', fontFamily: '"Galmuri11", monospace' }}>{plusLabel}</button>
   </div>
 );
 
@@ -220,7 +220,7 @@ export const DebugTestPanel: React.FC<{
     background: 'rgba(20,20,40,0.9)', color: '#ffd700',
     border: '1px solid #ffd700', borderTop: 'none',
     borderRadius: '0 0 6px 6px',
-    cursor: 'pointer', fontFamily: 'monospace',
+    cursor: 'pointer', fontFamily: '"Galmuri11", monospace',
   };
 
   // ── 접힌 상태 ──
@@ -241,7 +241,7 @@ export const DebugTestPanel: React.FC<{
       background: 'rgba(10, 10, 20, 0.96)',
       borderBottom: '2px solid #444',
       display: 'flex', flexDirection: 'column',
-      fontFamily: 'monospace', color: '#ccc',
+      fontFamily: '"Galmuri11", monospace', color: '#ccc',
       maxHeight: '50vh', overflow: 'hidden',
     }}>
       {/* 헤더: 타이틀 + 탭 + 버튼을 한 줄에 */}
@@ -342,7 +342,7 @@ export const DebugTestPanel: React.FC<{
                       <button key={id} onClick={() => spawnNewEnemy(id)} title={BASE_ENEMIES[id]?.name || id}
                         style={{
                           padding: '3px 6px', fontSize: '10px', background: '#2a2a3a', color: '#bbb',
-                          border: '1px solid #444', borderRadius: '3px', cursor: 'pointer', fontFamily: 'monospace',
+                          border: '1px solid #444', borderRadius: '3px', cursor: 'pointer', fontFamily: '"Galmuri11", monospace',
                         }}
                         onMouseEnter={e => { e.currentTarget.style.background = '#3a3a5a'; e.currentTarget.style.color = '#fff'; }}
                         onMouseLeave={e => { e.currentTarget.style.background = '#2a2a3a'; e.currentTarget.style.color = '#bbb'; }}
@@ -413,7 +413,7 @@ export const DebugTestPanel: React.FC<{
                       padding: '2px 10px', fontSize: '11px', fontWeight: 'bold',
                       background: b.val ? '#254' : '#333', color: b.val ? '#8f8' : '#888',
                       border: `1px solid ${b.val ? '#4a4' : '#555'}`, borderRadius: '4px',
-                      cursor: 'pointer', fontFamily: 'monospace',
+                      cursor: 'pointer', fontFamily: '"Galmuri11", monospace',
                     }}
                   >{b.val ? 'ON' : 'OFF'}</button>
                 </div>
@@ -456,7 +456,7 @@ export const DebugTestPanel: React.FC<{
                 <div style={{ display: 'flex', gap: '3px', flexShrink: 0 }}>
                   {Object.entries(TYPE_LABELS).map(([type, label]) => (
                     <button key={type} onClick={() => setCardTypeFilter(type)} style={{
-                      padding: '2px 7px', fontSize: '10px', fontFamily: 'monospace',
+                      padding: '2px 7px', fontSize: '10px', fontFamily: '"Galmuri11", monospace',
                       background: cardTypeFilter === type ? (TYPE_COLORS[type] || '#555') : '#2a2a3a',
                       color: cardTypeFilter === type ? '#000' : (TYPE_COLORS[type] || '#aaa'),
                       border: `1px solid ${TYPE_COLORS[type] || '#555'}`,
@@ -490,12 +490,12 @@ export const DebugTestPanel: React.FC<{
                     <button onClick={() => addCardToDeck(card, 1)} style={{
                       padding: '2px 6px', fontSize: '10px', fontWeight: 'bold',
                       background: '#253', color: '#8f8', border: '1px solid #4a4',
-                      borderRadius: '3px', cursor: 'pointer', fontFamily: 'monospace',
+                      borderRadius: '3px', cursor: 'pointer', fontFamily: '"Galmuri11", monospace',
                     }}>+1</button>
                     <button onClick={() => addCardToDeck(card, 3)} style={{
                       padding: '2px 6px', fontSize: '10px', fontWeight: 'bold',
                       background: '#335', color: '#8bf', border: '1px solid #44a',
-                      borderRadius: '3px', cursor: 'pointer', fontFamily: 'monospace',
+                      borderRadius: '3px', cursor: 'pointer', fontFamily: '"Galmuri11", monospace',
                     }}>+3</button>
                   </div>
                 ))}
@@ -552,7 +552,7 @@ export const DebugTestPanel: React.FC<{
                 <div style={{ display: 'flex', gap: '3px' }}>
                   {(['ALL', 'COMMON', 'UNCOMMON', 'RARE', 'BOSS'] as const).map(tier => (
                     <button key={tier} onClick={() => setRelicTierFilter(tier)} style={{
-                      padding: '2px 7px', fontSize: '10px', fontFamily: 'monospace',
+                      padding: '2px 7px', fontSize: '10px', fontFamily: '"Galmuri11", monospace',
                       background: relicTierFilter === tier ? (TIER_COLORS[tier] || '#555') : '#2a2a3a',
                       color: relicTierFilter === tier ? '#000' : (TIER_COLORS[tier] || '#aaa'),
                       border: `1px solid ${TIER_COLORS[tier] || '#555'}`,
@@ -589,7 +589,7 @@ export const DebugTestPanel: React.FC<{
                           padding: '2px 8px', fontSize: '10px', fontWeight: 'bold',
                           background: owned ? '#522' : '#253', color: owned ? '#f88' : '#8f8',
                           border: `1px solid ${owned ? '#a44' : '#4a4'}`,
-                          borderRadius: '3px', cursor: 'pointer', fontFamily: 'monospace', flexShrink: 0,
+                          borderRadius: '3px', cursor: 'pointer', fontFamily: '"Galmuri11", monospace', flexShrink: 0,
                         }}
                       >{owned ? '제거' : '추가'}</button>
                     </div>

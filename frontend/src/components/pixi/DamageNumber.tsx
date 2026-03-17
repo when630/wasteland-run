@@ -16,6 +16,7 @@ export const DamageNumber: React.FC<DamageNumberProps> = ({ amount, x, y, color,
   const [alpha, setAlpha] = useState(0);
 
   const textStyle = useMemo(() => new PIXI.TextStyle({
+    fontFamily: 'Galmuri11',
     fill: color,
     fontSize: 28,
     fontWeight: 'bold',

@@ -3,7 +3,7 @@ import { useRunStore } from '../store/useRunStore';
 import { useDeckStore } from '../store/useDeckStore';
 import { useAudioStore } from '../store/useAudioStore';
 import { resolveCardEffects, type EffectAction } from '../logic/cardEffectHandlers';
-import { onCardPlayed } from '../logic/relicEffects';
+import { onCardPlayed, getPassiveDamageBonus } from '../logic/relicEffects';
 import { useRngStore } from '../store/useRngStore';
 import { dispatchVfx } from '../components/pixi/vfx/vfxDispatcher';
 import { VFX_PROFILES } from '../components/pixi/vfx/vfxProfiles';
@@ -126,18 +126,26 @@ export const useCardPlay = () => {
     // 7. 카드 효과 해석 및 실행
     const targetEnemy = (finalTargetId && finalTargetId !== 'PLAYER') ? enemies.find(e => e.id === finalTargetId) : null;
 
+    // 유물 패시브 피해 보너스 계산
+    const pHp = useRunStore.getState().playerHp;
+    const pMaxHp = useRunStore.getState().playerMaxHp;
+    const relicDmg = getPassiveDamageBonus(relics, pHp, pMaxHp);
+
     const actions = resolveCardEffects(card, {
       targetEnemyId: targetEnemy?.id || null,
       targetEnemy: targetEnemy || null,
       enemies,
       consumedAmmoAmount,
       physicalScalingBonus: powerPhysicalScalingBonus,
-      playerHp: useRunStore.getState().playerHp,
-      playerMaxHp: useRunStore.getState().playerMaxHp,
+      playerHp: pHp,
+      playerMaxHp: pMaxHp,
       playerShield: useBattleStore.getState().playerStatus.shield,
       rampageCounts: useBattleStore.getState().rampageCounts,
       nextAttackBonus: useBattleStore.getState().nextAttackBonus,
       powerFrenzyAmount: useBattleStore.getState().powerFrenzyAmount,
+      relicPhysicalBonus: relicDmg.physicalBonus,
+      relicSpecialBonus: relicDmg.specialBonus,
+      relicSingleTargetBonus: relicDmg.singleTargetBonus,
     });
 
     let hasDamage = false;
@@ -297,6 +305,12 @@ export const useCardPlay = () => {
       setTargetingCard(null);
     }
     playCardFromHand(cardId);
+
+    // [잔해 수집기] 소멸 카드 사용 시 탄약 +1
+    if (card.isExhaust && relics.includes('scrap_collector_relic')) {
+      addAmmo(1);
+      setToastMessage('잔해 수집기 — 소멸 카드에서 탄약 1 획득!');
+    }
 
     // 불사조의 재: 카드 소멸 시 방어도 획득
     if (card.isExhaust) {

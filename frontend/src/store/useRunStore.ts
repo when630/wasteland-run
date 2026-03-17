@@ -20,6 +20,12 @@ interface RunState {
   totalDamageTaken: number;
   totalGoldEarned: number;
 
+  // 미지(EVENT) 인카운터 확률 추적
+  unknownProb: { enemy: number; shop: number; treasure: number };
+  unknownVisitedCount: number; // 챕터 내 미지 방문 횟수
+  lastVisitedNodeType: string | null; // 직전 방문 노드 타입 (상인 제외 규칙용)
+  cardRemovalCount: number; // 상점 카드 제거 횟수 (가격 누적용)
+
   // Actions
   healPlayer: (amount: number) => void;
   damagePlayer: (amount: number) => void;
@@ -37,6 +43,8 @@ interface RunState {
   addDamageDealt: (amount: number) => void;
   addDamageTaken: (amount: number) => void;
   addGoldEarned: (amount: number) => void;
+  resolveUnknownEncounter: (roll: number, currentFloor: number) => RunState['currentScene']; // 미지 노드 진입 시 인카운터 결정
+  resetUnknownProb: () => void; // 챕터 시작 시 확률 초기화
   submitRunStats: (cleared: boolean) => Promise<void>;
   saveRunData: () => Promise<void>;
   loadRunData: () => Promise<void>;
@@ -61,9 +69,16 @@ export const useRunStore = create<RunState>((set) => ({
   totalDamageTaken: 0,
   totalGoldEarned: 0,
 
-  healPlayer: (amount: number) => set((state) => ({
-    playerHp: Math.min(state.playerHp + amount, state.playerMaxHp)
-  })),
+  unknownProb: { enemy: 10, shop: 3, treasure: 2 },
+  unknownVisitedCount: 0,
+  lastVisitedNodeType: null,
+  cardRemovalCount: 0,
+
+  healPlayer: (amount: number) => set((state) => {
+    const bonus = state.relics.includes('concentrated_heal') ? 1.5 : 1;
+    const finalAmount = Math.floor(amount * bonus);
+    return { playerHp: Math.min(state.playerHp + finalAmount, state.playerMaxHp) };
+  }),
 
   damagePlayer: (amount: number) => set((state) => ({
     playerHp: Math.max(state.playerHp - amount, 0)
@@ -82,7 +97,11 @@ export const useRunStore = create<RunState>((set) => ({
     currentScene: scene
   }),
 
-  setChapter: (chapter: number) => set({ currentChapter: chapter }),
+  setChapter: (chapter: number) => set({
+    currentChapter: chapter,
+    unknownProb: { enemy: 10, shop: 3, treasure: 2 },
+    unknownVisitedCount: 0,
+  }),
 
   addRelic: (relicId) => set((state) => ({
     relics: [...state.relics, relicId]
@@ -104,6 +123,85 @@ export const useRunStore = create<RunState>((set) => ({
   addDamageDealt: (amount: number) => set((state) => ({ totalDamageDealt: state.totalDamageDealt + amount })),
   addDamageTaken: (amount: number) => set((state) => ({ totalDamageTaken: state.totalDamageTaken + amount })),
   addGoldEarned: (amount: number) => set((state) => ({ totalGoldEarned: state.totalGoldEarned + amount })),
+
+  resetUnknownProb: () => set({ unknownProb: { enemy: 10, shop: 3, treasure: 2 }, unknownVisitedCount: 0 }),
+
+  resolveUnknownEncounter: (roll: number, currentFloor: number) => {
+    const state = useRunStore.getState();
+    const BASE = { enemy: 10, shop: 3, treasure: 2 };
+    let { enemy, shop, treasure } = state.unknownProb;
+
+    // Step 2: 6층 이후 보정 (챕터 내 상대 층 기준)
+    if (currentFloor >= 6) {
+      enemy += state.unknownVisitedCount * 2;
+    }
+
+    // 상인 제외 규칙
+    if (state.lastVisitedNodeType === 'SHOP' || state.lastVisitedNodeType === 'EVENT_SHOP') {
+      shop = 0;
+    }
+
+    // 폐허의 부적: 미지에서 적 인카운터 제거
+    if (state.relics.includes('ruin_charm')) {
+      enemy = 0;
+    }
+
+    // Step 3: 오버플로 보정
+    if (enemy + shop + treasure > 100) {
+      treasure = Math.max(0, 100 - enemy - shop);
+    }
+    if (enemy + shop + treasure > 100) {
+      shop = Math.max(0, 100 - enemy);
+    }
+
+    // 확률 롤 (roll은 외부에서 전달: 0~99)
+    let result: RunState['currentScene'];
+    let encounterType: string;
+
+    if (roll < enemy) {
+      result = 'BATTLE';
+      encounterType = 'enemy';
+    } else if (roll < enemy + shop) {
+      result = 'SHOP';
+      encounterType = 'shop';
+    } else if (roll < enemy + shop + treasure) {
+      result = 'TREASURE';
+      encounterType = 'treasure';
+    } else {
+      result = 'EVENT';
+      encounterType = 'event';
+    }
+
+    // 확률 업데이트
+    const newProb = { ...state.unknownProb };
+    if (encounterType === 'enemy') {
+      newProb.enemy = BASE.enemy;
+      newProb.shop += BASE.shop;
+      newProb.treasure += BASE.treasure;
+    } else if (encounterType === 'shop') {
+      newProb.enemy += BASE.enemy;
+      newProb.shop = BASE.shop;
+      newProb.treasure += BASE.treasure;
+    } else if (encounterType === 'treasure') {
+      newProb.enemy += BASE.enemy;
+      newProb.shop += BASE.shop;
+      newProb.treasure = BASE.treasure;
+    } else {
+      newProb.enemy += BASE.enemy;
+      newProb.shop += BASE.shop;
+      newProb.treasure += BASE.treasure;
+    }
+
+    const lastType = encounterType === 'shop' ? 'EVENT_SHOP' : encounterType === 'enemy' ? 'BATTLE' : result;
+
+    set({
+      unknownProb: newProb,
+      unknownVisitedCount: state.unknownVisitedCount + 1,
+      lastVisitedNodeType: lastType,
+    });
+
+    return result;
+  },
 
   submitRunStats: async (cleared: boolean) => {
     try {
@@ -176,6 +274,10 @@ export const useRunStore = create<RunState>((set) => ({
         totalDamageDealt: currentState.totalDamageDealt,
         totalDamageTaken: currentState.totalDamageTaken,
         totalGoldEarned: currentState.totalGoldEarned,
+        unknownProb: JSON.stringify(currentState.unknownProb),
+        unknownVisitedCount: currentState.unknownVisitedCount,
+        lastVisitedNodeType: currentState.lastVisitedNodeType || '',
+        cardRemovalCount: currentState.cardRemovalCount,
         mapJson
       });
       // 저장 성공 시 조용히 넘김
@@ -202,7 +304,11 @@ export const useRunStore = create<RunState>((set) => ({
           cardsPlayed: data.cardsPlayed || 0,
           totalDamageDealt: data.totalDamageDealt || 0,
           totalDamageTaken: data.totalDamageTaken || 0,
-          totalGoldEarned: data.totalGoldEarned || 0
+          totalGoldEarned: data.totalGoldEarned || 0,
+          unknownProb: data.unknownProb ? JSON.parse(data.unknownProb) : { enemy: 10, shop: 3, treasure: 2 },
+          unknownVisitedCount: data.unknownVisitedCount || 0,
+          lastVisitedNodeType: data.lastVisitedNodeType || null,
+          cardRemovalCount: data.cardRemovalCount || 0,
         });
 
         // 다른 스토어 상태도 복원

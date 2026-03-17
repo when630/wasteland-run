@@ -6,7 +6,7 @@ import { determineNextIntent } from '../../assets/data/enemies';
 import { useRngStore } from '../useRngStore';
 import { STATUS_CARDS } from '../../assets/data/cards';
 import { calculateDamageToEnemy, calculateDamageToPlayer } from '../../logic/damageCalculation';
-import { onEnemyKilledBySpecial, onFatalDamage } from '../../logic/relicEffects';
+import { onEnemyKilledBySpecial, onEnemyKilledByPhysical, onEnemyKilled, onFatalDamage } from '../../logic/relicEffects';
 import { processStatusDamage, parseAttackIntent, processStatusDecay } from '../../logic/enemyTurnLogic';
 import { dispatchVfx } from '../../components/pixi/vfx/vfxDispatcher';
 import { PLAYER_POS, enemyPos } from '../../components/pixi/vfx/battleLayout';
@@ -48,9 +48,33 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
           get().pushDamageNumber(enemyId, result.actualDamage, dmgColor);
         }
 
-        if (result.isKilled && type === 'SPECIAL') {
-          const healAmount = onEnemyKilledBySpecial(useRunStore.getState().relics);
-          if (healAmount > 0) useRunStore.getState().healPlayer(healAmount);
+        if (result.isKilled) {
+          const relics = useRunStore.getState().relics;
+
+          // 특수 공격 킬: 체력 회복
+          if (type === 'SPECIAL') {
+            const healAmount = onEnemyKilledBySpecial(relics);
+            if (healAmount > 0) useRunStore.getState().healPlayer(healAmount);
+          }
+
+          // 물리 공격 킬: 스플래시 데미지
+          if (type === 'PHYSICAL') {
+            const physKillFx = onEnemyKilledByPhysical(relics);
+            if (physKillFx.splashDamage > 0) {
+              setTimeout(() => {
+                const allEnemies = get().enemies;
+                allEnemies.forEach(e => {
+                  if (e.currentHp > 0 && e.id !== enemyId) {
+                    get().applyDamageToEnemy(e.id, physKillFx.splashDamage, 'PHYSICAL');
+                  }
+                });
+              }, 50);
+            }
+          }
+
+          // 킬 공통: 탄약 획득
+          const killFx = onEnemyKilled(relics);
+          if (killFx.ammo > 0) get().addAmmo(killFx.ammo);
         }
 
         if (result.isKilled) {
@@ -332,10 +356,17 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
       }
 
       // 3. 상태이상 감소 및 다음 의도
+      const intentRng = useRngStore.getState().intentRng;
+      const newIntent = determineNextIntent(enemyObj.baseId, intentRng);
+      // 예언의 수정구: 다음 턴 의도도 미리 계산
+      const hasOrb = useRunStore.getState().relics.includes('prophecy_orb');
+      const peekIntent = hasOrb ? determineNextIntent(enemyObj.baseId, intentRng) : null;
+
       const updatedEnemy = {
         ...enemyObj,
         statuses: processStatusDecay(currentStatuses),
-        currentIntent: determineNextIntent(enemyObj.baseId, useRngStore.getState().intentRng),
+        currentIntent: newIntent,
+        nextIntent: peekIntent,
         visualEffect: (enemyObj.visualEffect?.type && enemyObj.visualEffect.type !== 'DAMAGE')
           ? enemyObj.visualEffect : undefined
       };

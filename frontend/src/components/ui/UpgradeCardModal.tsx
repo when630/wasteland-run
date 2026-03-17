@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useDeckStore } from '../../store/useDeckStore';
+import { useRunStore } from '../../store/useRunStore';
 import type { Card } from '../../types/gameTypes';
 import { iconCardUpgrade } from '../../assets/images/GUI';
 import { CardFrame } from './CardFrame';
@@ -11,13 +12,14 @@ interface UpgradeCardModalProps {
 }
 
 export const UpgradeCardModal: React.FC<UpgradeCardModalProps> = ({ onClose, onUpgradeComplete }) => {
-  const { masterDeck, upgradeCard } = useDeckStore();
+  const { masterDeck } = useDeckStore();
+  const relics = useRunStore(s => s.relics);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
   const selectedCard = masterDeck.find(c => c.id === selectedCardId) ?? null;
   const upgradedPreview = useMemo(
-    () => selectedCard ? applyUpgrade(selectedCard) : null,
-    [selectedCard],
+    () => selectedCard ? applyUpgrade(selectedCard, relics) : null,
+    [selectedCard, relics],
   );
 
   const handleSelect = (card: Card) => {
@@ -26,8 +28,11 @@ export const UpgradeCardModal: React.FC<UpgradeCardModalProps> = ({ onClose, onU
   };
 
   const handleConfirmUpgrade = () => {
-    if (!selectedCardId) return;
-    upgradeCard(selectedCardId);
+    if (!selectedCardId || !upgradedPreview) return;
+    // precision_tools 유물 보너스가 반영된 upgradedPreview를 직접 덱에 적용
+    useDeckStore.setState(state => ({
+      masterDeck: state.masterDeck.map(c => c.id === selectedCardId ? upgradedPreview : c),
+    }));
     onUpgradeComplete();
   };
 

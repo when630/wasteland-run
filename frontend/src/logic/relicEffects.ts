@@ -54,6 +54,15 @@ export function onBattleStart(relics: string[], scene: string): BattleStartEffec
   // [폐허의 부적] 적 전체 약화 1턴
   if (relics.includes('ruin_charm')) result.weakAllEnemies += 1;
 
+  // [도박사의 주사위] 전투 시작 시 랜덤 보너스
+  if (relics.includes('gambler_dice')) {
+    const roll = Math.floor(Math.random() * 4);
+    if (roll === 0) result.ammo += 2;
+    else if (roll === 1) result.extraAp += 1;
+    else if (roll === 2) result.shield += 10;
+    else result.extraDraw += 2;
+  }
+
   // [금이 간 황동 나침반] 엘리트 전투 시
   if (relics.includes('cracked_brass_compass') && scene === 'ELITE') {
     result.extraAp += 2;

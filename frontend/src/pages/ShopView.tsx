@@ -24,7 +24,10 @@ export const ShopView: React.FC = () => {
   const [shopRelics, setShopRelics] = useState<ShopRelic[]>([]);
   const [removeServiceAvailable, setRemoveServiceAvailable] = useState(true);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
-  const REMOVE_PRICE = 50;
+  const cardRemovalCount = useRunStore(s => s.cardRemovalCount);
+  const hasMembership = ownedRelics.includes('merchant_membership');
+  const discount = hasMembership ? 0.5 : 1;
+  const REMOVE_PRICE = Math.floor((75 + cardRemovalCount * 25) * discount);
 
   // 프리뷰 상태
   const [previewCardIdx, setPreviewCardIdx] = useState<number | null>(null);
@@ -35,7 +38,8 @@ export const ShopView: React.FC = () => {
     const dropPool = ALL_CARDS.filter(c => c.tier !== 'BASIC');
     const shuffledCards = customShuffle(dropPool, lootRng);
     const selectedCards = shuffledCards.slice(0, 6).map((card, idx) => {
-      const randomPrice = lootRng.nextInt(4) * 10 + 50;
+      const basePrice = lootRng.nextInt(4) * 10 + 50;
+      const randomPrice = Math.floor(basePrice * discount);
       return { ...card, id: `shop_card_${idx}`, price: randomPrice, isSoldOut: false } as ShopCard;
     });
     setShopCards(selectedCards);
@@ -47,6 +51,7 @@ export const ShopView: React.FC = () => {
       if (relic.tier === 'UNCOMMON') price = 120;
       else if (relic.tier === 'RARE') price = 200;
       price += lootRng.nextInt(5) * 10 - 20;
+      price = Math.floor(price * discount);
       return { ...relic, price, isSoldOut: false };
     });
     setShopRelics(selectedRelics);
@@ -87,6 +92,7 @@ export const ShopView: React.FC = () => {
 
   const onRemoveConfirm = async () => {
     addGold(-REMOVE_PRICE);
+    useRunStore.setState(s => ({ cardRemovalCount: s.cardRemovalCount + 1 }));
     setRemoveServiceAvailable(false);
     setIsRemoveModalOpen(false);
     setToastMessage('카드를 덱에서 제거했습니다.');

@@ -13,7 +13,7 @@ import { DebugTestPanel } from '../components/ui/DebugTestPanel';
 import { useDeckStore } from '../store/useDeckStore';
 import { useBattleStore } from '../store/useBattleStore';
 import { createStartingDeck, STATUS_CARDS } from '../assets/data/cards';
-import { createEnemy, getEnemyIdsByTier } from '../assets/data/enemies';
+import { createEnemy, getEnemyIdsByTier, determineNextIntent } from '../assets/data/enemies';
 import { useRunStore } from '../store/useRunStore';
 import { onBattleStart, onBattleEnd } from '../logic/relicEffects';
 import { useRngStore } from '../store/useRngStore';
@@ -67,12 +67,36 @@ export const BattleView: React.FC = () => {
         spawnEnemies(shuffled.slice(0, 2).map(id => createEnemy(id, battleRng)));
       }
 
+      // 예언의 수정구: 초기 nextIntent 설정
+      if (relics.includes('prophecy_orb')) {
+        const intentRng = useRngStore.getState().intentRng;
+        useBattleStore.setState(s => ({
+          enemies: s.enemies.map(e => ({
+            ...e,
+            nextIntent: determineNextIntent(e.baseId, intentRng),
+          })),
+        }));
+      }
+
       // 유물 효과 일괄 적용
       const fx = onBattleStart(relics, currentScene);
       if (fx.ammo > 0) addAmmo(fx.ammo);
       if (fx.shield > 0) useBattleStore.getState().addPlayerShield(fx.shield);
+      if (fx.resist > 0) useBattleStore.getState().addPlayerResist(fx.resist);
       if (fx.extraAp > 0) useBattleStore.getState().consumeAp(-fx.extraAp);
       if (fx.extraDraw > 0) useDeckStore.getState().drawCards(fx.extraDraw);
+      if (fx.healAmount > 0) useRunStore.getState().healPlayer(fx.healAmount);
+      // 적 전체 디버프
+      if (fx.vulnerableAllEnemies > 0) {
+        useBattleStore.getState().enemies.forEach(e => {
+          if (e.currentHp > 0) useBattleStore.getState().applyStatusToEnemy(e.id, 'VULNERABLE', fx.vulnerableAllEnemies);
+        });
+      }
+      if (fx.weakAllEnemies > 0) {
+        useBattleStore.getState().enemies.forEach(e => {
+          if (e.currentHp > 0) useBattleStore.getState().applyStatusToEnemy(e.id, 'WEAK', fx.weakAllEnemies);
+        });
+      }
       if (fx.statusCardBaseId) {
         const statusBlueprint = STATUS_CARDS.find(c => c.baseId === fx.statusCardBaseId);
         if (statusBlueprint) {

@@ -25,6 +25,7 @@ function getHpTextStyle(fontSize: number): PIXI.TextStyle {
   const key = `${fontSize}`;
   if (!hpTextStyleCache.has(key)) {
     hpTextStyleCache.set(key, new PIXI.TextStyle({
+      fontFamily: 'Galmuri11',
       fill: 0xffffff,
       fontSize,
       fontWeight: 'bold',

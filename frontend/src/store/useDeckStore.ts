@@ -31,6 +31,7 @@ interface DeckState {
   setViewingPile: (pile: PileType) => void;
   addCardToDiscardPile: (cardBlueprint: Omit<Card, 'id'>) => void; // 🌟 몹의 패턴 등에 의해 강제로 카드를 욱여넣을 때 사용
   exhaustCardFromHand: (cardId: string) => void; // 손패에서 특정 카드를 소멸 파일로 이동
+  shuffleDrawPile: () => void; // 드로우 파일 셔플
 }
 
 export const useDeckStore = create<DeckState>((set) => ({
@@ -241,14 +242,18 @@ export const useDeckStore = create<DeckState>((set) => ({
   }),
 
   exhaustCardFromHand: (cardId: string) => set((state) => {
-    const cardIndex = state.hand.findIndex(c => c.id === cardId);
-    if (cardIndex === -1) return state;
-    const card = state.hand[cardIndex];
-    const newHand = [...state.hand];
-    newHand.splice(cardIndex, 1);
-    return {
-      hand: newHand,
-      exhaustPile: [...state.exhaustPile, card],
-    };
+      const cardIndex = state.hand.findIndex(c => c.id === cardId);
+      if (cardIndex === -1) return state;
+      const card = state.hand[cardIndex];
+      const newHand = [...state.hand];
+      newHand.splice(cardIndex, 1);
+      return {
+        hand: newHand,
+        exhaustPile: [...state.exhaustPile, card],
+      };
   }),
+
+  shuffleDrawPile: () => set((state) => ({
+    drawPile: customShuffle([...state.drawPile], useRngStore.getState().shuffleRng),
+  })),
 }));

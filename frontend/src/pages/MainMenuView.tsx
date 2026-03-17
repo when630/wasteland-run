@@ -27,7 +27,7 @@ export const MainMenuView: React.FC = () => {
     textShadow: isHovered === id ? '0 0 10px rgba(255,255,255,0.8)' : 'none',
     transform: isHovered === id && !disabled ? 'scale(1.1)' : 'scale(1)',
     transition: 'all 0.2s ease-in-out',
-    fontFamily: '"Courier New", Courier, monospace',
+    fontFamily: '"Galmuri11", "Courier New", Courier, monospace',
     textAlign: 'left' as const,
     whiteSpace: 'nowrap' as const,
   });
@@ -52,6 +52,10 @@ export const MainMenuView: React.FC = () => {
       totalDamageDealt: 0,
       totalDamageTaken: 0,
       totalGoldEarned: 0,
+      unknownProb: { enemy: 10, shop: 3, treasure: 2 },
+      unknownVisitedCount: 0,
+      lastVisitedNodeType: null,
+      cardRemovalCount: 0,
     });
 
     // 시드 RNG 초기화
@@ -97,7 +101,7 @@ export const MainMenuView: React.FC = () => {
           margin: 0,
           color: '#ff4444',
           textShadow: '4px 4px 0px #440000, 0 0 20px rgba(255,60,60,0.5)',
-          fontFamily: 'Impact, sans-serif',
+          fontFamily: '"Galmuri11", Impact, sans-serif',
           letterSpacing: '5px'
         }}>
           WASTELAND RUN
@@ -107,7 +111,7 @@ export const MainMenuView: React.FC = () => {
           color: '#888',
           marginTop: '10px',
           letterSpacing: '10px',
-          fontFamily: '"Courier New", Courier, monospace',
+          fontFamily: '"Galmuri11", "Courier New", Courier, monospace',
           textTransform: 'uppercase'
         }}>
           The End of the World is just the Beginning
