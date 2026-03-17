@@ -35,12 +35,55 @@ export const ShopView: React.FC = () => {
 
   useEffect(() => {
     const lootRng = useRngStore.getState().lootRng;
-    const dropPool = ALL_CARDS.filter(c => c.tier !== 'BASIC');
-    const shuffledCards = customShuffle(dropPool, lootRng);
-    const selectedCards = shuffledCards.slice(0, 6).map((card, idx) => {
-      const basePrice = lootRng.nextInt(4) * 10 + 50;
-      const randomPrice = Math.floor(basePrice * discount);
-      return { ...card, id: `shop_card_${idx}`, price: randomPrice, isSoldOut: false } as ShopCard;
+    const allNonBasic = ALL_CARDS.filter(c => c.tier !== 'BASIC');
+
+    // map.md 스펙: 공격 2장 + 방어 2장 + 변화 1장 = 5장
+    const attackCards = allNonBasic.filter(c => c.type === 'PHYSICAL_ATTACK' || c.type === 'SPECIAL_ATTACK');
+    const defenseCards = allNonBasic.filter(c => c.type === 'PHYSICAL_DEFENSE' || c.type === 'SPECIAL_DEFENSE');
+    const utilityCards = allNonBasic.filter(c => c.type === 'UTILITY');
+
+    const pickFromPool = (pool: typeof allNonBasic, picked: typeof allNonBasic): typeof allNonBasic[number] => {
+      const available = pool.filter(c => !picked.some(p => p.baseId === c.baseId));
+      return (available.length > 0 ? available : pool)[lootRng.nextInt(available.length || pool.length)];
+    };
+
+    const picked: typeof allNonBasic = [];
+    picked.push(pickFromPool(attackCards, picked));
+    picked.push(pickFromPool(attackCards, picked));
+    picked.push(pickFromPool(defenseCards, picked));
+    picked.push(pickFromPool(defenseCards, picked));
+    picked.push(pickFromPool(utilityCards, picked));
+
+    // 최소 1장 특별, 1장 희귀 보장
+    const hasUncommon = picked.some(c => c.tier === 'UNCOMMON' || c.tier === 'RARE');
+    const hasRare = picked.some(c => c.tier === 'RARE');
+    if (!hasRare) {
+      const rarePool = allNonBasic.filter(c => c.tier === 'RARE' && !picked.some(p => p.baseId === c.baseId));
+      if (rarePool.length > 0) picked[lootRng.nextInt(picked.length)] = rarePool[lootRng.nextInt(rarePool.length)];
+    }
+    if (!hasUncommon && !picked.some(c => c.tier === 'UNCOMMON')) {
+      const uncommonPool = allNonBasic.filter(c => c.tier === 'UNCOMMON' && !picked.some(p => p.baseId === c.baseId));
+      if (uncommonPool.length > 0) {
+        const replaceIdx = picked.findIndex(c => c.tier === 'COMMON');
+        if (replaceIdx >= 0) picked[replaceIdx] = uncommonPool[lootRng.nextInt(uncommonPool.length)];
+      }
+    }
+
+    // 1장 반값 할인
+    const halfPriceIdx = lootRng.nextInt(picked.length);
+
+    // 등급별 가격: COMMON 45-55, UNCOMMON 68-82, RARE 135-165
+    const tierPrice = (tier: string): number => {
+      if (tier === 'RARE') return 135 + lootRng.nextInt(31);      // 135~165
+      if (tier === 'UNCOMMON') return 68 + lootRng.nextInt(15);   // 68~82
+      return 45 + lootRng.nextInt(11);                             // 45~55
+    };
+
+    const selectedCards = picked.map((card, idx) => {
+      let price = tierPrice(card.tier || 'COMMON');
+      if (idx === halfPriceIdx) price = Math.floor(price / 2);
+      price = Math.floor(price * discount);
+      return { ...card, id: `shop_card_${idx}`, price, isSoldOut: false } as ShopCard;
     });
     setShopCards(selectedCards);
 

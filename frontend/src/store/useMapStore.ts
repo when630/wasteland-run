@@ -175,6 +175,59 @@ export const useMapStore = create<MapState>((set) => ({
       }
     }
 
+    // --- (b-2) 맵 생성 제한 규칙 후처리 ---
+    // map.md: 엘리트 3층 이하 금지, 상점 연속 금지, 모닥불 3층 간격, 보물 추가 최대 1회
+    const allNodes = Array.from(nodeMap.values());
+    const fixedFloors = [1, 8, TOTAL_FLOORS - 1, TOTAL_FLOORS];
+
+    // 층별 노드 그룹
+    const nodesByFloor = new Map<number, MapNode[]>();
+    for (const node of allNodes) {
+      if (!nodesByFloor.has(node.floor)) nodesByFloor.set(node.floor, []);
+      nodesByFloor.get(node.floor)!.push(node);
+    }
+
+    // 룰 위반 검사 및 재배정
+    let treasureCount = 0; // 8층 고정 외 추가 보물 수
+    for (let floor = 2; floor <= TOTAL_FLOORS - 2; floor++) {
+      const floorNodes = nodesByFloor.get(floor) || [];
+      for (const node of floorNodes) {
+        if (fixedFloors.includes(floor)) continue;
+
+        // 엘리트 3층 이하 금지
+        if (node.type === 'ELITE' && floor <= 3) {
+          node.type = 'BATTLE';
+        }
+
+        // 상점 연속 금지: 직전 층에 상점이 있으면 재배정
+        if (node.type === 'SHOP') {
+          const prevFloorNodes = nodesByFloor.get(floor - 1) || [];
+          if (prevFloorNodes.some(n => n.type === 'SHOP')) {
+            node.type = 'EVENT';
+          }
+        }
+
+        // 모닥불 3층 간격: 이전 3층 내에 모닥불이 있으면 재배정
+        if (node.type === 'REST') {
+          let tooClose = false;
+          for (let df = 1; df <= 2; df++) {
+            const nearNodes = nodesByFloor.get(floor - df) || [];
+            if (nearNodes.some(n => n.type === 'REST')) { tooClose = true; break; }
+          }
+          if (tooClose) node.type = 'BATTLE';
+        }
+
+        // 보물방 추가 생성 최대 1회 (8층 고정 제외, 9~13층에서만)
+        if (node.type === 'TREASURE' && floor !== 8) {
+          if (floor < 9 || floor > 13 || treasureCount >= 1) {
+            node.type = 'EVENT';
+          } else {
+            treasureCount++;
+          }
+        }
+      }
+    }
+
     // --- (c) 간선 생성: 각 경로를 따라 노드 간 연결 ---
     const bossId = `f${TOTAL_FLOORS}-boss`;
 
