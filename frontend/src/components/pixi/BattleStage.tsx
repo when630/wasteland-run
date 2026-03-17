@@ -54,7 +54,7 @@ export const BattleStage: React.FC = () => {
   const defaultTextStyle = useMemo(() => new PIXI.TextStyle({
     fontFamily: 'Galmuri11',
     fill: 0xffffff,
-    fontSize: 18,
+    fontSize: 12,
   }), []);
 
   const turnTextStyle = useMemo(() => new PIXI.TextStyle({
