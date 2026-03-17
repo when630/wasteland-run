@@ -33,7 +33,7 @@ export const BossRelicPickModal: React.FC<BossRelicPickModalProps> = ({ onComple
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: 'rgba(5, 3, 0, 0.94)', zIndex: 9999,
+      backgroundColor: 'rgba(5, 5, 3, 0.92)', zIndex: 2000,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       animation: 'fadeIn 0.5s ease-out',
     }}>
@@ -102,6 +102,7 @@ export const BossRelicPickModal: React.FC<BossRelicPickModalProps> = ({ onComple
             background: 'none', color: '#a09078',
             border: '1px solid rgba(120, 100, 70, 0.4)',
             borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
+            textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
           }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(180, 150, 100, 0.6)'; e.currentTarget.style.color = '#c8b898'; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(120, 100, 70, 0.4)'; e.currentTarget.style.color = '#a09078'; }}

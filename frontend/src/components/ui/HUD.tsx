@@ -7,7 +7,7 @@ import { DebugMenu } from './DebugMenu';
 import { RelicBar } from './RelicBar';
 import { MapView } from '../../pages/MapView';
 import { useMapStore } from '../../store/useMapStore';
-import { colors } from '../../styles/theme';
+import { UI } from '../../styles/uiConstants';
 import { iconHeart, iconGold, iconSettings, iconCardCount, iconMap, iconRelicReward } from '../../assets/images/GUI';
 
 export const HUD: React.FC = () => {
@@ -67,10 +67,10 @@ export const HUD: React.FC = () => {
             <span style={{ fontSize: '16px' }}>{totalFloor}F</span>
           </div>
           <div style={{ color: '#aaa', fontSize: '14px' }}>{CHAPTER_NAMES[currentChapter] || `챕터 ${currentChapter}`}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: colors.accent.red }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: UI.color.danger }}>
             {iconImg(iconHeart)}<span>{playerHp} / {playerMaxHp}</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: colors.accent.gold }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: UI.color.gold }}>
             {iconImg(iconGold)}<span>{gold}</span>
           </div>
         </div>

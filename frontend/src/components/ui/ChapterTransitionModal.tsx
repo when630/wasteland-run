@@ -47,7 +47,7 @@ export const ChapterTransitionModal: React.FC = () => {
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: '#000', zIndex: 999,
+      backgroundColor: '#000', zIndex: 500,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       color: '#fff',
       opacity: fadeOut ? 0 : 1,

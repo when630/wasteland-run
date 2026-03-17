@@ -116,7 +116,7 @@ export const TreasureRoomView: React.FC = () => {
       width: '100vw', height: '100vh',
       background: 'radial-gradient(circle at center, #2a1f0a 0%, #0a0a0a 80%)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      fontFamily: '"Galmuri11", "Courier New", Courier, monospace', color: '#fff',
+      color: '#fff',
       gap: '24px',
     }}>
       <h1 style={{

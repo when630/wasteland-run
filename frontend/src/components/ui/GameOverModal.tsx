@@ -61,7 +61,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.95)', zIndex: 999,
+      backgroundColor: 'rgba(5, 5, 3, 0.95)', zIndex: 500,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       animation: 'fadeIn 1.5s ease-in-out', color: '#fff', overflowY: 'auto', padding: '40px 0'
     }}>
@@ -106,7 +106,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
 
         {/* 좌측: 종합 리포트 */}
         <div style={{
-          backgroundColor: '#1f2937', border: `2px solid ${isVictory ? '#fbbf24' : '#4b5563'}`,
+          backgroundColor: '#1a1812', border: `2px solid ${isVictory ? '#fbbf24' : '#3a3024'}`,
           borderRadius: '12px', padding: '25px', display: 'flex', flexDirection: 'column',
           gap: '12px', minWidth: '320px'
         }}>
@@ -160,7 +160,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
 
           {/* 획득 유물 목록 */}
           <div style={{
-            backgroundColor: '#1f2937', border: '2px solid #4b5563',
+            backgroundColor: '#1a1812', border: '2px solid #3a3024',
             borderRadius: '12px', padding: '20px'
           }}>
             <h3 style={{ margin: '0 0 12px 0', textAlign: 'center', color: '#ffaaaa', fontSize: '20px' }}>
@@ -194,7 +194,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
 
           {/* 최종 덱 요약 */}
           <div style={{
-            backgroundColor: '#1f2937', border: '2px solid #4b5563',
+            backgroundColor: '#1a1812', border: '2px solid #3a3024',
             borderRadius: '12px', padding: '20px'
           }}>
             <h3 style={{ margin: '0 0 12px 0', textAlign: 'center', color: '#60a5fa', fontSize: '20px' }}>
