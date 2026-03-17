@@ -47,8 +47,8 @@ export const ALL_CARDS: Partial<Card>[] = [
     tier: 'BASIC',
     costAp: 1,
     costAmmo: 1,
-    description: '특수 피해 15를 줍니다.',
-    effects: [{ type: 'DAMAGE', amount: 15 }],
+    description: '특수 피해 10을 줍니다.',
+    effects: [{ type: 'DAMAGE', amount: 10 }],
   },
   {
     baseId: 'scavenge',
@@ -73,8 +73,8 @@ export const ALL_CARDS: Partial<Card>[] = [
     tier: 'COMMON',
     costAp: 1,
     costAmmo: 0,
-    description: '적에게 4 물리 피해. 약화 1턴 부여. 탄약 1 획득.',
-    effects: [{ type: 'DAMAGE', amount: 4 }, { type: 'DEBUFF', condition: 'WEAK', amount: 1 }, { type: 'ADD_AMMO', amount: 1 }],
+    description: '물리 피해 6과 약화 1턴을 부여하고 탄약 1을 얻습니다.',
+    effects: [{ type: 'DAMAGE', amount: 6 }, { type: 'DEBUFF', condition: 'WEAK', amount: 1 }, { type: 'ADD_AMMO', amount: 1 }],
   },
   {
     baseId: 'subway_slam',
@@ -187,8 +187,8 @@ export const ALL_CARDS: Partial<Card>[] = [
     tier: 'RARE',
     costAp: 2,
     costAmmo: 0,
-    description: '모든 적에게 8 물리 피해.',
-    effects: [{ type: 'DAMAGE', amount: 8, target: 'ALL_ENEMIES' }],
+    description: '모든 적에게 12 물리 피해.',
+    effects: [{ type: 'DAMAGE', amount: 12, target: 'ALL_ENEMIES' }],
   },
   {
     baseId: 'berserker_strike',
@@ -408,8 +408,8 @@ export const ALL_CARDS: Partial<Card>[] = [
     tier: 'UNCOMMON',
     costAp: 2,
     costAmmo: 0,
-    description: '12 물리 방어도. 물리 피격 시 4 반사.',
-    effects: [{ type: 'SHIELD', amount: 12 }, { type: 'BUFF', condition: 'REFLECT_PHYSICAL_4' }],
+    description: '14 물리 방어도. 물리 피격 시 6 반사.',
+    effects: [{ type: 'SHIELD', amount: 14 }, { type: 'BUFF', condition: 'REFLECT_PHYSICAL_6' }],
   },
   {
     baseId: 'last_stand',
@@ -570,8 +570,8 @@ export const ALL_CARDS: Partial<Card>[] = [
     tier: 'UNCOMMON',
     costAp: 1,
     costAmmo: 0,
-    description: '10 특수 방어도.',
-    effects: [{ type: 'RESIST', amount: 10 }],
+    description: '8 특수 방어도.',
+    effects: [{ type: 'RESIST', amount: 8 }],
   },
 
   // --- 희귀 (3) ---

@@ -30,8 +30,8 @@ const UPGRADE_TABLE: Record<string, UpgradeEntry> = {
   },
   rusty_pistol: {
     name: '녹슨 권총+',
-    effects: [{ type: 'DAMAGE', amount: 20 }],
-    description: '특수 피해 20을 줍니다.',
+    effects: [{ type: 'DAMAGE', amount: 15 }],
+    description: '특수 피해 15를 줍니다.',
   },
   scavenge: {
     name: '잔해 뒤지기+',
@@ -42,8 +42,8 @@ const UPGRADE_TABLE: Record<string, UpgradeEntry> = {
   // ═══ 물리 공격 ═══
   knee_crush: {
     name: '무릎 으깨기+',
-    effects: [{ type: 'DAMAGE', amount: 6 }, { type: 'DEBUFF', condition: 'WEAK', amount: 2 }, { type: 'ADD_AMMO', amount: 1 }],
-    description: '적에게 6 물리 피해. 약화 2턴 부여. 탄약 1 획득.',
+    effects: [{ type: 'DAMAGE', amount: 8 }, { type: 'DEBUFF', condition: 'WEAK', amount: 2 }, { type: 'ADD_AMMO', amount: 1 }],
+    description: '물리 피해 8과 약화 2턴을 부여하고 탄약 1을 얻습니다.',
   },
   subway_slam: {
     name: '지하철 강타+',
@@ -97,8 +97,8 @@ const UPGRADE_TABLE: Record<string, UpgradeEntry> = {
   },
   storm_barrage: {
     name: '폭풍 난타+',
-    effects: [{ type: 'DAMAGE', amount: 11, target: 'ALL_ENEMIES' }],
-    description: '모든 적에게 11 물리 피해.',
+    effects: [{ type: 'DAMAGE', amount: 15, target: 'ALL_ENEMIES' }],
+    description: '모든 적에게 15 물리 피해.',
   },
   berserker_strike: {
     name: '광전사의 일격+',
@@ -201,8 +201,8 @@ const UPGRADE_TABLE: Record<string, UpgradeEntry> = {
   },
   spiked_barricade: {
     name: '가시 돋친 바리케이드+',
-    effects: [{ type: 'SHIELD', amount: 16 }, { type: 'BUFF', condition: 'REFLECT_PHYSICAL_6' }],
-    description: '16 물리 방어도. 피격 시 6 반사.',
+    effects: [{ type: 'SHIELD', amount: 18 }, { type: 'BUFF', condition: 'REFLECT_PHYSICAL_8' }],
+    description: '18 물리 방어도. 피격 시 8 반사.',
   },
   last_stand: {
     name: '결사항전+',
@@ -279,8 +279,8 @@ const UPGRADE_TABLE: Record<string, UpgradeEntry> = {
   },
   rad_shield_gen: {
     name: '방사선 차폐 발생기+',
-    effects: [{ type: 'RESIST', amount: 14 }],
-    description: '14 특수 방어도.',
+    effects: [{ type: 'RESIST', amount: 12 }],
+    description: '12 특수 방어도.',
   },
   current_absorber: {
     name: '전류 흡수망+',

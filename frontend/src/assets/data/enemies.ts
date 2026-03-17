@@ -132,7 +132,7 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     baseId: 'waste_slime',
     tier: 'NORMAL',
     name: '폐기물 슬라임',
-    maxHp: 65,
+    maxHp: 40,
     chapter: 1,
     spriteUrl: wasteSlimeImg,
     spriteAttackUrl: wasteSlimeAttackImg,
@@ -488,7 +488,7 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
     baseId: 'experiment_x7',
     tier: 'NORMAL',
     name: '실험체 X-7',
-    maxHp: 60,
+    maxHp: 45,
     chapter: 3,
   },
   // ── 3막 신규 엘리트 ──
@@ -541,11 +541,13 @@ export const determineNextIntent = (baseId: string, rng?: SeededRNG): Intent => 
       }
     }
     case 'waste_slime': {
-      // 50% 확률로 자기방어(버프), 50% 확률로 물리공격 3
-      if (rand < 0.5) {
+      // 40% 자기방어, 35% 중간 공격, 25% 강공격
+      if (rand < 0.4) {
         return { type: 'BUFF', amount: 5, description: '🛡️ 단단해지기 (방어도 5)' };
+      } else if (rand < 0.75) {
+        return { type: 'ATTACK', amount: 5, damageType: 'PHYSICAL', description: '⚔️ 짓누르기 5' };
       } else {
-        return { type: 'ATTACK', amount: 3, damageType: 'PHYSICAL', description: '⚔️ 짓누르기 3' };
+        return { type: 'ATTACK', amount: 7, damageType: 'PHYSICAL', description: '⚔️ 산성 덮치기 7' };
       }
     }
     case 'radiation_spider': {
@@ -856,15 +858,15 @@ export const determineNextIntent = (baseId: string, rng?: SeededRNG): Intent => 
       }
     }
     case 'spider_queen': {
-      // 보스: 소환 + 특수 공격
-      if (rand < 0.3) {
+      // 보스: 소환 + 특수 공격 (강화)
+      if (rand < 0.2) {
         return { type: 'BUFF', amount: 10, description: '🛡️ 알집 방어 (방어도 10)' };
-      } else if (rand < 0.55) {
-        return { type: 'ATTACK', amount: 12, damageType: 'SPECIAL', description: '☣️ 독액 분사 12', applyDebuff: { status: 'WEAK', amount: 1 } };
-      } else if (rand < 0.8) {
-        return { type: 'ATTACK', amount: 8, damageType: 'SPECIAL', description: '☣️ 독거미 소환 (4x2)' };
+      } else if (rand < 0.5) {
+        return { type: 'ATTACK', amount: 14, damageType: 'SPECIAL', description: '☣️ 독액 분사 14', applyDebuff: { status: 'WEAK', amount: 1 } };
+      } else if (rand < 0.75) {
+        return { type: 'ATTACK', amount: 10, damageType: 'SPECIAL', description: '☣️ 독거미 소환 (5x2)' };
       } else {
-        return { type: 'ATTACK', amount: 6, damageType: 'SPECIAL', description: '☣️ 맹독 주입 6', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
+        return { type: 'ATTACK', amount: 8, damageType: 'SPECIAL', description: '☣️ 맹독 주입 8', applyDebuff: { status: 'VULNERABLE', amount: 1 } };
       }
     }
     case 'storm_generator': {
@@ -912,15 +914,15 @@ export const determineNextIntent = (baseId: string, rng?: SeededRNG): Intent => 
       }
     }
     case 'underground_lord': {
-      // 보스: 졸개 소환 + 버프
-      if (rand < 0.25) {
+      // 보스: 졸개 소환 + 버프 (강화)
+      if (rand < 0.2) {
         return { type: 'BUFF', amount: 12, description: '🛡️ 지하 왕좌 (방어도 12)' };
-      } else if (rand < 0.5) {
-        return { type: 'ATTACK', amount: 16, damageType: 'PHYSICAL', description: '⚔️ 왕의 일격 16' };
+      } else if (rand < 0.45) {
+        return { type: 'ATTACK', amount: 18, damageType: 'PHYSICAL', description: '⚔️ 왕의 일격 18' };
       } else if (rand < 0.75) {
-        return { type: 'ATTACK', amount: 10, damageType: 'SPECIAL', description: '☣️ 암흑 포효 10', applyDebuff: { status: 'WEAK', amount: 2 } };
+        return { type: 'ATTACK', amount: 14, damageType: 'SPECIAL', description: '☣️ 암흑 포효 14', applyDebuff: { status: 'WEAK', amount: 2 } };
       } else {
-        return { type: 'ATTACK', amount: 8, damageType: 'PHYSICAL', description: '⚔️ 졸개 돌격 (4x2)' };
+        return { type: 'ATTACK', amount: 10, damageType: 'PHYSICAL', description: '⚔️ 졸개 돌격 (5x2)' };
       }
     }
 
@@ -934,13 +936,15 @@ export const determineNextIntent = (baseId: string, rng?: SeededRNG): Intent => 
       }
     }
     case 'experiment_x7': {
-      // 50% HP 이하 광폭화 (더 강한 공격)
-      if (rand < 0.4) {
-        return { type: 'ATTACK', amount: 12, damageType: 'PHYSICAL', description: '⚔️ 변이 팔 강타 12' };
-      } else if (rand < 0.7) {
-        return { type: 'ATTACK', amount: 8, damageType: 'SPECIAL', description: '☣️ 산성 체액 8', applyDebuff: { status: 'BURN', amount: 1 } };
+      // 공격 + 방어 혼합 패턴
+      if (rand < 0.35) {
+        return { type: 'ATTACK', amount: 10, damageType: 'PHYSICAL', description: '⚔️ 변이 팔 강타 10' };
+      } else if (rand < 0.6) {
+        return { type: 'ATTACK', amount: 7, damageType: 'SPECIAL', description: '☣️ 산성 체액 7', applyDebuff: { status: 'BURN', amount: 1 } };
+      } else if (rand < 0.8) {
+        return { type: 'ATTACK', amount: 12, damageType: 'PHYSICAL', description: '⚔️ 광폭화 난타 (4x3)' };
       } else {
-        return { type: 'ATTACK', amount: 15, damageType: 'PHYSICAL', description: '⚔️ 광폭화 난타 (5x3)' };
+        return { type: 'BUFF', amount: 8, description: '🛡️ 변이 경화 (방어도 8)' };
       }
     }
     case 'prototype_fighter': {
