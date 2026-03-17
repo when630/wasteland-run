@@ -1,5 +1,7 @@
 {
   "name": "wasteland-run",
+  "description": "Wasteland Run — 2D 덱빌딩 로그라이크 RPG (Steam PC)",
+  "author": "when630",
   "private": true,
   "version": "0.1.0",
   "type": "module",
