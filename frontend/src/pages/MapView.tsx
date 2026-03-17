@@ -64,8 +64,10 @@ export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) =
     if (type === 'EVENT') {
       // 미지 노드: 동적으로 인카운터 결정 (적/상인/보물/이벤트)
       const roll = useRngStore.getState().eventRng.nextInt(100);
-      const currentFloor = useMapStore.getState().currentFloor;
-      const resolvedScene = useRunStore.getState().resolveUnknownEncounter(roll, currentFloor);
+      // 클릭한 노드의 실제 floor를 사용 (off-by-one 방지)
+      const targetNode = nodes.find(n => n.id === nodeId);
+      const targetFloor = targetNode?.floor ?? useMapStore.getState().currentFloor;
+      const resolvedScene = useRunStore.getState().resolveUnknownEncounter(roll, targetFloor);
       setScene(resolvedScene);
       await useRunStore.getState().saveRunData();
     } else {

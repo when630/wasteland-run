@@ -167,14 +167,42 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
   const goldBtnRef = useRef<HTMLButtonElement>(null);
 
   const [rewardCards] = useState<Card[]>(() => {
-    const dropPool = ALL_CARDS.filter(c => c.tier !== 'BASIC');
     const lootRng = useRngStore.getState().lootRng;
-    const shuffled = lootRng.shuffle(dropPool) as Card[];
-    return shuffled.slice(0, 3);
+    const allNonBasic = ALL_CARDS.filter(c => c.tier !== 'BASIC') as Card[];
+
+    // map.md 스펙: 전투 유형별 카드 등급 확률
+    const tierProb = currentScene === 'BOSS'
+      ? { COMMON: 0, UNCOMMON: 0, RARE: 100 }      // 보스: 희귀 100%
+      : currentScene === 'ELITE'
+        ? { COMMON: 50, UNCOMMON: 30, RARE: 20 }    // 엘리트: 일반50 특별30 희귀20
+        : { COMMON: 60, UNCOMMON: 30, RARE: 10 };   // 일반: 일반60 특별30 희귀10
+
+    const cards: Card[] = [];
+    for (let i = 0; i < 3; i++) {
+      const roll = lootRng.nextInt(100);
+      let tier: string;
+      if (roll < tierProb.COMMON) tier = 'COMMON';
+      else if (roll < tierProb.COMMON + tierProb.UNCOMMON) tier = 'UNCOMMON';
+      else tier = 'RARE';
+
+      let pool = allNonBasic.filter(c => c.tier === tier && !cards.some(picked => picked.baseId === c.baseId));
+      if (pool.length === 0) pool = allNonBasic.filter(c => !cards.some(picked => picked.baseId === c.baseId));
+      if (pool.length === 0) pool = allNonBasic;
+
+      const picked = pool[lootRng.nextInt(pool.length)];
+      cards.push(picked);
+    }
+    return cards;
   });
 
   const isFinalBoss = currentScene === 'BOSS' && currentChapter >= 3;
-  const goldAmount = currentScene === 'BOSS' ? 100 : currentScene === 'ELITE' ? 50 : 20;
+  // map.md 스펙: 일반 10~20, 엘리트 25~35, 보스 ~100
+  const [goldAmount] = useState(() => {
+    const lootRng = useRngStore.getState().lootRng;
+    if (currentScene === 'BOSS') return 90 + lootRng.nextInt(21); // 90~110
+    if (currentScene === 'ELITE') return 25 + lootRng.nextInt(11); // 25~35
+    return 10 + lootRng.nextInt(11); // 10~20
+  });
   const showRelic = !isFinalBoss && (currentScene === 'ELITE' || currentScene === 'BOSS');
   const iconSize = 64;
 

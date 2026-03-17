@@ -56,7 +56,7 @@ function rollReward(chestSize: ChestSize, ownedRelics: string[]): TreasureReward
   }
 
   if (relicPool.length === 0) {
-    relicPool = RELICS.filter(r => !ownedRelics.includes(r.id) && r.tier !== 'BOSS' && r.tier !== 'STARTER');
+    relicPool = RELICS.filter(r => !ownedRelics.includes(r.id) && !['BOSS', 'STARTER', 'EVENT', 'SHOP'].includes(r.tier));
   }
 
   const selectedRelic = relicPool.length > 0

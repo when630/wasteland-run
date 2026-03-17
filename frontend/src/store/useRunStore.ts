@@ -20,6 +20,8 @@ interface RunState {
   totalDamageTaken: number;
   totalGoldEarned: number;
 
+  usedEventIds: string[]; // oncePerRun 이벤트 추적
+
   // 미지(EVENT) 인카운터 확률 추적
   unknownProb: { enemy: number; shop: number; treasure: number };
   unknownVisitedCount: number; // 챕터 내 미지 방문 횟수
@@ -69,6 +71,7 @@ export const useRunStore = create<RunState>((set) => ({
   totalDamageTaken: 0,
   totalGoldEarned: 0,
 
+  usedEventIds: [],
   unknownProb: { enemy: 10, shop: 3, treasure: 2 },
   unknownVisitedCount: 0,
   lastVisitedNodeType: null,
@@ -244,6 +247,7 @@ export const useRunStore = create<RunState>((set) => ({
       // 덱과 유물 정보 등은 다른 store에서 가져와야 하므로 getState()를 통해 동적으로 취합
       const { useDeckStore } = await import('./useDeckStore');
       const { useMapStore } = await import('./useMapStore');
+      const rngModule = await import('./useRngStore');
 
       const currentState = useRunStore.getState();
       const currentDeck = useDeckStore.getState().masterDeck;
@@ -274,10 +278,12 @@ export const useRunStore = create<RunState>((set) => ({
         totalDamageDealt: currentState.totalDamageDealt,
         totalDamageTaken: currentState.totalDamageTaken,
         totalGoldEarned: currentState.totalGoldEarned,
+        usedEventIds: JSON.stringify(currentState.usedEventIds),
         unknownProb: JSON.stringify(currentState.unknownProb),
         unknownVisitedCount: currentState.unknownVisitedCount,
         lastVisitedNodeType: currentState.lastVisitedNodeType || '',
         cardRemovalCount: currentState.cardRemovalCount,
+        rngStates: JSON.stringify(rngModule.useRngStore.getState().serializeStates()),
         mapJson
       });
       // 저장 성공 시 조용히 넘김
@@ -305,6 +311,7 @@ export const useRunStore = create<RunState>((set) => ({
           totalDamageDealt: data.totalDamageDealt || 0,
           totalDamageTaken: data.totalDamageTaken || 0,
           totalGoldEarned: data.totalGoldEarned || 0,
+          usedEventIds: data.usedEventIds ? JSON.parse(data.usedEventIds) : [],
           unknownProb: data.unknownProb ? JSON.parse(data.unknownProb) : { enemy: 10, shop: 3, treasure: 2 },
           unknownVisitedCount: data.unknownVisitedCount || 0,
           lastVisitedNodeType: data.lastVisitedNodeType || null,
@@ -347,9 +354,15 @@ export const useRunStore = create<RunState>((set) => ({
           }
         }
 
-        // 시드 RNG 초기화 (저장된 시드 기반)
+        // 시드 RNG 초기화 및 상태 복원
         const rngModule = await import('./useRngStore');
         rngModule.useRngStore.getState().initialize(data.runSeed || Math.random().toString(36).substring(2, 10));
+        // 저장된 RNG 내부 상태가 있으면 복원 (시퀀스 위치 유지)
+        if (data.rngStates) {
+          try {
+            rngModule.useRngStore.getState().restoreStates(JSON.parse(data.rngStates));
+          } catch { /* RNG 상태 복원 실패 시 초기 시드 기반으로 진행 */ }
+        }
 
         useRunStore.getState().setToastMessage('데이터 수신 완료 — 탐험을 이어갑니다.');
       } else if (data && !data.isActive) {

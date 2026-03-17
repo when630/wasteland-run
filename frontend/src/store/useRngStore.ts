@@ -1,6 +1,15 @@
 import { create } from 'zustand';
 import { SeededRNG, hashString } from '../utils/rng';
 
+interface RngStates {
+  intent: number;
+  event: number;
+  shuffle: number;
+  loot: number;
+  map: number;
+  battle: number;
+}
+
 interface RngState {
   intentRng: SeededRNG;
   eventRng: SeededRNG;
@@ -10,6 +19,8 @@ interface RngState {
   battleRng: SeededRNG;
 
   initialize: (seed: string) => void;
+  serializeStates: () => RngStates;
+  restoreStates: (states: RngStates) => void;
 }
 
 function createSubRng(baseSeed: number, salt: string): SeededRNG {
@@ -18,7 +29,7 @@ function createSubRng(baseSeed: number, salt: string): SeededRNG {
 
 const defaultSeed = hashString('default');
 
-export const useRngStore = create<RngState>((set) => ({
+export const useRngStore = create<RngState>((set, get) => ({
   intentRng: createSubRng(defaultSeed, 'intent'),
   eventRng: createSubRng(defaultSeed, 'event'),
   shuffleRng: createSubRng(defaultSeed, 'shuffle'),
@@ -36,5 +47,27 @@ export const useRngStore = create<RngState>((set) => ({
       mapRng: createSubRng(baseSeed, 'map'),
       battleRng: createSubRng(baseSeed, 'battle'),
     });
+  },
+
+  serializeStates: () => {
+    const s = get();
+    return {
+      intent: s.intentRng.getState(),
+      event: s.eventRng.getState(),
+      shuffle: s.shuffleRng.getState(),
+      loot: s.lootRng.getState(),
+      map: s.mapRng.getState(),
+      battle: s.battleRng.getState(),
+    };
+  },
+
+  restoreStates: (states: RngStates) => {
+    const s = get();
+    s.intentRng.setState(states.intent);
+    s.eventRng.setState(states.event);
+    s.shuffleRng.setState(states.shuffle);
+    s.lootRng.setState(states.loot);
+    s.mapRng.setState(states.map);
+    s.battleRng.setState(states.battle);
   },
 }));

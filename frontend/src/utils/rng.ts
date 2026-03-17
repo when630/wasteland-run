@@ -11,6 +11,10 @@ export class SeededRNG {
     this.state = seed;
   }
 
+  /** 내부 상태 직렬화/복원 */
+  getState(): number { return this.state; }
+  setState(s: number): void { this.state = s; }
+
   /** 0 이상 1 미만의 부동소수점 난수 반환 */
   next(): number {
     this.state |= 0;

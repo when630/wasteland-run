@@ -52,6 +52,7 @@ export const MainMenuView: React.FC = () => {
       totalDamageDealt: 0,
       totalDamageTaken: 0,
       totalGoldEarned: 0,
+      usedEventIds: [],
       unknownProb: { enemy: 10, shop: 3, treasure: 2 },
       unknownVisitedCount: 0,
       lastVisitedNodeType: null,

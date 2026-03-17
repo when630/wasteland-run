@@ -22,8 +22,23 @@ export const EventView: React.FC = () => {
 
   useEffect(() => {
     const eventRng = useRngStore.getState().eventRng;
-    const pick = RANDOM_EVENTS[eventRng.nextInt(RANDOM_EVENTS.length)];
+    const { currentChapter, usedEventIds } = useRunStore.getState();
+
+    // 챕터 필터링 + oncePerRun 제외
+    const available = RANDOM_EVENTS.filter(e => {
+      if (e.chapters && !e.chapters.includes(currentChapter)) return false;
+      if (e.oncePerRun && usedEventIds.includes(e.id)) return false;
+      return true;
+    });
+
+    const pool = available.length > 0 ? available : RANDOM_EVENTS;
+    const pick = pool[eventRng.nextInt(pool.length)];
     setCurrentEvent(pick);
+
+    // oncePerRun 이벤트 기록
+    if (pick.oncePerRun) {
+      useRunStore.setState(s => ({ usedEventIds: [...s.usedEventIds, pick.id] }));
+    }
 
     const { healAmount } = onRestOrEventEnter(relics, playerMaxHp);
     if (healAmount > 0) {
