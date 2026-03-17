@@ -14,18 +14,16 @@ import { PLAYER_POS, enemyPos } from '../components/pixi/vfx/battleLayout';
  * AP, Ammo 코스트 검증, 자원 차감, 그리고 덱 상태(playCardFromHand) 변경을 한 번에 처리합니다.
  */
 export const useCardPlay = () => {
-  const {
-    currentTurn, playerActionPoints, playerAmmo,
-    consumeAp, addAmmo, enemies,
-    applyDamageToEnemy, addPlayerShield, addPlayerResist,
-    targetingCardId, setTargetingCard,
-    hasPlayedUtilityThisTurn, setPlayedUtilityThisTurn,
-    playerStatus, powerPhysicalScalingBonus
-  } = useBattleStore();
-  const { hand, playCardFromHand } = useDeckStore();
-  const { relics, setToastMessage } = useRunStore();
-
+  // 스토어 구독 없음 — playCard 내에서 getState()로 읽어서 리렌더 전파 차단
   const playCard = (cardId: string, targetId?: string) => {
+    const { currentTurn, playerActionPoints, playerAmmo, consumeAp, addAmmo, enemies,
+      applyDamageToEnemy, addPlayerShield, addPlayerResist, targetingCardId, setTargetingCard,
+      hasPlayedUtilityThisTurn, setPlayedUtilityThisTurn, playerStatus, powerPhysicalScalingBonus,
+    } = useBattleStore.getState();
+    const { hand, playCardFromHand } = useDeckStore.getState();
+    const { relics } = useRunStore.getState();
+    const setToastMessage = (msg: string) => useRunStore.getState().setToastMessage(msg);
+
     // 1. 플레이어 턴 검사
     if (currentTurn !== 'PLAYER') {
       setToastMessage('적의 차례입니다. 잠시 기다리세요.');

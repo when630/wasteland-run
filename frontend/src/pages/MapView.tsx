@@ -22,58 +22,54 @@ import bossBadge from '../assets/images/map/boss_badge.webp';
 import relicBadge from '../assets/images/map/relic_badge.webp';
 import { iconClose } from '../assets/images/GUI';
 
+const TYPE_TO_ICON: Record<NodeType, string> = {
+  BATTLE: battleBadge, ELITE: eliteBadge, REST: restBadge,
+  SHOP: shopBadge, EVENT: eventBadge, BOSS: bossBadge, TREASURE: relicBadge,
+};
+
 interface MapViewProps {
   viewOnly?: boolean;
   onClose?: () => void;
 }
 
 export const MapView: React.FC<MapViewProps> = ({ viewOnly = false, onClose }) => {
-  const { setScene } = useRunStore();
-  const { nodes, currentNodeId, visitedNodeIds, generateMap, setPendingNode, commitPendingNode, mapChapter } = useMapStore();
+  const currentChapter = useRunStore(s => s.currentChapter);
+  const nodes = useMapStore(s => s.nodes);
+  const currentNodeId = useMapStore(s => s.currentNodeId);
+  const visitedNodeIds = useMapStore(s => s.visitedNodeIds);
+  const mapChapter = useMapStore(s => s.mapChapter);
 
   // 맵이 없거나 챕터가 변경되었으면 새로 생성
-  const { currentChapter } = useRunStore();
   useEffect(() => {
     if (nodes.length === 0 || mapChapter !== currentChapter) {
-      generateMap(currentChapter);
+      useMapStore.getState().generateMap(currentChapter);
     }
-  }, [nodes.length, mapChapter, generateMap, currentChapter]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodes.length, mapChapter, currentChapter]);
 
   // 씬 완료 후 MAP 복귀 시 pending 노드를 커밋하고 저장
   useEffect(() => {
     if (!viewOnly && useMapStore.getState().pendingNodeId) {
-      commitPendingNode();
+      useMapStore.getState().commitPendingNode();
       useRunStore.getState().saveRunData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 노드 타입별 뱃지 이미지 매핑
-  const typeToIcon: Record<NodeType, string> = {
-    BATTLE: battleBadge,
-    ELITE: eliteBadge,
-    REST: restBadge,
-    SHOP: shopBadge,
-    EVENT: eventBadge,
-    BOSS: bossBadge,
-    TREASURE: relicBadge,
-  };
+  const typeToIcon = TYPE_TO_ICON;
 
   const handleNodeClick = async (nodeId: string, type: NodeType) => {
-    setPendingNode(nodeId);
+    useMapStore.getState().setPendingNode(nodeId);
     if (type === 'EVENT') {
-      // 미지 노드: 동적으로 인카운터 결정 (적/상인/보물/이벤트)
       const roll = useRngStore.getState().eventRng.nextInt(100);
-      // 클릭한 노드의 실제 floor를 사용 (off-by-one 방지)
       const targetNode = nodes.find(n => n.id === nodeId);
       const targetFloor = targetNode?.floor ?? useMapStore.getState().currentFloor;
       const resolvedScene = useRunStore.getState().resolveUnknownEncounter(roll, targetFloor);
-      setScene(resolvedScene);
+      useRunStore.getState().setScene(resolvedScene);
       await useRunStore.getState().saveRunData();
     } else {
-      // EVENT가 아닌 노드는 lastVisitedNodeType 업데이트
       useRunStore.setState({ lastVisitedNodeType: type });
-      setScene(type);
+      useRunStore.getState().setScene(type);
     }
   };
 
