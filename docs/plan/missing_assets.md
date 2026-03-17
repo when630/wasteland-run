@@ -11,7 +11,7 @@
 | 적 스프라이트 (idle/attack/hit) | 33종 (99벌) | 29종 (87벌) | 14종 (42벌) | 88% |
 | 유물 이미지 | 55종 | 13종 | 42종 | 24% |
 | 배경 이미지 | 10종 | 10종 | 0 | 100% |
-| GUI 아이콘 | 53종 | 53종 | 0 | 100% |
+| GUI 아이콘 | 57종 | 53종 | 4종 | 93% |
 | 맵 노드 뱃지 | 7종 | 7종 | 0 | 100% |
 | 플레이어+NPC 스프라이트 | 6종 | 6종 | 0 | 100% |
 | 앱 아이콘 | 4종 | 4종 | 0 | 100% |
@@ -143,7 +143,21 @@
 
 ---
 
-## 3. 오디오 (전부 미완료)
+## 3. 적 의도(Intent) 아이콘 (4종 미완료)
+
+> 경로: `frontend/src/assets/images/GUI/`
+> 현재 ATTACK(물리/특수) 2종만 있고, 나머지 의도 타입은 아이콘이 없거나 다른 아이콘을 임시로 재활용 중.
+
+| 파일명 | IntentType | 현재 상태 | 비주얼 힌트 |
+|--------|-----------|----------|-----------|
+| intent_defend.webp | DEFEND | ❌ 미표시 | 방패 형태, 푸른 계열 |
+| intent_buff.webp | BUFF | ⚠️ physical_defense 재활용 | 위 화살표 + 빛, 녹색/노란 계열 |
+| intent_debuff.webp | DEBUFF | ❌ 미표시 | 해골/독 물방울, 보라/빨간 계열 |
+| intent_unknown.webp | UNKNOWN | ❌ 미표시 | 물음표(?), 회색 계열 |
+
+---
+
+## 4. 오디오 (전부 미완료)
 
 `useAudioStore`에 Web Audio API 기반 오디오 시스템 구현됨.
 실제 오디오 파일 없음 (`frontend/src/assets/sounds/` 비어있음).
@@ -185,7 +199,7 @@
 
 ---
 
-## 4. 카드 아트 (75장 전부 미완료)
+## 5. 카드 아트 (75장 전부 미완료)
 
 현재 카드는 타입 아이콘 + 텍스트 프레임으로 표현. 전용 일러스트 없음.
 BASIC 10, COMMON 25, UNCOMMON 20, RARE 15, STATUS 5.
@@ -194,7 +208,7 @@ BASIC 10, COMMON 25, UNCOMMON 20, RARE 15, STATUS 5.
 
 ---
 
-## 5. 완료된 에셋
+## 6. 완료된 에셋
 
 ### 적 스프라이트 (29종 × 3벌 = 87파일)
 **1막 (13종):** training_dummy, scrap_collector, acid_dog, waste_slime, radiation_spider, rust_marauder, scrap_turret, mutant_behemoth, rogue_sentry, mutant_sniper, brutus, rusted_watchbot, mutant_crows
