@@ -287,12 +287,17 @@ export const AnimatedEnemy: React.FC<AnimatedEnemyProps> = ({
     }
   });
 
-  // 보스 분기 처리
+  // 적 크기 — 실제 텍스처 높이 기반 동적 계산
   const isBoss = enemy.tier === 'BOSS';
   const isElite = enemy.tier === 'ELITE';
-  const targetHeight = isBoss ? 300 : (isElite ? 187 : 153);
-  const nameYOffset = isBoss ? -167 : -87;
-  const hpYOffset = isBoss ? 173 : 93;
+  const defaultHeight = isBoss ? 300 : (isElite ? 187 : 153);
+  const targetHeight = hasSprite
+    ? Math.min(isBoss ? 350 : (isElite ? 220 : 180), Math.max(100, defaultHeight))
+    : defaultHeight;
+  // 이름: 스프라이트 상단에서 약간 위
+  const nameYOffset = -(targetHeight / 2) - 14;
+  // HP바: 스프라이트 하단에서 약간 아래
+  const hpYOffset = (targetHeight / 2) + 8;
 
   const currentTexture = useMemo(() => {
     if (!hasSprite) return texture;

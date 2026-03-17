@@ -316,15 +316,19 @@ const EnemyOverlay: React.FC<{ enemy: Enemy; index: number; total: number; scale
   if (enemy.currentHp <= 0) return null;
 
   const isBoss = enemy.tier === 'BOSS';
+  const isElite = enemy.tier === 'ELITE';
   const ePos = enemyPos(index, total);
   const cx = ePos.x * scale + ox;
   const cy = ePos.y * scale + oy;
 
-  // Y 오프셋 (Pixi 월드 좌표 기준 → 화면 픽셀로 스케일링, 1280x720 기준)
-  const intentY = (isBoss ? -193 : -113) * scale;
-  const hpBarY = (isBoss ? 173 : 93) * scale;
-  const hpBarRight = (isBoss ? 80 : 53) * scale; // HP바 우측 끝 (width/2)
-  const statusY = hpBarY + (isBoss ? 16 : 15) * scale; // HP바 바로 아래
+  // 적 크기에 따른 동적 Y 오프셋 (AnimatedEnemy와 동기화)
+  const defaultHeight = isBoss ? 300 : (isElite ? 187 : 153);
+  const targetHeight = defaultHeight;
+  const halfH = targetHeight / 2;
+  const intentY = -(halfH + 28) * scale;            // 이름 위
+  const hpBarY = (halfH + 8) * scale;               // 스프라이트 하단
+  const hpBarRight = (isBoss ? 80 : 53) * scale;
+  const statusY = hpBarY + (isBoss ? 16 : 15) * scale;
 
   const activeStatuses = enemy.statuses
     ? Object.entries(enemy.statuses).filter(([, val]) => val > 0)
