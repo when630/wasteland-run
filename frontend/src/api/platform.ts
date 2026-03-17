@@ -24,10 +24,12 @@ declare global {
 // ── 런 세이브/로드 ──
 
 export async function platformSaveRun(data: Record<string, unknown>): Promise<void> {
+  if (!window.electronAPI) return;
   await window.electronAPI.saveRun(data);
 }
 
 export async function platformLoadRun(): Promise<Record<string, any> | null> {
+  if (!window.electronAPI) return null;
   return (await window.electronAPI.loadRun()) as Record<string, any> | null;
 }
 
@@ -117,12 +119,14 @@ function formatStatsForDisplay(stats: LocalStats): Record<string, any> {
 }
 
 export async function platformSubmitStats(payload: Record<string, any>): Promise<void> {
+  if (!window.electronAPI) return;
   const existing = (await window.electronAPI.loadStats()) as LocalStats | null;
   const merged = accumulateStats(existing, payload);
   await window.electronAPI.saveStats(merged);
 }
 
 export async function platformLoadStats(): Promise<Record<string, any> | null> {
+  if (!window.electronAPI) return null;
   const raw = (await window.electronAPI.loadStats()) as LocalStats | null;
   if (!raw) return null;
   return formatStatsForDisplay(raw);

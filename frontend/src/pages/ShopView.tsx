@@ -17,7 +17,12 @@ interface ShopCard extends Card { price: number; isSoldOut: boolean; }
 interface ShopRelic extends Relic { price: number; isSoldOut: boolean; }
 
 export const ShopView: React.FC = () => {
-  const { gold, addGold, setScene, setToastMessage, relics: ownedRelics, addRelic } = useRunStore();
+  const gold = useRunStore(s => s.gold);
+  const addGold = useRunStore(s => s.addGold);
+  const setScene = useRunStore(s => s.setScene);
+  const setToastMessage = useRunStore(s => s.setToastMessage);
+  const ownedRelics = useRunStore(s => s.relics);
+  const addRelic = useRunStore(s => s.addRelic);
   const { addCardToMasterDeck } = useDeckStore();
 
   const [shopCards, setShopCards] = useState<ShopCard[]>([]);

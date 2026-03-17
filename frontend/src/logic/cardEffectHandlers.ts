@@ -18,7 +18,7 @@ export type EffectAction =
   | { type: 'DEBUFF_ENEMY'; enemyId: string; status: string; amount: number }
   | { type: 'DEBUFF_ALL_ENEMIES'; status: string; amount: number }
   | { type: 'DEBUFF_PLAYER'; condition: string }
-  | { type: 'MARK_OF_FATE'; enemyId: string; healAmount: number; ammoAmount: number }
+  | { type: 'MARK_OF_FATE'; enemyId: string; healAmount: number; ammoAmount: number; drawAmount?: number }
   | { type: 'BUFF'; condition: string; target?: string }
   | { type: 'TOAST'; message: string };
 
@@ -268,8 +268,7 @@ function resolveDebuffEffect(
       const parts = effect.condition.split('_');
       const drawAmount = parseInt(parts[3], 10) || 0;
       const ammoAmount = parseInt(parts[4], 10) || 0;
-      actions.push({ type: 'MARK_OF_FATE', enemyId: ctx.targetEnemyId, healAmount: -(drawAmount * 100 + ammoAmount), ammoAmount: 0 });
-      // 약탈 마크를 MARK_OF_FATE로 재활용 (음수 healAmount로 구분, 추후 전용 액션 추가 가능)
+      actions.push({ type: 'MARK_OF_FATE', enemyId: ctx.targetEnemyId, healAmount: 0, ammoAmount, drawAmount });
       actions.push({ type: 'TOAST', message: `${ctx.targetEnemy.name}에게 약탈 표식! (사망 시 드로우 ${drawAmount}, 탄약 ${ammoAmount})` });
     }
     return;

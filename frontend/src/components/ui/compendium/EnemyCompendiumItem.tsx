@@ -89,7 +89,7 @@ export const EnemyCompendiumItem: React.FC<Props> = ({ baseId }) => {
           padding: '1px 6px',
           border: `1px solid ${tierColor}`, borderRadius: '3px',
         }}>
-          {getChapterLabel((enemy as any).chapter)} {getTierLabel(enemy.tier)}
+          {getChapterLabel(enemy.chapter)} {getTierLabel(enemy.tier)}
         </span>
       </div>
 
@@ -151,7 +151,7 @@ const EnemyDetailModal: React.FC<{ baseId: string; onClose: () => void }> = ({ b
               padding: '2px 10px',
               border: `1px solid ${tierColor}`, borderRadius: '4px',
             }}>
-              {getChapterLabel((enemy as any).chapter)} {getTierLabel(enemy.tier)}
+              {getChapterLabel(enemy.chapter)} {getTierLabel(enemy.tier)}
             </span>
           </div>
           <button onClick={onClose} style={{

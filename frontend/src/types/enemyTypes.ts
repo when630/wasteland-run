@@ -15,6 +15,7 @@ export interface Enemy {
   baseId: string;      // 적의 원본 ID (예: 'scrap_collector')
   tier: EnemyTier;     // 적 등급 (일반, 엘리트, 보스)
   name: string;        // 적 이름
+  chapter?: number;    // 소속 챕터 (1, 2, 3)
   maxHp: number;
   currentHp: number;
   shield: number;      // 물리 방어도 (피격 시 우선 깎임)

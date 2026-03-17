@@ -11,7 +11,7 @@ interface RelicBarProps {
 
 export const RelicBar: React.FC<RelicBarProps> = ({ isOpen, onClose }) => {
   const relicsList = useRunStore(state => state.relics);
-  const [selectedRelic, setSelectedRelic] = useState<any | null>(null);
+  const [selectedRelic, setSelectedRelic] = useState<typeof RELICS[number] | null>(null);
 
   if (!isOpen) return null;
 
@@ -67,7 +67,7 @@ export const RelicBar: React.FC<RelicBarProps> = ({ isOpen, onClose }) => {
               maxHeight: '400px', overflowY: 'auto',
             }}>
               {relicsList.map((relicId) => {
-                const relicData = RELICS.find((r: any) => r.id === relicId);
+                const relicData = RELICS.find(r => r.id === relicId);
                 if (!relicData) return null;
                 return (
                   <div

@@ -80,9 +80,17 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
         if (result.isKilled) {
           const mark = state.playerStatus.markOfFate;
           if (mark && mark.enemyId === enemyId) {
-            useRunStore.getState().healPlayer(mark.healAmount);
-            get().addAmmo(mark.ammoAmount);
-            useRunStore.getState().setToastMessage(`약육강식 발동 -- 체력 ${mark.healAmount} 회복, 탄약 ${mark.ammoAmount} 획득!`);
+            if (mark.drawAmount && mark.drawAmount > 0) {
+              // 약탈: 드로우 + 탄약
+              useDeckStore.getState().drawCards(mark.drawAmount);
+              get().addAmmo(mark.ammoAmount);
+              useRunStore.getState().setToastMessage(`약탈 발동 -- 카드 ${mark.drawAmount}장 드로우, 탄약 ${mark.ammoAmount} 획득!`);
+            } else {
+              // 약육강식: 체력 회복 + 탄약
+              useRunStore.getState().healPlayer(mark.healAmount);
+              get().addAmmo(mark.ammoAmount);
+              useRunStore.getState().setToastMessage(`약육강식 발동 -- 체력 ${mark.healAmount} 회복, 탄약 ${mark.ammoAmount} 획득!`);
+            }
           }
         }
 
@@ -201,9 +209,15 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
 
         const mark = state.playerStatus.markOfFate;
         if (mark && mark.enemyId === enemy.id) {
-          useRunStore.getState().healPlayer(mark.healAmount);
-          ammoGained += mark.ammoAmount;
-          useRunStore.getState().setToastMessage(`약육강식 발동 -- 체력 ${mark.healAmount} 회복, 탄약 ${mark.ammoAmount} 획득!`);
+          if (mark.drawAmount && mark.drawAmount > 0) {
+            useDeckStore.getState().drawCards(mark.drawAmount);
+            ammoGained += mark.ammoAmount;
+            useRunStore.getState().setToastMessage(`약탈 발동 -- 카드 ${mark.drawAmount}장 드로우, 탄약 ${mark.ammoAmount} 획득!`);
+          } else {
+            useRunStore.getState().healPlayer(mark.healAmount);
+            ammoGained += mark.ammoAmount;
+            useRunStore.getState().setToastMessage(`약육강식 발동 -- 체력 ${mark.healAmount} 회복, 탄약 ${mark.ammoAmount} 획득!`);
+          }
         }
 
         return {

@@ -14,7 +14,7 @@ export interface PlayerBattleStatus {
   reflectPhysical: number;
   apOnSpecialDefend: number;
   ammoOnSpecialDefend: number;
-  markOfFate: { enemyId: string; healAmount: number; ammoAmount: number } | null;
+  markOfFate: { enemyId: string; healAmount: number; ammoAmount: number; drawAmount?: number } | null;
   physicalAttacksThisTurn: number;
 }
 
@@ -60,7 +60,7 @@ export interface PlayerSlice {
   consumePlayerHitQueue: () => void;
   setPlayerSpriteState: (state: PlayerSpriteState) => void;
   setPlayerStatusField: (field: Partial<PlayerBattleStatus>) => void;
-  setMarkOfFate: (enemyId: string, healAmount: number, ammoAmount: number) => void;
+  setMarkOfFate: (enemyId: string, healAmount: number, ammoAmount: number, drawAmount?: number) => void;
   setPowerDefenseAmmo50: (active: boolean) => void;
   setPowerPhysicalScaling: (active: boolean) => void;
   addPhysicalScalingBonus: (amount: number) => void;

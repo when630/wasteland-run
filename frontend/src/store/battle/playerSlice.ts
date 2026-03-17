@@ -53,8 +53,8 @@ export const createPlayerSlice: StateCreator<BattleState, [], [], PlayerSlice> =
     playerStatus: { ...state.playerStatus, ...field }
   })),
 
-  setMarkOfFate: (enemyId, healAmount, ammoAmount) => set((state) => ({
-    playerStatus: { ...state.playerStatus, markOfFate: { enemyId, healAmount, ammoAmount } }
+  setMarkOfFate: (enemyId, healAmount, ammoAmount, drawAmount) => set((state) => ({
+    playerStatus: { ...state.playerStatus, markOfFate: { enemyId, healAmount, ammoAmount, drawAmount } }
   })),
 
   setPowerDefenseAmmo50: (active) => set({ powerDefenseAmmo50: active }),

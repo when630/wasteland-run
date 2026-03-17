@@ -283,6 +283,7 @@ export const useRunStore = create<RunState>((set) => ({
         unknownVisitedCount: currentState.unknownVisitedCount,
         lastVisitedNodeType: currentState.lastVisitedNodeType || '',
         cardRemovalCount: currentState.cardRemovalCount,
+        runStartTime: currentState.runStartTime,
         rngStates: JSON.stringify(rngModule.useRngStore.getState().serializeStates()),
         mapJson
       });
@@ -316,6 +317,7 @@ export const useRunStore = create<RunState>((set) => ({
           unknownVisitedCount: data.unknownVisitedCount || 0,
           lastVisitedNodeType: data.lastVisitedNodeType || null,
           cardRemovalCount: data.cardRemovalCount || 0,
+          runStartTime: data.runStartTime || Date.now(),
         });
 
         // 다른 스토어 상태도 복원

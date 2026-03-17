@@ -10,7 +10,10 @@ import eventBg from '../assets/images/backgrounds/event_map_background.webp';
 import { iconEvent } from '../assets/images/GUI';
 
 export const EventView: React.FC = () => {
-  const { setScene, relics, playerMaxHp, healPlayer } = useRunStore();
+  const setScene = useRunStore(s => s.setScene);
+  const relics = useRunStore(s => s.relics);
+  const playerMaxHp = useRunStore(s => s.playerMaxHp);
+  const healPlayer = useRunStore(s => s.healPlayer);
   const [currentEvent, setCurrentEvent] = useState<RandomEvent | null>(null);
   const [resultText, setResultText] = useState<string | null>(null);
 

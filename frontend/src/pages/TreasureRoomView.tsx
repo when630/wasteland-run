@@ -74,7 +74,11 @@ function rollReward(chestSize: ChestSize, ownedRelics: string[]): TreasureReward
 }
 
 export const TreasureRoomView: React.FC = () => {
-  const { relics, addRelic, addGold, setScene, setToastMessage } = useRunStore();
+  const relics = useRunStore(s => s.relics);
+  const addRelic = useRunStore(s => s.addRelic);
+  const addGold = useRunStore(s => s.addGold);
+  const setScene = useRunStore(s => s.setScene);
+  const setToastMessage = useRunStore(s => s.setToastMessage);
   const [opened, setOpened] = useState(false);
   const [reward, setReward] = useState<TreasureReward | null>(null);
   const [claimed, setClaimed] = useState(false);

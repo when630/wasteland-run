@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRunStore } from '../store/useRunStore';
 import { UpgradeCardModal } from '../components/ui/UpgradeCardModal';
 import { RemoveCardModal } from '../components/ui/RemoveCardModal';
@@ -7,7 +7,11 @@ import restBg from '../assets/images/backgrounds/campfire_map_background.webp';
 import { iconCampfire, iconCardUpgrade, iconHeart, iconBurn, iconCardRemove } from '../assets/images/GUI';
 
 export const RestView: React.FC = () => {
-  const { playerHp, playerMaxHp, healPlayer, setScene, relics } = useRunStore();
+  const playerHp = useRunStore(s => s.playerHp);
+  const playerMaxHp = useRunStore(s => s.playerMaxHp);
+  const healPlayer = useRunStore(s => s.healPlayer);
+  const setScene = useRunStore(s => s.setScene);
+  const relics = useRunStore(s => s.relics);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [healResult, setHealResult] = useState<number | null>(null);
@@ -18,6 +22,7 @@ export const RestView: React.FC = () => {
   const hasManual = relics.includes('forgotten_manual');
   const [upgradeCount, setUpgradeCount] = useState(0);
   const maxUpgrades = hasManual ? 2 : 1;
+  const upgradeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (relicEffects.healAmount > 0) {
@@ -25,6 +30,12 @@ export const RestView: React.FC = () => {
       useRunStore.getState().setToastMessage(`불에 탄 작전 지도 — 체력 ${relicEffects.healAmount} 회복!`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (upgradeTimerRef.current) clearTimeout(upgradeTimerRef.current);
+    };
   }, []);
 
   const handleHeal = async () => {
@@ -203,7 +214,7 @@ export const RestView: React.FC = () => {
             if (hasManual && newCount < maxUpgrades) {
               // 잊혀진 기술서: 2번째 강화 가능
               useRunStore.getState().setToastMessage(`잊혀진 기술서 — 강화 ${newCount}/${maxUpgrades} 완료! 한 번 더 강화 가능!`);
-              setTimeout(() => setIsUpgradeModalOpen(true), 300);
+              upgradeTimerRef.current = setTimeout(() => setIsUpgradeModalOpen(true), 300);
             } else {
               if (hasManual) {
                 useRunStore.getState().removeRelic('forgotten_manual');

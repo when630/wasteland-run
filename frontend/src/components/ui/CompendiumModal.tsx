@@ -87,7 +87,7 @@ export const CompendiumModal: React.FC<CompendiumModalProps> = ({ onClose }) => 
     let filtered = all;
     if (enemyFilter.startsWith('CH')) {
       const ch = parseInt(enemyFilter.slice(2));
-      filtered = all.filter(id => (BASE_ENEMIES[id] as any).chapter === ch);
+      filtered = all.filter(id => BASE_ENEMIES[id].chapter === ch);
     } else if (enemyFilter !== 'ALL') {
       filtered = all.filter(id => BASE_ENEMIES[id].tier === enemyFilter);
     }
@@ -96,7 +96,7 @@ export const CompendiumModal: React.FC<CompendiumModalProps> = ({ onClose }) => 
     const groups: { chapter: number; ids: string[] }[] = [];
     const chapterMap = new Map<number, string[]>();
     for (const id of filtered) {
-      const ch = (BASE_ENEMIES[id] as any).chapter || 0;
+      const ch = BASE_ENEMIES[id].chapter || 0;
       if (!chapterMap.has(ch)) chapterMap.set(ch, []);
       chapterMap.get(ch)!.push(id);
     }

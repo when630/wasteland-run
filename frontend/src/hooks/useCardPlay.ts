@@ -162,10 +162,16 @@ export const useCardPlay = () => {
     // 공격 카드 스프라이트 전환
     if (card.type === 'PHYSICAL_ATTACK') {
       useBattleStore.getState().setPlayerSpriteState('PHYSICAL_ATTACK');
-      setTimeout(() => useBattleStore.getState().setPlayerSpriteState('IDLE'), 500);
+      setTimeout(() => {
+        if (useBattleStore.getState().battleResult !== 'NONE') return;
+        useBattleStore.getState().setPlayerSpriteState('IDLE');
+      }, 500);
     } else if (card.type === 'SPECIAL_ATTACK') {
       useBattleStore.getState().setPlayerSpriteState('SPECIAL_ATTACK');
-      setTimeout(() => useBattleStore.getState().setPlayerSpriteState('IDLE'), 500);
+      setTimeout(() => {
+        if (useBattleStore.getState().battleResult !== 'NONE') return;
+        useBattleStore.getState().setPlayerSpriteState('IDLE');
+      }, 500);
     }
 
     // VFX 디스패치
@@ -212,6 +218,7 @@ export const useCardPlay = () => {
         const pos = enemyPos(targetEnemyIndex >= 0 ? targetEnemyIndex : 0, enemies.length);
         for (let hit = 0; hit < vfxProfile.multiHitCount; hit++) {
           setTimeout(() => {
+            if (useBattleStore.getState().battleResult !== 'NONE') return;
             dispatchVfx({
               cardBaseId: card.baseId,
               sourceX: vfxSourceX,
@@ -228,6 +235,7 @@ export const useCardPlay = () => {
         const shotCount = (vfxProfile.category === 'ELECTROMAGNETIC' && card.costAmmo > 1) ? card.costAmmo : 1;
         for (let shot = 0; shot < shotCount; shot++) {
           setTimeout(() => {
+            if (useBattleStore.getState().battleResult !== 'NONE') return;
             dispatchVfx({
               cardBaseId: card.baseId,
               sourceX: vfxSourceX,
@@ -248,7 +256,7 @@ export const useCardPlay = () => {
     if (relicBonus.spikedDamage > 0) {
       const livingEnemies = enemies.filter(e => e.currentHp > 0);
       if (livingEnemies.length > 0) {
-        const target = livingEnemies[Math.floor(useRngStore.getState().battleRng.next() * livingEnemies.length)];
+        const target = livingEnemies[useRngStore.getState().battleRng.nextInt(livingEnemies.length)];
         applyDamageToEnemy(target.id, relicBonus.spikedDamage, 'PHYSICAL');
         setToastMessage(`가시 어깨받이 발동! ${target.name}에게 ${relicBonus.spikedDamage} 피해!`);
       }
@@ -381,7 +389,7 @@ function executeAction(
       }
       break;
     case 'MARK_OF_FATE':
-      useBattleStore.getState().setMarkOfFate(action.enemyId, action.healAmount, action.ammoAmount);
+      useBattleStore.getState().setMarkOfFate(action.enemyId, action.healAmount, action.ammoAmount, action.drawAmount);
       break;
     case 'BUFF':
       executeBuff(action.condition, ctx.setToastMessage);

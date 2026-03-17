@@ -92,7 +92,7 @@ import undergroundLordImg from '../images/characters/underground_lord.webp';
 import undergroundLordAttackImg from '../images/characters/underground_lord_attack.webp';
 import undergroundLordHitImg from '../images/characters/underground_lord_hit.webp';
 
-type BaseEnemy = Omit<Enemy, 'id' | 'currentHp' | 'shield' | 'resist' | 'currentIntent'> & { chapter?: number; initialShield?: number };
+type BaseEnemy = Omit<Enemy, 'id' | 'currentHp' | 'shield' | 'resist' | 'currentIntent'> & { initialShield?: number };
 
 export const BASE_ENEMIES: Record<string, BaseEnemy> = {
   // ===== 디버그: 훈련용 허수아비 =====
