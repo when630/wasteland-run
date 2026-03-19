@@ -3,7 +3,12 @@ import { useRunStore } from '../store/useRunStore';
 import { useMapStore } from '../store/useMapStore';
 import { generateStartingEvent } from '../assets/data/events';
 import type { RandomEvent, EventOption } from '../types/eventTypes';
-
+import { RemoveCardModal } from '../components/ui/RemoveCardModal';
+import { UpgradeCardModal } from '../components/ui/UpgradeCardModal';
+import { CardRewardModal } from '../components/ui/CardRewardModal';
+import { useRngStore } from '../store/useRngStore';
+import { ALL_CARDS } from '../assets/data/cards';
+import type { Card } from '../types/gameTypes';
 import eventBg from '../assets/images/backgrounds/event_map_background.webp';
 import { iconEvent } from '../assets/images/GUI';
 
@@ -11,6 +16,13 @@ export const StartingEventView: React.FC = () => {
   const { setScene } = useRunStore();
   const [currentEvent, setCurrentEvent] = useState<RandomEvent | null>(null);
   const [resultText, setResultText] = useState<string | null>(null);
+  const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [isCardRewardOpen, setIsCardRewardOpen] = useState(false);
+  const [remainingRemoves, setRemainingRemoves] = useState(0);
+  const [removeModalKey, setRemoveModalKey] = useState(0);
+  const [pendingText, setPendingText] = useState<string | null>(null);
+  const [rewardCards, setRewardCards] = useState<Card[]>([]);
 
   useEffect(() => {
     setCurrentEvent(generateStartingEvent());
@@ -18,8 +30,46 @@ export const StartingEventView: React.FC = () => {
 
   if (!currentEvent) return null;
 
+  const generateCardReward = (rareOnly: boolean): Card[] => {
+    const lootRng = useRngStore.getState().lootRng;
+    const pool = rareOnly
+      ? ALL_CARDS.filter(c => c.tier === 'RARE')
+      : ALL_CARDS.filter(c => c.tier === 'COMMON' || c.tier === 'UNCOMMON');
+    const cards: Card[] = [];
+    const picked: string[] = [];
+    for (let i = 0; i < 3; i++) {
+      const available = pool.filter(c => !picked.includes(c.baseId!));
+      const p = (available.length > 0 ? available : pool)[lootRng.nextInt(available.length || pool.length)];
+      cards.push(p as Card);
+      picked.push(p.baseId!);
+    }
+    return cards;
+  };
+
   const handleOptionSelect = (option: EventOption) => {
     const result = option.onSelect();
+
+    if (result === 'TRIGGER_CARD_REMOVE') {
+      setRemainingRemoves(1); setIsRemoveModalOpen(true);
+      setPendingText('카드를 제거했습니다!'); return;
+    }
+    if (result === 'TRIGGER_CARD_REMOVE_2') {
+      setRemainingRemoves(2); setIsRemoveModalOpen(true);
+      setPendingText('카드 2장을 제거했습니다!'); return;
+    }
+    if (result === 'TRIGGER_CARD_UPGRADE') {
+      setIsUpgradeModalOpen(true);
+      setPendingText('카드를 강화했습니다!'); return;
+    }
+    if (result === 'TRIGGER_CARD_REWARD') {
+      setRewardCards(generateCardReward(false));
+      setIsCardRewardOpen(true); return;
+    }
+    if (result === 'TRIGGER_RARE_CARD_REWARD') {
+      setRewardCards(generateCardReward(true));
+      setIsCardRewardOpen(true); return;
+    }
+
     setResultText(result);
   };
 
@@ -142,6 +192,35 @@ export const StartingEventView: React.FC = () => {
             황무지로 출발한다
           </button>
         </div>
+      )}
+
+      {isRemoveModalOpen && (
+        <RemoveCardModal
+          key={removeModalKey}
+          onClose={() => { setIsRemoveModalOpen(false); setRemainingRemoves(0); }}
+          onRemoveComplete={() => {
+            if (remainingRemoves > 1) { setRemainingRemoves(p => p - 1); setRemoveModalKey(p => p + 1); return; }
+            setIsRemoveModalOpen(false); setRemainingRemoves(0);
+            if (pendingText) { setResultText(pendingText); setPendingText(null); }
+          }}
+          title={remainingRemoves > 1 ? `제거할 카드 선택 (${remainingRemoves}장 남음)` : undefined}
+        />
+      )}
+      {isUpgradeModalOpen && (
+        <UpgradeCardModal
+          onClose={() => setIsUpgradeModalOpen(false)}
+          onUpgradeComplete={() => {
+            setIsUpgradeModalOpen(false);
+            if (pendingText) { setResultText(pendingText); setPendingText(null); }
+          }}
+        />
+      )}
+      {isCardRewardOpen && (
+        <CardRewardModal
+          rewardCards={rewardCards}
+          onClose={() => { setIsCardRewardOpen(false); setResultText('카드를 선택하지 않았습니다.'); }}
+          onCardSelected={() => { setIsCardRewardOpen(false); setResultText('카드를 획득했습니다!'); }}
+        />
       )}
     </div>
   );

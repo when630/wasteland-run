@@ -18,6 +18,7 @@ import { createStartingDeck, STATUS_CARDS } from '../assets/data/cards';
 import { createEnemy, getEnemyIdsByTier, determineNextIntent } from '../assets/data/enemies';
 import { useRunStore } from '../store/useRunStore';
 import { onBattleStart, onBattleEnd } from '../logic/relicEffects';
+import { getMutationModifiers } from '../logic/mutationModifiers';
 import { useRngStore } from '../store/useRngStore';
 import { DESIGN_WIDTH, DESIGN_HEIGHT, enemyPos } from '../components/pixi/vfx/battleLayout';
 import battleBg1 from '../assets/images/backgrounds/stage1_battle_background.webp';
@@ -38,6 +39,7 @@ export const BattleView: React.FC = () => {
 
   const [showBossClear, setShowBossClear] = useState(false);
   const [showBossRelicPick, setShowBossRelicPick] = useState(false);
+  const [bossExtraEliteDone, setBossExtraEliteDone] = useState(false);
 
   // 게임(전투 뷰) 진입 시 초기 덱과 몬스터를 세팅
   useEffect(() => {
@@ -233,11 +235,17 @@ export const BattleView: React.FC = () => {
       return;
     }
     if (currentScene === 'BOSS') {
+      // 변이 20단계: 보스 후 추가 정예전
+      const mutMod = getMutationModifiers(useRunStore.getState().mutationStage);
+      if (mutMod.bossExtraElite && !bossExtraEliteDone) {
+        setBossExtraEliteDone(true);
+        useRunStore.getState().setToastMessage('완전한 변이 — 추가 정예 전투!');
+        useRunStore.getState().setScene('ELITE');
+        return;
+      }
       if (currentChapter < 3) {
-        // 1~2막 보스: 유물 선택방 → 챕터 전환
         setShowBossRelicPick(true);
       } else {
-        // 3막 보스: 게임 클리어
         setShowBossClear(true);
       }
     } else {

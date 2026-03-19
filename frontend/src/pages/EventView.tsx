@@ -4,6 +4,7 @@ import { RANDOM_EVENTS } from '../assets/data/events';
 import type { RandomEvent, EventOption } from '../types/eventTypes';
 import { RemoveCardModal } from '../components/ui/RemoveCardModal';
 import { UpgradeCardModal } from '../components/ui/UpgradeCardModal';
+import { useDeckStore } from '../store/useDeckStore';
 import { onRestOrEventEnter } from '../logic/relicEffects';
 import { useRngStore } from '../store/useRngStore';
 import eventBg from '../assets/images/backgrounds/event_map_background.webp';
@@ -19,6 +20,7 @@ export const EventView: React.FC = () => {
 
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const [pendingResultText, setPendingResultText] = useState<string | null>(null);
   const [remainingCardRemoves, setRemainingCardRemoves] = useState(0);
   const [removeModalKey, setRemoveModalKey] = useState(0);
@@ -77,6 +79,11 @@ export const EventView: React.FC = () => {
       setScene('ELITE');
       return;
     }
+    if (result === 'TRIGGER_CARD_DUPLICATE') {
+      setIsDuplicateModalOpen(true);
+      setPendingResultText('복제 장치가 가동되어 카드를 복제했습니다!');
+      return;
+    }
     setResultText(result);
   };
 
@@ -98,6 +105,21 @@ export const EventView: React.FC = () => {
     setIsUpgradeModalOpen(false);
     if (pendingResultText) {
       setResultText(pendingResultText);
+      setPendingResultText(null);
+    }
+  };
+
+  const handleDuplicateSelect = (cardId: string) => {
+    const ds = useDeckStore.getState();
+    const card = ds.masterDeck.find(c => c.id === cardId);
+    if (card) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id, ...blueprint } = card;
+      ds.addCardToMasterDeck(blueprint as any);
+    }
+    setIsDuplicateModalOpen(false);
+    if (pendingResultText) {
+      setResultText(card ? `[${card.name}]을(를) 복제했습니다!` : pendingResultText);
       setPendingResultText(null);
     }
   };
@@ -233,6 +255,37 @@ export const EventView: React.FC = () => {
           onClose={() => setIsUpgradeModalOpen(false)}
           onUpgradeComplete={handleUpgradeComplete}
         />
+      )}
+      {isDuplicateModalOpen && (
+        <div
+          onClick={() => { setIsDuplicateModalOpen(false); if (pendingResultText) { setResultText(pendingResultText); setPendingResultText(null); } }}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10000,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: '16px',
+          }}
+        >
+          <h3 onClick={e => e.stopPropagation()} style={{ color: '#d4a854', fontSize: '22px' }}>복제할 카드를 선택하세요</h3>
+          <div onClick={e => e.stopPropagation()} style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', maxWidth: '700px' }}>
+            {useDeckStore.getState().masterDeck.map(card => (
+              <button
+                key={card.id}
+                onClick={() => handleDuplicateSelect(card.id)}
+                style={{
+                  padding: '8px 12px', background: 'rgba(30,25,18,0.9)',
+                  border: '1px solid rgba(180,140,50,0.4)', borderRadius: '6px',
+                  color: '#e0d4bc', fontSize: '13px', cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(212,168,84,0.8)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(180,140,50,0.4)'; }}
+              >
+                {card.name}
+              </button>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );

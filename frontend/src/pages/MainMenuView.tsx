@@ -222,6 +222,8 @@ export const MainMenuView: React.FC = () => {
                   currentMapNode: runSnap.currentMapNode,
                   currentChapter: runSnap.currentChapter,
                   runSeed: runSnap.runSeed,
+                  mutationStage: runSnap.mutationStage,
+                  maxMutationUnlocked: runSnap.maxMutationUnlocked,
                 },
                 deck: deckSnap.map((c: Card) => ({ ...c })),
                 rng: rngSnap,
