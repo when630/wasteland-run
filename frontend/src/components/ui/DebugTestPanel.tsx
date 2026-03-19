@@ -6,7 +6,6 @@ import { createEnemy, BASE_ENEMIES, getEnemyIdsByTier } from '../../assets/data/
 import { ALL_CARDS, createStartingDeck } from '../../assets/data/cards';
 import { RELICS } from '../../assets/data/relics';
 import { SUPPLIES } from '../../assets/data/supplies';
-import { useMapStore } from '../../store/useMapStore';
 import type { Card } from '../../types/gameTypes';
 
 // ── 공용 스타일 ──
@@ -139,9 +138,11 @@ export const DebugTestPanel: React.FC<{
   const playerHp = useRunStore(s => s.playerHp);
   const relics = useRunStore(s => s.relics);
   const supplies = useRunStore(s => s.supplies);
+  const masterDeck = useDeckStore(s => s.masterDeck);
   const handCount = useDeckStore(s => s.hand.length);
   const drawCount = useDeckStore(s => s.drawPile.length);
   const discardCount = useDeckStore(s => s.discardPile.length);
+  const exhaustCount = useDeckStore(s => s.exhaustPile.length);
 
   const firstAlive = enemies.find(e => e.currentHp > 0);
 
@@ -311,11 +312,8 @@ export const DebugTestPanel: React.FC<{
             useBattleStore.setState({ playerMaxAp: 4, playerActionPoints: 4, playerAmmo: 3 });
           };
 
-          const goToScene = (scene: 'REST' | 'EVENT' | 'SHOP' | 'TREASURE' | 'MAP', chapter: number) => {
+          const goToScene = (scene: 'REST' | 'EVENT' | 'SHOP' | 'TREASURE', chapter: number) => {
             useRunStore.setState({ currentChapter: chapter });
-            if (scene === 'MAP') {
-              useMapStore.getState().generateMap(chapter);
-            }
             if (scene === 'SHOP') {
               useRunStore.setState({ gold: 999 });
             }
@@ -384,11 +382,6 @@ export const DebugTestPanel: React.FC<{
                         onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.4)'}
                         onMouseLeave={e => e.currentTarget.style.filter = 'brightness(1)'}>
                         보물
-                      </button>
-                      <button onClick={() => goToScene('MAP', ch)} style={scenarioBtnStyle('#1a1a2a', '#88c')}
-                        onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.4)'}
-                        onMouseLeave={e => e.currentTarget.style.filter = 'brightness(1)'}>
-                        맵
                       </button>
                     </div>
                   </div>
@@ -546,89 +539,152 @@ export const DebugTestPanel: React.FC<{
         )}
 
         {/* ════ 카드 탭 ════ */}
-        {tab === 'cards' && (
-          <div style={{ display: 'flex', gap: '16px' }}>
-            {/* 좌: 덱 관리 */}
-            <div style={{ flex: '0 0 200px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <div style={sectionLabel}>덱 관리</div>
-              <div style={{ fontSize: '11px', color: '#888' }}>
-                손패 {handCount} | 드로우 {drawCount} | 버림 {discardCount}
-              </div>
-              <div style={{ display: 'flex', gap: '4px' }}>
-                <Btn label="1장" onClick={() => useDeckStore.getState().drawCards(1)} bg="#335" color="#8bf" flex />
-                <Btn label="5장" onClick={() => useDeckStore.getState().drawCards(5)} bg="#335" color="#8bf" flex />
-                <Btn label="10장" onClick={() => useDeckStore.getState().drawCards(10)} bg="#335" color="#8bf" flex />
-              </div>
-              <Btn label="기본 덱으로 초기화" onClick={() => {
-                const ds = useDeckStore.getState();
-                ds.setMasterDeck(createStartingDeck());
-                ds.initDeck();
-                ds.drawCards(5);
-              }} bg="#353" color="#8f8" />
-            </div>
+        {tab === 'cards' && (() => {
+          // 마스터 덱 카드별 수량 집계
+          const deckCounts: Record<string, number> = {};
+          masterDeck.forEach(c => { deckCounts[c.baseId] = (deckCounts[c.baseId] || 0) + 1; });
+          const uniqueDeckCards = Object.entries(deckCounts).map(([baseId, count]) => {
+            const card = ALL_CARDS.find(c => c.baseId === baseId) || masterDeck.find(c => c.baseId === baseId);
+            return { baseId, count, card };
+          }).filter(x => x.card);
 
-            {/* 우: 카드 추가 */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
-              <div style={sectionLabel}>카드 추가</div>
-              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                <input
-                  value={cardSearch} onChange={e => setCardSearch(e.target.value)}
-                  placeholder="이름 검색..."
-                  style={{ ...selectStyle, flex: 1, padding: '4px 8px' }}
-                />
-                <div style={{ display: 'flex', gap: '3px', flexShrink: 0 }}>
-                  {Object.entries(TYPE_LABELS).map(([type, label]) => (
-                    <button key={type} onClick={() => setCardTypeFilter(type)} style={{
-                      padding: '2px 7px', fontSize: '10px', fontFamily: '"Galmuri11", monospace',
-                      background: cardTypeFilter === type ? (TYPE_COLORS[type] || '#555') : '#2a2a3a',
-                      color: cardTypeFilter === type ? '#000' : (TYPE_COLORS[type] || '#aaa'),
-                      border: `1px solid ${TYPE_COLORS[type] || '#555'}`,
-                      borderRadius: '3px', cursor: 'pointer',
-                      fontWeight: cardTypeFilter === type ? 'bold' : 'normal',
-                    }}>
-                      {label}
-                    </button>
-                  ))}
+          const removeCardFromDeck = (baseId: string) => {
+            const ds = useDeckStore.getState();
+            const deck = ds.masterDeck;
+            const idx = deck.findIndex(c => c.baseId === baseId);
+            if (idx === -1) return;
+            const next = [...deck];
+            next.splice(idx, 1);
+            ds.setMasterDeck(next);
+            ds.initDeck();
+            ds.drawCards(5);
+          };
+
+          return (
+            <div style={{ display: 'flex', gap: '16px' }}>
+              {/* 좌: 보유 덱 */}
+              <div style={{ flex: '0 0 280px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={sectionLabel}>보유 덱 ({masterDeck.length}장)</div>
+                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                  <Btn label="기본 덱" onClick={() => {
+                    const ds = useDeckStore.getState();
+                    ds.setMasterDeck(createStartingDeck());
+                    ds.initDeck();
+                    ds.drawCards(5);
+                  }} bg="#353" color="#8f8" flex />
+                  <Btn label="전부 제거" onClick={() => {
+                    useDeckStore.getState().setMasterDeck([]);
+                    useDeckStore.getState().initDeck();
+                  }} bg="#433" color="#fbb" flex />
                 </div>
-              </div>
-              <div style={{
-                maxHeight: '180px', overflowY: 'auto',
-                border: '1px solid #333', borderRadius: '4px', background: '#0a0a15',
-                display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-              }}>
-                {filteredCards.map(card => (
-                  <div key={card.baseId} style={{
-                    display: 'flex', alignItems: 'center', gap: '6px',
-                    padding: '3px 8px', borderBottom: '1px solid #1a1a2a',
+                <div style={{ fontSize: '11px', color: '#888', display: 'flex', gap: '8px' }}>
+                  <span>손패 {handCount}</span>
+                  <span>드로우 {drawCount}</span>
+                  <span>버림 {discardCount}</span>
+                  <span>소멸 {exhaustCount}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  <Btn label="1장" onClick={() => useDeckStore.getState().drawCards(1)} bg="#335" color="#8bf" flex />
+                  <Btn label="3장" onClick={() => useDeckStore.getState().drawCards(3)} bg="#335" color="#8bf" flex />
+                  <Btn label="5장" onClick={() => useDeckStore.getState().drawCards(5)} bg="#335" color="#8bf" flex />
+                </div>
+                {uniqueDeckCards.length > 0 ? (
+                  <div style={{
+                    maxHeight: '130px', overflowY: 'auto',
+                    border: '1px solid #333', borderRadius: '4px', background: '#0a0a15', padding: '2px',
                   }}>
-                    <span style={{
-                      fontSize: '11px', flex: 1, color: TYPE_COLORS[card.type || ''] || '#ccc',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }} title={`${card.name} — ${card.description}`}>
-                      {card.name}
-                    </span>
-                    <span style={{ fontSize: '10px', color: '#666', flexShrink: 0 }}>
-                      {card.costAp}AP{card.costAmmo ? `+${card.costAmmo}A` : ''}
-                    </span>
-                    <button onClick={() => addCardToDeck(card, 1)} style={{
-                      padding: '2px 6px', fontSize: '10px', fontWeight: 'bold',
-                      background: '#253', color: '#8f8', border: '1px solid #4a4',
-                      borderRadius: '3px', cursor: 'pointer', fontFamily: '"Galmuri11", monospace',
-                    }}>+1</button>
-                    <button onClick={() => addCardToDeck(card, 3)} style={{
-                      padding: '2px 6px', fontSize: '10px', fontWeight: 'bold',
-                      background: '#335', color: '#8bf', border: '1px solid #44a',
-                      borderRadius: '3px', cursor: 'pointer', fontFamily: '"Galmuri11", monospace',
-                    }}>+3</button>
+                    {uniqueDeckCards.map(({ baseId, count, card }) => (
+                      <div key={baseId} style={{
+                        display: 'flex', alignItems: 'center', gap: '4px',
+                        padding: '2px 6px', borderBottom: '1px solid #1a1a2a',
+                      }}>
+                        <span style={{
+                          fontSize: '11px', flex: 1, color: TYPE_COLORS[card!.type || ''] || '#ccc',
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>{card!.name}</span>
+                        <span style={{ fontSize: '10px', color: '#888', flexShrink: 0 }}>x{count}</span>
+                        <button onClick={() => removeCardFromDeck(baseId)} style={{
+                          padding: '1px 5px', fontSize: '10px', fontWeight: 'bold',
+                          background: '#522', color: '#f88', border: '1px solid #a44',
+                          borderRadius: '3px', cursor: 'pointer', fontFamily: '"Galmuri11", monospace',
+                        }}>-1</button>
+                      </div>
+                    ))}
                   </div>
-                ))}
-                {filteredCards.length === 0 && (
-                  <div style={{ padding: '12px', fontSize: '11px', color: '#555', textAlign: 'center' }}>검색 결과 없음</div>
+                ) : (
+                  <div style={{ fontSize: '11px', color: '#555', padding: '8px', textAlign: 'center' }}>덱 비어있음</div>
                 )}
               </div>
+
+              {/* 우: 카드 추가 */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={sectionLabel}>카드 추가</div>
+                  <input
+                    value={cardSearch} onChange={e => setCardSearch(e.target.value)}
+                    placeholder="이름 검색..."
+                    style={{ ...selectStyle, width: '120px', padding: '3px 8px', fontSize: '11px' }}
+                  />
+                  <div style={{ display: 'flex', gap: '3px', flexShrink: 0 }}>
+                    {Object.entries(TYPE_LABELS).map(([type, label]) => (
+                      <button key={type} onClick={() => setCardTypeFilter(type)} style={{
+                        padding: '2px 7px', fontSize: '10px', fontFamily: '"Galmuri11", monospace',
+                        background: cardTypeFilter === type ? (TYPE_COLORS[type] || '#555') : '#2a2a3a',
+                        color: cardTypeFilter === type ? '#000' : (TYPE_COLORS[type] || '#aaa'),
+                        border: `1px solid ${TYPE_COLORS[type] || '#555'}`,
+                        borderRadius: '3px', cursor: 'pointer',
+                        fontWeight: cardTypeFilter === type ? 'bold' : 'normal',
+                      }}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div style={{
+                  maxHeight: '180px', overflowY: 'auto',
+                  border: '1px solid #333', borderRadius: '4px', background: '#0a0a15',
+                  display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                }}>
+                  {filteredCards.map(card => {
+                    const owned = deckCounts[card.baseId] || 0;
+                    return (
+                      <div key={card.baseId} style={{
+                        display: 'flex', alignItems: 'center', gap: '6px',
+                        padding: '3px 8px', borderBottom: '1px solid #1a1a2a',
+                      }}>
+                        <span style={{
+                          fontSize: '11px', flex: 1, color: TYPE_COLORS[card.type || ''] || '#ccc',
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }} title={`${card.name} — ${card.description}`}>
+                          {card.name}
+                        </span>
+                        <span style={{ fontSize: '10px', color: '#666', flexShrink: 0 }}>
+                          {card.costAp}AP{card.costAmmo ? `+${card.costAmmo}A` : ''}
+                        </span>
+                        {owned > 0 && (
+                          <span style={{ fontSize: '9px', color: '#8f8', flexShrink: 0 }}>({owned})</span>
+                        )}
+                        <button onClick={() => addCardToDeck(card, 1)} style={{
+                          padding: '2px 6px', fontSize: '10px', fontWeight: 'bold',
+                          background: '#253', color: '#8f8', border: '1px solid #4a4',
+                          borderRadius: '3px', cursor: 'pointer', fontFamily: '"Galmuri11", monospace',
+                        }}>+1</button>
+                        <button onClick={() => addCardToDeck(card, 3)} style={{
+                          padding: '2px 6px', fontSize: '10px', fontWeight: 'bold',
+                          background: '#335', color: '#8bf', border: '1px solid #44a',
+                          borderRadius: '3px', cursor: 'pointer', fontFamily: '"Galmuri11", monospace',
+                        }}>+3</button>
+                      </div>
+                    );
+                  })}
+                  {filteredCards.length === 0 && (
+                    <div style={{ padding: '12px', fontSize: '11px', color: '#555', textAlign: 'center' }}>검색 결과 없음</div>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* ════ 유물 탭 ════ */}
         {tab === 'relics' && (
