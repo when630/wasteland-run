@@ -1,6 +1,6 @@
 # 미제작 에셋 목록
 
-> 최종 업데이트: 2026-03-17
+> 최종 업데이트: 2026-03-19
 
 ---
 
@@ -8,12 +8,13 @@
 
 | 카테고리 | 전체 | 완료 | 미완료 | 완성도 |
 |----------|------|------|--------|--------|
-| 적 스프라이트 (idle/attack/hit) | 33종 (99벌) | 29종 (87벌) | 14종 (42벌) | 88% |
-| 유물 이미지 | 55종 | 13종 | 42종 | 24% |
+| 적 스프라이트 (idle/attack/hit) | 43종 (129벌) | 43종 (129벌) | 0 | 100% |
+| 유물 이미지 | 60종 | 55종 | 5종 | 92% |
+| 보급품 이미지 | 30종 | 0 | 30종 | 0% |
 | 배경 이미지 | 10종 | 10종 | 0 | 100% |
-| GUI 아이콘 | 57종 | 53종 | 4종 | 93% |
+| GUI 아이콘 | 54종 | 54종 | 0 | 100% |
 | 맵 노드 뱃지 | 7종 | 7종 | 0 | 100% |
-| 플레이어+NPC 스프라이트 | 6종 | 6종 | 0 | 100% |
+| 플레이어+NPC 스프라이트 | 8종 | 8종 | 0 | 100% |
 | 앱 아이콘 | 4종 | 4종 | 0 | 100% |
 | 폰트 | 2종 | 2종 | 0 | 100% |
 | 카드 아트 | 75장 | 0 | 75장 | 0% |
@@ -22,142 +23,76 @@
 
 ---
 
-## 1. 적 스프라이트 (14종 미완료 — 42벌)
+## 1. 유물 이미지 (5종 미완료)
 
-> 파일 규칙: `{baseId}.webp`, `{baseId}_attack.webp`, `{baseId}_hit.webp`
-> 경로: `frontend/src/assets/images/characters/`
-> 스프라이트 없는 적은 intent 패턴도 미구현 (fallback 사용중)
+> 파일 규칙: `relic_{id}.webp` → `frontend/src/assets/images/relics/`
+> 55종 완료, 5종은 보급품 연관 신규 유물 (이모지 아이콘 대체 중)
 
-### 3막 일반 (8종 — 스프라이트 없음, intent 미구현)
+### 보급품 연관 유물 (5종 — 이미지 없음, 이모지 사용)
 
-| baseId | 이름 | tier | HP | 비주얼 힌트 |
-|--------|------|------|----|-----------|
-| security_drone | 기업 경비 드론 | NORMAL | 40 | 날개 달린 소형 드론, 레이저 포탑 |
-| bio_experiment | 생체 실험체 | NORMAL | 55 | 배양액 묻은 변이 인간, 투명 피부 |
-| corporate_guard | 기업 경비원 | NORMAL | 42 | 검은 방탄복, 바이저 헬멧, 곤봉 |
-| nano_swarm | 나노 군집 | NORMAL | 30 | 미세 로봇 군집, 은빛 구름 형태 |
-| cryo_sentinel | 냉동 감시자 | NORMAL | 50 | 서리 낀 로봇, 냉기 방출, 파란 눈 |
-| hazmat_worker | 방호복 작업자 | NORMAL | 38 | 노란 방호복, 가스마스크, 화학 스프레이 |
-| cleaning_drone | 방주 청소 드론 | NORMAL | 22 | 원형 청소 로봇, 레이저 장착 |
-| experiment_x7 | 실험체 X-7 | NORMAL | 45 | 피부 투명 근육질 실험체, 붉은 코드번호 |
-
-### 3막 엘리트 (3종)
-
-| baseId | 이름 | tier | HP | 비주얼 힌트 |
-|--------|------|------|----|-----------|
-| chief_scientist | 수석 과학자 | ELITE | 110 | 백의 + 기계팔, 플라즈마 주사기 |
-| war_machine | 전쟁 기계 | ELITE | 120 | 무한궤도 탱크형 로봇, 기관총+미사일 |
-| prototype_fighter | 프로토타입 전투기 | ELITE | 100 | 미완성 전투 로봇, 한쪽 팔 미장착 |
-
-### 3막 보스 (3종)
-
-| baseId | 이름 | tier | HP | 비주얼 힌트 |
-|--------|------|------|----|-----------|
-| director_omega | 최종 지시자 오메가 | BOSS | 220 | 거대 기업 AI 본체, 모니터+케이블, 초기 방어도 30 |
-| central_ai | AI 중앙통제 시스템 | BOSS | 180 | 서버랙 + 거대 모니터, 붉은 AI 얼굴, 초기 방어도 25 |
-| final_weapon | 최종 병기 프로젝트 | BOSS | 250 | 거대 인형 무기, 미사일+포탑+검 일체형 |
+| id | 이름 | 현재 아이콘 | 비주얼 힌트 |
+|----|------|------------|-----------|
+| large_backpack | 대형 배낭 | 🎒 | 황무지 가죽 배낭, 주머니 많음, 보급품 포켓 |
+| supply_officer_armband | 보급 장교 완장 | 🎖️ | 군용 완장, 보급부대 마크, 패치 |
+| first_aid_manual | 응급 처치 교범 | 📕 | 빨간 표지 군용 매뉴얼, 십자 마크 |
+| scrap_distiller | 폐품 증류기 | ⚗️ | 구리관 연결된 소형 증류 장치 |
+| vow_of_abstinence | 금욕의 서약 | 🚫 | 붉은 인장이 찍힌 낡은 서약서 |
 
 ---
 
-## 2. 유물 이미지 (42종 미완료)
+## 2. 보급품 이미지 (30종 전부 미완료)
 
-> 파일 규칙: `relic_{id}.webp` → `frontend/src/assets/images/relics/`
-> 이미지 완료 13종: bloody_bandolier, old_medkit, old_sheriff_badge, glow_watch, scrap_parts_bracelet, cracked_brass_compass, alloy_plating, faded_family_photo, arc_heart, bionic_culture_heart, red_eye_surveillance_module, cracked_sunstone_reactor, burnt_operation_map
+> 파일 규칙: `supply_{id}.webp` → `frontend/src/assets/images/supplies/` (폴더 미생성)
+> 현재 전부 이모지 아이콘 대체 중. 우선순위 중간.
 
-### STARTER (1종)
+### COMMON (12종)
 
-| id | 이름 | 현재 | 비주얼 힌트 |
-|----|------|------|-----------|
-| survivor_dog_tag | 황무지 생존자의 인식표 | 🏷️ | 찌그러진 금속 인식표, 체인에 매달림 |
+| id | 이름 | 현재 아이콘 | 비주얼 힌트 |
+|----|------|------------|-----------|
+| emergency_ration | 비상 식량 팩 | 🍞 | 군용 MRE 포장, 은박 포장 |
+| purified_water | 정제수 캔 | 💧 | 은색 캔, "PURIFIED" 라벨 |
+| energy_gel | 에너지 젤 | ⚡ | 투명 파란 젤 파우치 |
+| spare_magazine | 임시 탄창 | 🔩 | 테이프로 묶은 탄창 2개 |
+| stimulant_shot | 자극제 주사 | 💉 | 노란 액체 자동 주사기 |
+| emergency_tourniquet | 응급 지혈대 | 🩹 | 빨간 군용 지혈대 |
+| shielding_panel | 차폐 패널 | 🛡️ | 납 코팅 금속 패널 |
+| rusty_grenade | 녹슨 수류탄 | 💣 | 녹슨 파편 수류탄, 핀 달림 |
+| smoke_canister | 연막 캔 | 🌫️ | 회색 캔, 연기 분출 |
+| flashbang | 섬광탄 | ✨ | 은색 원통, 번쩍이는 효과 |
+| sticky_bomb | 접착 폭탄 | 🧨 | 접착제 묻은 소형 폭탄 |
+| old_painkiller | 오래된 진통제 | 💊 | 낡은 약병, 흰 알약 |
 
-### COMMON (9종)
+### UNCOMMON (10종)
 
-| id | 이름 | 현재 | 비주얼 힌트 |
-|----|------|------|-----------|
-| rusty_knuckle | 녹슨 너클 | 🥊 | 녹슨 철 주먹장갑, 관절에 볼트 |
-| makeshift_silencer | 즉석 소음기 | 🔫 | 페트병을 총구에 테이프로 감음 |
-| lucky_casing | 행운의 탄피 | 📿 | 황동 탄피 여러 개 꿰어 만든 목걸이 |
-| emergency_bandage | 응급 붕대 | 🩹 | 피 묻은 거즈 롤 |
-| steel_helmet | 철모 | 🪖 | 탄흔 있는 녹슨 군용 헬멧 |
-| makeshift_trap | 즉석 함정 | 🪤 | 철사와 캔으로 만든 트립와이어 |
-| small_battery | 소형 배터리 | 🔋 | 반쯤 녹슨 AA 배터리 2개 테이프 묶음 |
-| relief_crate | 구호물자 상자 | 📦 | UN 스타일 흰색 상자, 먼지 덮임 |
-| auto_loader | 자동 장전기 | 🔩 | 스프링 달린 금속 장치 |
-
-### UNCOMMON (9종)
-
-| id | 이름 | 현재 | 비주얼 힌트 |
-|----|------|------|-----------|
-| spiked_pauldron | 가시 어깨받이 | 🦔 | 못 박힌 가죽 어깨 패드 |
-| regen_salve | 재생 연고 | 💊 | 형광 녹색 연고 유리병 |
-| scrap_collector_relic | 잔해 수집기 | ♻️ | 허리 자석 벨트, 철 파편 붙음 |
-| skull_charm | 해골 부적 | 💀 | 작은 동물 두개골 + 빨간 실 |
-| scope | 조준경 | 🎯 | 깨진 라이플 스코프 |
-| reinforced_gloves | 강화 장갑 | 🧤 | 금속판 붙인 두꺼운 장갑 |
-| lead_insert | 납판 삽입물 | 🛡️ | 납으로 만든 얇은 판, 조끼에 삽입 |
-| hourglass | 모래시계 | ⏳ | 깨진 유리에 모래 흐르는 시계 |
-| tactical_vest | 전술 조끼 | 🃏 | 주머니 많은 군용 조끼 |
+| id | 이름 | 현재 아이콘 | 비주얼 힌트 |
+|----|------|------------|-----------|
+| military_ration | 군용 레이션 | 🥫 | 국방색 군용 식량 팩 |
+| combat_stimulant | 전투 흥분제 | 🔴 | 빨간 캡슐 주사기 |
+| overcharge_cell | 과부하 셀 | 🔋 | 빛나는 파란 에너지 셀 |
+| tactical_ammo_belt | 전술 탄약 벨트 | 🎖️ | 탄창 가득 달린 벨트 |
+| composite_plate | 복합 방탄판 | 🪨 | 세라믹+케블라 복합 패널 |
+| detox_kit | 해독 키트 | 🧪 | 초록 해독제 + 주사기 세트 |
+| chemical_bomb | 화학 폭탄 | ☣️ | 노란 경고표 플라스크 폭탄 |
+| emp_grenade | EMP 수류탄 | ⚡ | 파란 전자기 펄스 수류탄 |
+| field_repair_tool | 야전 수리 도구 | 🔧 | 접이식 만능 공구 세트 |
+| blood_transfusion | 응급 수혈 팩 | 🩸 | 빨간 수혈 팩 + 튜브 |
 
 ### RARE (8종)
 
-| id | 이름 | 현재 | 비주얼 힌트 |
-|----|------|------|-----------|
-| tactical_hud | 전술 HUD | 📡 | 한쪽 눈 모노클 디스플레이 |
-| welding_gauntlet | 용접 장갑 | 🔥 | 용접기 내장 가죽 장갑, 불꽃 |
-| magnetic_coil | 자기장 코일 | 🧲 | 팔뚝 구리 코일, 푸른 전류 |
-| blood_regulator | 혈압 조절기 | 🌡️ | 팔에 감은 혈압계 + 튜브 |
-| gambler_dice | 도박사의 주사위 | 🎰 | 이빨 빠진 구식 주사위 |
-| ammo_magnet | 탄약 자석 | 🧲 | U자형 자석에 탄피 붙음 |
-| perpetual_engine | 영구 운동 장치 | 🔄 | 쉬지 않고 도는 작은 기어 세트 |
-| berserker_mark | 광전사의 문양 | 🩸 | 팔에 새긴 붉은 부족 문양 |
-
-### BOSS (4종)
-
-| id | 이름 | 현재 | 비주얼 힌트 |
-|----|------|------|-----------|
-| adrenaline_injector | 아드레날린 주입기 | 💉 | 팔에 테이프로 고정된 자동 주사기 |
-| quantum_core | 양자 코어 | 🌀 | 보라색 빛 구체, 균열 에너지 |
-| ancient_prosthetic | 고대 전투 보철 | ⛓️ | 금속 의수, 관절에서 증기 |
-| unstable_teleporter | 불안정한 텔레포터 | 🔮 | 깜빡이는 파란 빛 손목 장치 |
-
-### EVENT (5종)
-
-| id | 이름 | 현재 | 비주얼 힌트 |
-|----|------|------|-----------|
-| mutant_claw | 돌연변이 발톱 | 🐾 | 형광 녹색 발톱 3개 |
-| forgotten_manual | 잊혀진 기술서 | 📖 | 낡은 군용 매뉴얼, 테이프 수선 |
-| ruin_charm | 폐허의 부적 | 🦴 | 뼈와 금속 조각으로 엮은 부적 |
-| canned_food | 통조림 식량 | 🍖 | 라벨 벗겨진 군용 식량 캔 |
-| prophecy_orb | 예언의 수정구 | 🔮 | 금 간 수정구, 안개 소용돌이 |
-
-### SHOP (6종)
-
-| id | 이름 | 현재 | 비주얼 힌트 |
-|----|------|------|-----------|
-| merchant_membership | 상인의 멤버십 | 💰 | 금속 멤버십 카드 |
-| concentrated_heal | 농축 회복제 | 🧪 | 진한 빨간 액체 주사기 |
-| precision_tools | 정밀 공구 | 📐 | 소형 정밀 드라이버 세트 |
-| weapon_maintenance_kit | 화기 정비 키트 | 🧲 | 기름 묻은 천 + 청소봉 |
-| universal_repair_tool | 만능 수리 도구 | 🔧 | 접이식 만능 공구 |
-| large_ammo_case | 대형 탄약통 | 🎒 | 금속 탄약 상자, 잠금장치 |
+| id | 이름 | 현재 아이콘 | 비주얼 힌트 |
+|----|------|------------|-----------|
+| nano_repair_shot | 나노 수복 주사 | 💎 | 은빛 나노 입자 주사기 |
+| berserker_serum | 광전사 혈청 | 🩸 | 검붉은 혈청 바이알 |
+| quantum_purifier | 양자 정화기 | 🌀 | 보라빛 소형 정화 장치 |
+| tactical_warhead | 전술 핵탄두 | ☢️ | 소형 전술 탄두, 방사능 표시 |
+| nano_field | 나노 필드 | 🔰 | 푸른 에너지 방어막 생성기 |
+| time_distorter | 시간 왜곡기 | ⏳ | 시계 부품 + 보라 에너지 장치 |
+| full_resupply | 완전 재보급 | 📦 | 대형 군용 보급 상자 |
+| bio_enhancer | 생체 강화 주사 | 🧬 | DNA 나선 문양 녹색 주사기 |
 
 ---
 
-## 3. 적 의도(Intent) 아이콘 (4종 미완료)
-
-> 경로: `frontend/src/assets/images/GUI/`
-> 현재 ATTACK(물리/특수) 2종만 있고, 나머지 의도 타입은 아이콘이 없거나 다른 아이콘을 임시로 재활용 중.
-
-| 파일명 | IntentType | 현재 상태 | 비주얼 힌트 |
-|--------|-----------|----------|-----------|
-| intent_defend.webp | DEFEND | ❌ 미표시 | 방패 형태, 푸른 계열 |
-| intent_buff.webp | BUFF | ⚠️ physical_defense 재활용 | 위 화살표 + 빛, 녹색/노란 계열 |
-| intent_debuff.webp | DEBUFF | ❌ 미표시 | 해골/독 물방울, 보라/빨간 계열 |
-| intent_unknown.webp | UNKNOWN | ❌ 미표시 | 물음표(?), 회색 계열 |
-
----
-
-## 4. 오디오 (전부 미완료)
+## 3. 오디오 (전부 미완료)
 
 `useAudioStore`에 Web Audio API 기반 오디오 시스템 구현됨.
 실제 오디오 파일 없음 (`frontend/src/assets/sounds/` 비어있음).
@@ -199,7 +134,7 @@
 
 ---
 
-## 5. 카드 아트 (75장 전부 미완료)
+## 4. 카드 아트 (75장 전부 미완료)
 
 현재 카드는 타입 아이콘 + 텍스트 프레임으로 표현. 전용 일러스트 없음.
 BASIC 10, COMMON 25, UNCOMMON 20, RARE 15, STATUS 5.
@@ -208,27 +143,45 @@ BASIC 10, COMMON 25, UNCOMMON 20, RARE 15, STATUS 5.
 
 ---
 
+## 5. 파일명 이슈 (해결 완료)
+
+- ~~`adiation_spider*.webp`~~ → `radiation_spider*.webp` 으로 수정 완료 (2026-03-19)
+- ~~`stage*_battle_backgroung.webp`~~ → `stage*_battle_background.webp` 으로 수정 완료 (2026-03-19)
+
+---
+
 ## 6. 완료된 에셋
 
-### 적 스프라이트 (29종 × 3벌 = 87파일)
-**1막 (13종):** training_dummy, scrap_collector, acid_dog, waste_slime, radiation_spider, rust_marauder, scrap_turret, mutant_behemoth, rogue_sentry, mutant_sniper, brutus, rusted_watchbot, mutant_crows
-**2막 (10종):** subway_rat, rail_crawler, mole_person, tunnel_spider, electric_slime, rusted_golem, derailed_conductor, shadow_lurker, track_guardian, leviathan_worm
-**3막 보스+일반 (6종):** spider_queen, storm_generator, derailed_train, underground_lord, infected_passenger, glowing_moss
+### 적 스프라이트 (43종 × 3벌 = 129파일) ✅ 100%
+**1막 일반 (10종):** scrap_collector, acid_dog, waste_slime, radiation_spider, rust_marauder, scrap_turret, mutant_behemoth, rogue_sentry, mutant_sniper, mutant_crows
+**1막 엘리트 (2종):** brutus, rusted_watchbot
+**1막 보스 (2종):** spider_queen, storm_generator
+**2막 일반 (8종):** subway_rat, mole_person, tunnel_spider, electric_slime, infected_passenger, glowing_moss, derailed_conductor, shadow_lurker
+**2막 엘리트 (2종):** rusted_golem, track_guardian
+**2막 보스 (2종):** derailed_train, underground_lord, leviathan_worm
+**3막 일반 (8종):** security_drone, bio_experiment, corporate_guard, nano_swarm, cryo_sentinel, hazmat_worker, cleaning_drone, experiment_x7
+**3막 엘리트 (3종):** chief_scientist, war_machine, prototype_fighter
+**3막 보스 (3종):** director_omega, central_ai, final_weapon
+**기타:** training_dummy (연습용), scarecrow, rail_crawler
 
-### 배경 (10종)
-전투 스테이지 3종 (stage1~3_battle_backgroung.webp), 맵 존 4종 (map_background, zone1~3), 씬 배경 3종 (campfire, event, shop)
+### 유물 이미지 (55종) ✅ 92%
+STARTER 1, COMMON 12, UNCOMMON 12, RARE 10, BOSS 8, EVENT 6, SHOP 6 = 55종 완료.
+보급품 연관 유물 5종만 미완료.
 
-### GUI 아이콘 (53종)
-카드 타입 7, 리소스 5, HUD 19, 카드 더미 4, 디버프/상태 8, 버프 7, 기타 3
+### 배경 (10종) ✅ 100%
+전투 스테이지 3종, 맵 존 배경 3종, 씬 배경 4종 (맵, 모닥불, 이벤트, 상점)
 
-### 맵 뱃지 (7종)
-battle, elite, boss, campfire, event, shop, relic (보물방)
+### GUI 아이콘 (54종) ✅ 100%
+카드 타입 7, 리소스 6, 의도 아이콘 6, 상태/디버프 4, 버프 9, HUD/UI 22
 
-### 플레이어+NPC (6종)
-player (idle, physical_attack, physical_hit, special_attack, special_hit) + merchant
+### 맵 뱃지 (7종) ✅ 100%
+battle, elite, boss, campfire, event, shop, relic
 
-### 앱 아이콘 (4종)
-icon.png (512), icon-256.png, icon-1024.png, icon.ico → `frontend/resources/`
+### 플레이어+NPC (8종) ✅ 100%
+player (idle, attack, physical_attack, physical_hit, special_attack, special_hit), merchant, scarecrow
 
-### 폰트 (2종)
-Galmuri11.woff2, Galmuri11-Bold.woff2 → `frontend/src/assets/fonts/`
+### 앱 아이콘 (4종) ✅ 100%
+icon.png, icon-256.png, icon-1024.png, icon.ico
+
+### 폰트 (2종) ✅ 100%
+Galmuri11.woff2, Galmuri11-Bold.woff2
