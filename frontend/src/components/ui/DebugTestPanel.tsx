@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { useBattleStore } from '../../store/useBattleStore';
 import { useDeckStore } from '../../store/useDeckStore';
 import { useRunStore } from '../../store/useRunStore';
-import { createEnemy, BASE_ENEMIES } from '../../assets/data/enemies';
+import { createEnemy, BASE_ENEMIES, getEnemyIdsByTier } from '../../assets/data/enemies';
 import { ALL_CARDS, createStartingDeck } from '../../assets/data/cards';
 import { RELICS } from '../../assets/data/relics';
 import { SUPPLIES } from '../../assets/data/supplies';
+import { useMapStore } from '../../store/useMapStore';
 import type { Card } from '../../types/gameTypes';
 
 // ── 공용 스타일 ──
@@ -114,7 +115,7 @@ const SUPPLY_TIER_COLORS: Record<string, string> = {
   ALL: '#aaa', COMMON: '#a8b8a0', UNCOMMON: '#5ca8d4', RARE: '#d4a854',
 };
 
-type TabId = 'enemy' | 'player' | 'cards' | 'relics' | 'supply';
+type TabId = 'scenario' | 'enemy' | 'player' | 'cards' | 'relics' | 'supply';
 
 // ── 메인 컴포넌트 ──
 export const DebugTestPanel: React.FC<{
@@ -122,7 +123,7 @@ export const DebugTestPanel: React.FC<{
   onExit: () => void;
 }> = ({ onReset, onExit }) => {
   const [isOpen, setIsOpen] = useState(true);
-  const [tab, setTab] = useState<TabId>('enemy');
+  const [tab, setTab] = useState<TabId>('scenario');
   const [intentPreset, setIntentPreset] = useState('IDLE');
   const [cardSearch, setCardSearch] = useState('');
   const [cardTypeFilter, setCardTypeFilter] = useState('ALL');
@@ -262,6 +263,7 @@ export const DebugTestPanel: React.FC<{
         {/* 탭 */}
         <div style={{ display: 'flex', gap: '2px' }}>
           {([
+            ['scenario', '시나리오'],
             ['enemy', '적'],
             ['player', '플레이어'],
             ['cards', '카드'],
@@ -282,6 +284,119 @@ export const DebugTestPanel: React.FC<{
 
       {/* 탭 콘텐츠 */}
       <div style={{ overflowY: 'auto', overflowX: 'hidden', padding: '6px 12px' }}>
+
+        {/* ════ 시나리오 탭 ════ */}
+        {tab === 'scenario' && (() => {
+          const scenarioBtnStyle = (bg: string, color: string): React.CSSProperties => ({
+            padding: '8px 12px', fontSize: '12px', fontWeight: 'bold',
+            fontFamily: '"Galmuri11", monospace', cursor: 'pointer',
+            background: bg, color, border: `1px solid ${color}33`,
+            borderRadius: '6px', transition: 'filter 0.15s', textAlign: 'left',
+          });
+
+          const setupBattle = (chapter: number, tier: 'NORMAL' | 'ELITE' | 'BOSS') => {
+            useRunStore.setState({ currentChapter: chapter });
+            useBattleStore.getState().resetBattle();
+            useDeckStore.getState().setMasterDeck(createStartingDeck());
+            useDeckStore.getState().initDeck();
+            useDeckStore.getState().drawCards(5);
+            const ids = getEnemyIdsByTier(tier, chapter);
+            if (tier === 'NORMAL') {
+              const shuffled = [...ids].sort(() => Math.random() - 0.5);
+              useBattleStore.getState().spawnEnemies(shuffled.slice(0, 2).map(id => createEnemy(id)));
+            } else {
+              const pick = ids[Math.floor(Math.random() * ids.length)];
+              useBattleStore.getState().spawnEnemies([createEnemy(pick)]);
+            }
+            useBattleStore.setState({ playerMaxAp: 4, playerActionPoints: 4, playerAmmo: 3 });
+          };
+
+          const goToScene = (scene: 'REST' | 'EVENT' | 'SHOP' | 'TREASURE' | 'MAP', chapter: number) => {
+            useRunStore.setState({ currentChapter: chapter });
+            if (scene === 'MAP') {
+              useMapStore.getState().generateMap(chapter);
+            }
+            if (scene === 'SHOP') {
+              useRunStore.setState({ gold: 999 });
+            }
+            useRunStore.getState().setScene(scene);
+          };
+
+          return (
+            <div style={{ display: 'flex', gap: '16px' }}>
+              {/* 전투 시나리오 */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={sectionLabel}>전투 시나리오</div>
+                {[1, 2, 3].map(ch => (
+                  <div key={ch}>
+                    <div style={{ fontSize: '10px', color: '#666', marginTop: '2px' }}>
+                      {ch}막 — {{ 1: '오염된 외곽 도시', 2: '무너진 지하철도', 3: '거대 기업의 방주' }[ch]}
+                    </div>
+                    <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
+                      <button onClick={() => setupBattle(ch, 'NORMAL')} style={scenarioBtnStyle('#1a2a1a', '#8c8')}
+                        onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.4)'}
+                        onMouseLeave={e => e.currentTarget.style.filter = 'brightness(1)'}>
+                        일반전 (x2)
+                      </button>
+                      <button onClick={() => setupBattle(ch, 'ELITE')} style={scenarioBtnStyle('#2a2a1a', '#cc8')}
+                        onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.4)'}
+                        onMouseLeave={e => e.currentTarget.style.filter = 'brightness(1)'}>
+                        엘리트전
+                      </button>
+                      <button onClick={() => setupBattle(ch, 'BOSS')} style={scenarioBtnStyle('#2a1a1a', '#c88')}
+                        onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.4)'}
+                        onMouseLeave={e => e.currentTarget.style.filter = 'brightness(1)'}>
+                        보스전
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* 비전투 씬 */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={sectionLabel}>비전투 씬</div>
+                <div style={{ fontSize: '10px', color: '#666', marginBottom: '2px' }}>
+                  해당 씬으로 이동합니다. 상단 HUD의 "연습" 버튼으로 돌아올 수 있습니다.
+                </div>
+                {[1, 2, 3].map(ch => (
+                  <div key={ch}>
+                    <div style={{ fontSize: '10px', color: '#666', marginTop: '2px' }}>
+                      {ch}막
+                    </div>
+                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '2px' }}>
+                      <button onClick={() => goToScene('REST', ch)} style={scenarioBtnStyle('#1a2a2a', '#8cc')}
+                        onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.4)'}
+                        onMouseLeave={e => e.currentTarget.style.filter = 'brightness(1)'}>
+                        휴식
+                      </button>
+                      <button onClick={() => goToScene('EVENT', ch)} style={scenarioBtnStyle('#2a1a2a', '#c8c')}
+                        onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.4)'}
+                        onMouseLeave={e => e.currentTarget.style.filter = 'brightness(1)'}>
+                        이벤트
+                      </button>
+                      <button onClick={() => goToScene('SHOP', ch)} style={scenarioBtnStyle('#2a2a1a', '#cc8')}
+                        onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.4)'}
+                        onMouseLeave={e => e.currentTarget.style.filter = 'brightness(1)'}>
+                        상점
+                      </button>
+                      <button onClick={() => goToScene('TREASURE', ch)} style={scenarioBtnStyle('#2a1a1a', '#ca8')}
+                        onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.4)'}
+                        onMouseLeave={e => e.currentTarget.style.filter = 'brightness(1)'}>
+                        보물
+                      </button>
+                      <button onClick={() => goToScene('MAP', ch)} style={scenarioBtnStyle('#1a1a2a', '#88c')}
+                        onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.4)'}
+                        onMouseLeave={e => e.currentTarget.style.filter = 'brightness(1)'}>
+                        맵
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ════ 적 탭 ════ */}
         {tab === 'enemy' && (

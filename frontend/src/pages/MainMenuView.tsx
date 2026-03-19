@@ -231,7 +231,7 @@ export const MainMenuView: React.FC = () => {
 
               const seed = 'practice_' + Date.now();
               useRngStore.getState().initialize(seed);
-              useRunStore.setState({ playerHp: 9999, playerMaxHp: 9999 });
+              useRunStore.setState({ playerHp: 9999, playerMaxHp: 9999, isPracticeMode: true, gold: 999 });
               setScene('DEBUG_BATTLE');
             }}
           >

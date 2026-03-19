@@ -320,6 +320,7 @@ export const BattleView: React.FC = () => {
               useRngStore.getState().restoreStates(backup.rng);
               delete (window as any).__practiceBackup;
             }
+            useRunStore.setState({ isPracticeMode: false });
             useRunStore.getState().setScene('MAIN_MENU');
           }}
         />

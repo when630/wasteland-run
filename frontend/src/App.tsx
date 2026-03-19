@@ -46,7 +46,9 @@ function SceneManager() {
     }
   }, [currentScene]);
 
+  const isPracticeMode = useRunStore(s => s.isPracticeMode);
   const showHUD = currentScene !== 'MAIN_MENU' && currentScene !== 'DEBUG_BATTLE';
+  const showPracticeReturn = isPracticeMode && currentScene !== 'DEBUG_BATTLE' && currentScene !== 'MAIN_MENU';
 
   const scene = (() => {
     switch (currentScene) {
@@ -79,6 +81,33 @@ function SceneManager() {
       {scene}
       {showHUD && <HUD />}
       <CardViewerModal />
+      {/* 연습모드: 비전투 씬에서 돌아가기 버튼 */}
+      {showPracticeReturn && (
+        <button
+          onClick={() => useRunStore.getState().setScene('DEBUG_BATTLE')}
+          style={{
+            position: 'fixed',
+            top: 8,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 9999,
+            padding: '6px 20px',
+            fontSize: '13px',
+            fontWeight: 'bold',
+            fontFamily: '"Galmuri11", monospace',
+            background: 'rgba(20, 20, 40, 0.95)',
+            color: '#ffd700',
+            border: '1px solid #ffd700',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            boxShadow: '0 2px 12px rgba(255, 215, 0, 0.2)',
+          }}
+          onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.3)'}
+          onMouseLeave={e => e.currentTarget.style.filter = 'brightness(1)'}
+        >
+          연습 패널로 돌아가기
+        </button>
+      )}
     </>
   );
 }

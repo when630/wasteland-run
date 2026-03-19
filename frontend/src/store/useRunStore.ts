@@ -12,6 +12,7 @@ interface RunState {
   supplies: string[];          // 🌟 보급품 인벤토리 (소모품 ID 배열)
   mutationStage: number;       // 🌟 변이 단계 (0~20)
   maxMutationUnlocked: number; // 🌟 해금된 최고 변이 단계
+  isPracticeMode: boolean;     // 🌟 연습 모드 여부
   toastMessage: string | null; // 🌟 전역 알림 메시지 상태
   runStartTime: number;
   runSeed: string; // 🌟 런 시드 (보존용)
@@ -66,6 +67,7 @@ export const useRunStore = create<RunState>((set) => ({
   currentChapter: 1,
   relics: [],
   supplies: [],
+  isPracticeMode: false,
   mutationStage: 0,
   maxMutationUnlocked: 0,
   toastMessage: null,
