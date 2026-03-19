@@ -5,6 +5,7 @@ import { useRunStore } from '../../store/useRunStore';
 import { createEnemy, BASE_ENEMIES } from '../../assets/data/enemies';
 import { ALL_CARDS, createStartingDeck } from '../../assets/data/cards';
 import { RELICS } from '../../assets/data/relics';
+import { SUPPLIES } from '../../assets/data/supplies';
 import type { Card } from '../../types/gameTypes';
 
 // ── 공용 스타일 ──
@@ -109,7 +110,11 @@ const TIER_COLORS: Record<string, string> = {
   ALL: '#aaa', COMMON: '#aaa', UNCOMMON: '#5b8', RARE: '#d93', BOSS: '#c5f',
 };
 
-type TabId = 'enemy' | 'player' | 'cards' | 'relics';
+const SUPPLY_TIER_COLORS: Record<string, string> = {
+  ALL: '#aaa', COMMON: '#a8b8a0', UNCOMMON: '#5ca8d4', RARE: '#d4a854',
+};
+
+type TabId = 'enemy' | 'player' | 'cards' | 'relics' | 'supply';
 
 // ── 메인 컴포넌트 ──
 export const DebugTestPanel: React.FC<{
@@ -122,6 +127,7 @@ export const DebugTestPanel: React.FC<{
   const [cardSearch, setCardSearch] = useState('');
   const [cardTypeFilter, setCardTypeFilter] = useState('ALL');
   const [relicTierFilter, setRelicTierFilter] = useState('ALL');
+  const [supplyTierFilter, setSupplyTierFilter] = useState('ALL');
 
   // 스토어
   const ap = useBattleStore(s => s.playerActionPoints);
@@ -131,6 +137,7 @@ export const DebugTestPanel: React.FC<{
   const enemies = useBattleStore(s => s.enemies);
   const playerHp = useRunStore(s => s.playerHp);
   const relics = useRunStore(s => s.relics);
+  const supplies = useRunStore(s => s.supplies);
   const handCount = useDeckStore(s => s.hand.length);
   const drawCount = useDeckStore(s => s.drawPile.length);
   const discardCount = useDeckStore(s => s.discardPile.length);
@@ -259,6 +266,7 @@ export const DebugTestPanel: React.FC<{
             ['player', '플레이어'],
             ['cards', '카드'],
             ['relics', '유물'],
+            ['supply', '보급품'],
           ] as [TabId, string][]).map(([id, label]) => (
             <button key={id} onClick={() => setTab(id)} style={tabBtnStyle(tab === id)}>{label}</button>
           ))}
@@ -595,6 +603,112 @@ export const DebugTestPanel: React.FC<{
                     </div>
                   );
                 })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ════ 보급품 탭 ════ */}
+        {tab === 'supply' && (
+          <div style={{ display: 'flex', gap: '16px' }}>
+            {/* 좌: 보유 보급품 */}
+            <div style={{ flex: '0 0 220px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div style={sectionLabel}>보유 보급품 ({supplies.length}개)</div>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <Btn label="전부 제거" onClick={() => useRunStore.setState({ supplies: [] })} bg="#433" color="#fbb" flex />
+                <Btn label="전부 획득" onClick={() => {
+                  const ids = SUPPLIES.map(s => s.id);
+                  useRunStore.setState({ supplies: ids });
+                }} bg="#445" color="#bbf" flex />
+              </div>
+              {supplies.length > 0 ? (
+                <div style={{
+                  display: 'flex', flexDirection: 'column', gap: '2px',
+                  maxHeight: '160px', overflowY: 'auto',
+                  border: '1px solid #333', borderRadius: '4px', background: '#0a0a15', padding: '4px',
+                }}>
+                  {supplies.map((sid, idx) => {
+                    const s = SUPPLIES.find(x => x.id === sid);
+                    if (!s) return null;
+                    return (
+                      <div key={`${sid}-${idx}`} style={{
+                        display: 'flex', alignItems: 'center', gap: '6px',
+                        padding: '3px 6px', borderBottom: '1px solid #1a1a2a',
+                      }}>
+                        <span style={{ fontSize: '16px', flexShrink: 0 }}>{s.icon}</span>
+                        <span style={{
+                          fontSize: '11px', flex: 1, color: SUPPLY_TIER_COLORS[s.tier],
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }} title={s.description}>{s.name}</span>
+                        <button onClick={() => {
+                          useRunStore.setState(st => {
+                            const next = [...st.supplies];
+                            next.splice(idx, 1);
+                            return { supplies: next };
+                          });
+                        }} style={{
+                          padding: '2px 6px', fontSize: '10px', fontWeight: 'bold',
+                          background: '#522', color: '#f88', border: '1px solid #a44',
+                          borderRadius: '3px', cursor: 'pointer', fontFamily: '"Galmuri11", monospace',
+                        }}>제거</button>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ fontSize: '11px', color: '#555', padding: '8px', textAlign: 'center' }}>보급품 없음</div>
+              )}
+            </div>
+
+            {/* 우: 보급품 추가 */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={sectionLabel}>보급품 추가</div>
+                <div style={{ display: 'flex', gap: '3px' }}>
+                  {(['ALL', 'COMMON', 'UNCOMMON', 'RARE'] as const).map(tier => (
+                    <button key={tier} onClick={() => setSupplyTierFilter(tier)} style={{
+                      padding: '2px 7px', fontSize: '10px', fontFamily: '"Galmuri11", monospace',
+                      background: supplyTierFilter === tier ? (SUPPLY_TIER_COLORS[tier] || '#555') : '#2a2a3a',
+                      color: supplyTierFilter === tier ? '#000' : (SUPPLY_TIER_COLORS[tier] || '#aaa'),
+                      border: `1px solid ${SUPPLY_TIER_COLORS[tier] || '#555'}`,
+                      borderRadius: '3px', cursor: 'pointer',
+                      fontWeight: supplyTierFilter === tier ? 'bold' : 'normal',
+                    }}>
+                      {{ ALL: '전체', COMMON: '일반', UNCOMMON: '고급', RARE: '희귀' }[tier]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div style={{
+                maxHeight: '180px', overflowY: 'auto',
+                border: '1px solid #333', borderRadius: '4px', background: '#0a0a15',
+                display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+              }}>
+                {SUPPLIES.filter(s => supplyTierFilter === 'ALL' || s.tier === supplyTierFilter).map(s => (
+                  <div key={s.id} style={{
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    padding: '3px 8px', borderBottom: '1px solid #1a1a2a',
+                  }}>
+                    <span style={{ fontSize: '16px', flexShrink: 0 }}>{s.icon}</span>
+                    <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                      <div style={{
+                        fontSize: '11px', color: SUPPLY_TIER_COLORS[s.tier],
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }} title={s.description}>{s.name}</div>
+                      <div style={{ fontSize: '9px', color: '#666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {s.description}
+                      </div>
+                    </div>
+                    <span style={{ fontSize: '9px', color: '#555', flexShrink: 0 }}>
+                      {s.usageContext === 'COMBAT' ? '전투' : '항시'}
+                    </span>
+                    <button onClick={() => useRunStore.getState().addSupply(s.id)} style={{
+                      padding: '2px 6px', fontSize: '10px', fontWeight: 'bold',
+                      background: '#253', color: '#8f8', border: '1px solid #4a4',
+                      borderRadius: '3px', cursor: 'pointer', fontFamily: '"Galmuri11", monospace',
+                    }}>+1</button>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
