@@ -43,6 +43,13 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ result }) => {
   const { grade, color: gradeColor } = calculateGrade(isVictory, playTimeSeconds, enemiesKilled, playerHp, playerMaxHp);
 
   const handleReturnToTitle = async () => {
+    // 3막 보스 클리어 시 변이 단계 해금
+    if (isVictory && currentChapter >= 3) {
+      const { mutationStage, maxMutationUnlocked } = useRunStore.getState();
+      if (mutationStage >= maxMutationUnlocked && mutationStage < 20) {
+        useRunStore.setState({ maxMutationUnlocked: mutationStage + 1 });
+      }
+    }
     await submitRunStats(isVictory);
     setIsActive(false);
     await saveRunData();

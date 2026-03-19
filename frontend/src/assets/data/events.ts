@@ -4,55 +4,297 @@ import { useDeckStore } from '../../store/useDeckStore';
 import { useRngStore } from '../../store/useRngStore';
 import { RELICS } from './relics';
 import { ALL_CARDS, STARTING_CARDS, STATUS_CARDS } from './cards';
+import { SUPPLIES } from './supplies';
+import { getMaxSupplySlots } from '../../logic/supplyEffects';
 import { customShuffle } from '../../utils/rng';
 
 /**
- * 0층 출발 이벤트 — 게임 시작 시 3가지 축복 중 하나를 선택
+ * 시작 이벤트 선택지 풀 (STS 고래밥 시스템)
+ * 4개 카테고리에서 각 1개씩 랜덤으로 뽑아 4개 선택지를 제시한다.
+ *
+ * 카테고리 1 — 무료, 카드 관련 (경미한 이득)
+ * 카테고리 2 — 무료, 자원 관련 (중간 이득)
+ * 카테고리 3 — 페널티 + 강한 보상 (하이리스크)
+ * 카테고리 4 — 시작 유물 교체 (고정)
  */
-export const STARTING_EVENTS: RandomEvent[] = [
+import type { EventOption } from '../../types/eventTypes';
+
+// ── 카테고리 1: 무료 카드 관련 ──
+const STARTING_CAT1: EventOption[] = [
   {
-    id: 'evt_starting_wasteland_gate',
-    title: '황무지의 관문',
-    description: '폐허가 된 도시의 경계에 섰습니다. 이곳에서부터 당신의 여정이 시작됩니다. 무너진 검문소 앞에 세 갈래 길이 보입니다. 각각의 길 앞에는 이전 탐험가들이 남긴 흔적이 있습니다.',
-    visualDesc: '녹슨 철조망과 콘크리트 잔해 사이로 세 갈래의 길이 뻗어 있습니다. 저 멀리 황무지의 먼지 폭풍이 일렁입니다...',
-    options: [
-      {
-        label: '[보급품 창고를 뒤진다]',
-        description: '골드 100을 획득합니다.',
-        onSelect: () => {
-          useRunStore.getState().addGold(100);
-          return '검문소 옆 보급품 창고에서 쓸만한 물자를 잔뜩 챙겼습니다. (골드 100 획득)';
-        }
-      },
-      {
-        label: '[의료 텐트에서 체력을 보강한다]',
-        description: '최대 체력이 15 증가하고 체력이 완전히 회복됩니다.',
-        onSelect: () => {
-          const runStore = useRunStore.getState();
-          useRunStore.setState({ playerMaxHp: runStore.playerMaxHp + 15 });
-          runStore.healPlayer(999);
-          return '남겨진 의료 장비로 몸 상태를 최상으로 끌어올렸습니다. (최대 체력 +15, 체력 완전 회복)';
-        }
-      },
-      {
-        label: '[수상한 사물함을 연다]',
-        description: '무작위 [일반] 유물을 1개 획득합니다.',
-        onSelect: () => {
-          const runStore = useRunStore.getState();
-          const commonRelics = RELICS.filter(r => r.tier === 'COMMON' && !runStore.relics.includes(r.id));
-          if (commonRelics.length > 0) {
-            const pick = commonRelics[Math.floor(useRngStore.getState().eventRng.next() * commonRelics.length)];
-            runStore.addRelic(pick.id);
-            return `사물함 안에서 이전 탐험가의 유품을 발견했습니다. [${pick.name}] 유물을 획득했습니다!`;
-          } else {
-            runStore.addGold(50);
-            return '사물함은 이미 털린 뒤였지만, 바닥에 흩어진 동전을 주웠습니다. (골드 50 획득)';
-          }
+    label: '[카드 보상을 받는다]',
+    description: '일반/고급 카드 3장 중 1장을 선택합니다.',
+    onSelect: () => 'TRIGGER_CARD_REWARD',
+  },
+  {
+    label: '[무작위 희귀 카드를 받는다]',
+    description: '무작위 [희귀] 카드 1장이 덱에 추가됩니다.',
+    onSelect: () => {
+      const pool = ALL_CARDS.filter(c => c.tier === 'RARE');
+      const rng = useRngStore.getState().eventRng;
+      const pick = pool[Math.floor(rng.next() * pool.length)];
+      useDeckStore.getState().addCardToMasterDeck({ ...pick } as any);
+      return `전투 기록에서 고급 전투 기술을 습득했습니다. [${pick.name}] 카드를 획득했습니다!`;
+    },
+  },
+  {
+    label: '[카드를 1장 제거한다]',
+    description: '덱에서 카드 1장을 영구히 제거합니다.',
+    onSelect: () => 'TRIGGER_CARD_REMOVE',
+  },
+  {
+    label: '[카드를 1장 변환한다]',
+    description: '카드 1장을 제거하고 같은 타입의 랜덤 카드를 얻습니다.',
+    onSelect: () => {
+      const ds = useDeckStore.getState();
+      const deck = [...ds.masterDeck];
+      const rng = useRngStore.getState().eventRng;
+      const ri = Math.floor(rng.next() * deck.length);
+      const removed = deck[ri];
+      deck.splice(ri, 1);
+      const pool = ALL_CARDS.filter(c => c.type === removed.type && c.tier !== 'BASIC' && c.baseId !== removed.baseId);
+      if (pool.length > 0) {
+        const p = pool[Math.floor(rng.next() * pool.length)];
+        ds.setMasterDeck(deck);
+        ds.addCardToMasterDeck({ ...p } as any);
+        return `[${removed.name}]을 분해하여 [${p.name}]으로 변환했습니다!`;
+      }
+      ds.setMasterDeck(deck);
+      return `[${removed.name}]이 사라졌지만 쓸만한 것은 나오지 않았습니다.`;
+    },
+  },
+  {
+    label: '[카드를 1장 강화한다]',
+    description: '덱의 카드 1장을 강화합니다.',
+    condition: () => useDeckStore.getState().masterDeck.some(c => !c.isUpgraded),
+    onSelect: () => 'TRIGGER_CARD_UPGRADE',
+  },
+];
+
+// ── 카테고리 2: 무료 자원 관련 ──
+const STARTING_CAT2: EventOption[] = [
+  {
+    label: '[의료 텐트에서 체력을 보강한다]',
+    description: '최대 체력 +10.',
+    onSelect: () => {
+      const rs = useRunStore.getState();
+      useRunStore.setState({ playerMaxHp: rs.playerMaxHp + 10 });
+      rs.healPlayer(10);
+      return '의료 장비로 몸 상태를 보강했습니다. (최대 체력 +10)';
+    },
+  },
+  {
+    label: '[보급품 창고를 뒤진다]',
+    description: '골드 100을 획득합니다.',
+    onSelect: () => {
+      useRunStore.getState().addGold(100);
+      return '창고에서 물자를 챙겼습니다. (골드 100 획득)';
+    },
+  },
+  {
+    label: '[수상한 사물함을 연다]',
+    description: '무작위 [일반] 유물을 1개 획득합니다.',
+    onSelect: () => {
+      const rs = useRunStore.getState();
+      const pool = RELICS.filter(r => r.tier === 'COMMON' && !rs.relics.includes(r.id));
+      if (pool.length > 0) {
+        const pick = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)];
+        rs.addRelic(pick.id);
+        return `사물함에서 [${pick.name}] 유물을 발견했습니다!`;
+      }
+      rs.addGold(50);
+      return '사물함은 이미 털렸지만 동전을 주웠습니다. (골드 50)';
+    },
+  },
+  {
+    label: '[의무병의 가방을 챙긴다]',
+    description: '무작위 보급품 3개를 획득합니다.',
+    onSelect: () => {
+      const rs = useRunStore.getState();
+      const rng = useRngStore.getState().eventRng;
+      const gained: string[] = [];
+      for (let i = 0; i < 3; i++) {
+        if (rs.supplies.length >= getMaxSupplySlots(rs.relics)) break;
+        const pool = SUPPLIES.filter(s => s.tier === 'COMMON' || s.tier === 'UNCOMMON');
+        const pick = pool[Math.floor(rng.next() * pool.length)];
+        rs.addSupply(pick.id);
+        gained.push(pick.name);
+      }
+      if (gained.length === 0) return '보급품 소지 한도가 가득 찼습니다.';
+      return `의무병의 가방에서 보급품을 챙겼습니다! [${gained.join('], [')}] 획득!`;
+    },
+  },
+];
+
+// ── 카테고리 3: 페널티 + 강한 보상 ──
+const STARTING_CAT3_PENALTIES: Array<{ label: string; desc: string; apply: () => string }> = [
+  {
+    label: '최대 체력 -8',
+    desc: '최대 체력을 8 잃고',
+    apply: () => {
+      const rs = useRunStore.getState();
+      const newMax = rs.playerMaxHp - 8;
+      useRunStore.setState({ playerMaxHp: newMax, playerHp: Math.min(rs.playerHp, newMax) });
+      return '최대 체력 -8';
+    },
+  },
+  {
+    label: '골드 전부 잃음',
+    desc: '골드를 전부 잃고',
+    apply: () => {
+      const rs = useRunStore.getState();
+      useRunStore.setState({ gold: 0 });
+      return `골드 ${rs.gold} 소실`;
+    },
+  },
+  {
+    label: '체력 -20',
+    desc: '체력을 20 잃고',
+    apply: () => {
+      useRunStore.getState().damagePlayer(20);
+      return '체력 -20';
+    },
+  },
+  {
+    label: '저주 카드 1장',
+    desc: '덱에 [화상] 카드가 추가되고',
+    apply: () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id: _id, ...burn } = STATUS_CARDS[0];
+      useDeckStore.getState().addCardToMasterDeck(burn as any);
+      return '덱에 [화상] 추가';
+    },
+  },
+];
+
+const STARTING_CAT3_REWARDS: Array<{ label: string; desc: string; apply: () => string }> = [
+  {
+    label: '[희귀] 카드 보상',
+    desc: '희귀 카드 3장 중 1장을 선택합니다.',
+    apply: () => 'TRIGGER_RARE_CARD_REWARD',
+  },
+  {
+    label: '[희귀] 유물 획득',
+    desc: '무작위 [희귀] 유물을 획득합니다.',
+    apply: () => {
+      const rs = useRunStore.getState();
+      const pool = RELICS.filter(r => r.tier === 'RARE' && !rs.relics.includes(r.id));
+      if (pool.length > 0) {
+        const pick = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)];
+        rs.addRelic(pick.id);
+        return `[${pick.name}] 유물을 획득했습니다!`;
+      }
+      rs.addGold(80);
+      return '유물 대신 골드 80을 찾았습니다.';
+    },
+  },
+  {
+    label: '카드 2장 제거',
+    desc: '덱에서 카드 2장을 제거합니다.',
+    apply: () => 'TRIGGER_CARD_REMOVE_2',
+  },
+  {
+    label: '카드 2장 변환',
+    desc: '카드 2장을 랜덤 변환합니다.',
+    apply: () => {
+      const ds = useDeckStore.getState();
+      const deck = [...ds.masterDeck];
+      const rng = useRngStore.getState().eventRng;
+      const results: string[] = [];
+      for (let i = 0; i < 2 && deck.length > 0; i++) {
+        const ri = Math.floor(rng.next() * deck.length);
+        const removed = deck[ri];
+        deck.splice(ri, 1);
+        const pool = ALL_CARDS.filter(c => c.type === removed.type && c.tier !== 'BASIC' && c.baseId !== removed.baseId);
+        if (pool.length > 0) {
+          const p = pool[Math.floor(rng.next() * pool.length)];
+          ds.addCardToMasterDeck({ ...p } as any);
+          results.push(`[${removed.name}]→[${p.name}]`);
+        } else {
+          results.push(`[${removed.name}] 소실`);
         }
       }
-    ]
-  }
+      ds.setMasterDeck(deck);
+      return results.join(', ');
+    },
+  },
+  {
+    label: '골드 250 획득',
+    desc: '골드 250을 획득합니다.',
+    apply: () => {
+      useRunStore.getState().addGold(250);
+      return '골드 250 획득!';
+    },
+  },
+  {
+    label: '[희귀] 보급품 획득',
+    desc: '무작위 [희귀] 보급품을 획득합니다.',
+    apply: () => {
+      const rs = useRunStore.getState();
+      if (rs.supplies.length >= getMaxSupplySlots(rs.relics)) return '보급품 한도 초과';
+      const pool = SUPPLIES.filter(s => s.tier === 'RARE');
+      const pick = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)];
+      rs.addSupply(pick.id);
+      return `[${pick.name}] 획득!`;
+    },
+  },
 ];
+
+/**
+ * 시작 이벤트를 동적으로 생성한다.
+ * 4개 카테고리에서 각 1개씩 랜덤으로 뽑아 선택지를 구성한다.
+ */
+export function generateStartingEvent(): RandomEvent {
+  const rng = useRngStore.getState().eventRng;
+
+  // 카테고리 1, 2에서 각 1개
+  const cat1 = STARTING_CAT1[Math.floor(rng.next() * STARTING_CAT1.length)];
+  const cat2 = STARTING_CAT2[Math.floor(rng.next() * STARTING_CAT2.length)];
+
+  // 카테고리 3: 페널티 1개 + 보상 1개 조합
+  const penalty = STARTING_CAT3_PENALTIES[Math.floor(rng.next() * STARTING_CAT3_PENALTIES.length)];
+  const reward = STARTING_CAT3_REWARDS[Math.floor(rng.next() * STARTING_CAT3_REWARDS.length)];
+  const cat3: EventOption = {
+    label: `[${penalty.label}] → ${reward.label}`,
+    description: `${penalty.desc} ${reward.desc}`,
+    onSelect: () => {
+      const penaltyResult = penalty.apply();
+      const rewardResult = reward.apply();
+      // TRIGGER 계열이면 그대로 반환 (EventView에서 처리)
+      if (rewardResult.startsWith('TRIGGER_')) return rewardResult;
+      return `${penaltyResult}. ${rewardResult}`;
+    },
+  };
+
+  // 카테고리 4: 시작 유물 교체 (고정)
+  const cat4: EventOption = {
+    label: '[시작 유물을 교체한다]',
+    description: '생존자의 인식표를 잃고 무작위 [보스] 유물을 획득합니다.',
+    condition: () => useRunStore.getState().relics.includes('survivor_dog_tag'),
+    onSelect: () => {
+      const rs = useRunStore.getState();
+      rs.removeRelic('survivor_dog_tag');
+      const pool = RELICS.filter(r => r.tier === 'BOSS' && !rs.relics.includes(r.id));
+      if (pool.length > 0) {
+        const pick = pool[Math.floor(rng.next() * pool.length)];
+        rs.addRelic(pick.id);
+        return `인식표를 버리고 [${pick.name}]을(를) 손에 넣었습니다! 강력하지만 대가가 따릅니다.`;
+      }
+      return '교체할 유물이 없었습니다.';
+    },
+  };
+
+  return {
+    id: 'evt_starting_wasteland_gate',
+    title: '황무지의 관문',
+    description: '폐허가 된 도시의 경계에 섰습니다. 이전 탐험가들이 남긴 흔적 속에서 여정에 도움이 될 무언가를 찾을 수 있을 것 같습니다. 네 갈래의 선택지가 당신 앞에 놓여 있습니다.',
+    visualDesc: '녹슨 철조망과 콘크리트 잔해 사이로 길이 뻗어 있습니다. 저 멀리 황무지의 먼지 폭풍이 일렁입니다...',
+    options: [cat1, cat2, cat3, cat4],
+  };
+}
+
+// 하위 호환: 기존 코드에서 STARTING_EVENTS를 참조하는 곳 대응
+export const STARTING_EVENTS: RandomEvent[] = [];
 
 export const RANDOM_EVENTS: RandomEvent[] = [
   {
@@ -771,6 +1013,215 @@ export const RANDOM_EVENTS: RandomEvent[] = [
       { label: '[해킹]', description: '체력 -8, [희귀] 유물.', onSelect: () => { useRunStore.getState().damagePlayer(8); const rs = useRunStore.getState(); const pool = RELICS.filter(x => x.tier === 'RARE' && !rs.relics.includes(x.id)); if (pool.length > 0) { const p = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)]; rs.addRelic(p.id); return `해킹 성공! (체력 -8) [${p.name}]!`; } return '비어있었습니다. (-8)'; }},
       { label: '[우회]', description: '골드 30 + 카드 강화.', onSelect: () => { useRunStore.getState().addGold(30); return 'TRIGGER_CARD_UPGRADE'; }},
       { label: '[경보]', description: '엘리트 전투.', onSelect: () => 'TRIGGER_ELITE_BATTLE' },
+    ]
+  },
+
+  // ═══ 보급품 관련 이벤트 (5종) ═══
+  {
+    id: 'evt_supply_cache', title: '버려진 보급 상자',
+    description: '길가에 군용 보급 상자가 놓여 있습니다. 자물쇠는 이미 부서져 있고, 안에 아직 물건이 남아 있는 것 같습니다.',
+    visualDesc: '국방색 보급 상자의 뚜껑이 반쯤 열려 있습니다...',
+    options: [
+      {
+        label: '[상자를 뒤진다]',
+        description: '무작위 보급품 2개를 획득합니다.',
+        onSelect: () => {
+          const rs = useRunStore.getState();
+          const maxSlots = getMaxSupplySlots(rs.relics);
+          const rng = useRngStore.getState().eventRng;
+          const pool = SUPPLIES.filter(s => s.tier === 'COMMON' || s.tier === 'UNCOMMON');
+          const gained: string[] = [];
+          for (let i = 0; i < 2; i++) {
+            if (rs.supplies.length >= maxSlots) break;
+            const pick = pool[Math.floor(rng.next() * pool.length)];
+            rs.addSupply(pick.id);
+            gained.push(pick.name);
+          }
+          if (gained.length === 0) return '보급품 소지 한도가 가득 찼습니다. 아무것도 챙기지 못했습니다.';
+          return `상자에서 쓸만한 물자를 찾았습니다! [${gained.join('], [')}] 획득!`;
+        }
+      },
+      {
+        label: '[상자를 팔아 넘긴다]',
+        description: '골드 40을 획득합니다.',
+        onSelect: () => {
+          useRunStore.getState().addGold(40);
+          return '상자째로 근처 상인에게 넘겼습니다. (골드 40 획득)';
+        }
+      },
+      {
+        label: '[무시한다]',
+        description: '아무 일도 일어나지 않습니다.',
+        onSelect: () => '함정일 수도 있다고 판단하고 지나쳤습니다.',
+      }
+    ]
+  },
+  {
+    id: 'evt_field_medic', title: '야전 의무병',
+    description: '부상당한 의무병이 벽에 기대어 앉아 있습니다. "내 보급품을 가져가시오... 나는 더 이상 필요 없으니." 그의 가방에는 다양한 의약품이 들어 있습니다.',
+    visualDesc: '핏자국 묻은 의무병 가방에서 약품들이 보입니다...',
+    options: [
+      {
+        label: '[치료해주고 보급품을 받는다]',
+        description: '체력 10을 소모합니다. 무작위 [고급] 보급품 1개를 획득합니다.',
+        condition: () => useRunStore.getState().playerHp > 10,
+        onSelect: () => {
+          const rs = useRunStore.getState();
+          rs.damagePlayer(10);
+          const maxSlots = getMaxSupplySlots(rs.relics);
+          if (rs.supplies.length >= maxSlots) return '의무병을 치료했지만 보급품을 더 들고 갈 여유가 없습니다. (체력 -10)';
+          const pool = SUPPLIES.filter(s => s.tier === 'UNCOMMON');
+          const pick = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)];
+          rs.addSupply(pick.id);
+          return `붕대를 나눠주자 의무병이 감사하며 고급 보급품을 건넵니다. (체력 -10) [${pick.name}] 획득!`;
+        }
+      },
+      {
+        label: '[가방만 가져간다]',
+        description: '무작위 [일반] 보급품 1개를 획득합니다.',
+        onSelect: () => {
+          const rs = useRunStore.getState();
+          const maxSlots = getMaxSupplySlots(rs.relics);
+          if (rs.supplies.length >= maxSlots) return '보급품을 더 들고 갈 여유가 없습니다.';
+          const pool = SUPPLIES.filter(s => s.tier === 'COMMON');
+          const pick = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)];
+          rs.addSupply(pick.id);
+          return `가방에서 쓸만한 것을 하나 챙겼습니다. [${pick.name}] 획득!`;
+        }
+      },
+      {
+        label: '[지나간다]',
+        description: '아무 일도 일어나지 않습니다.',
+        onSelect: () => '안타깝지만 발걸음을 재촉했습니다.',
+      }
+    ]
+  },
+  {
+    id: 'evt_contaminated_supplies', title: '오염된 보급함',
+    description: '방사능 경고 표시가 붙은 보급함을 발견했습니다. 안의 물건들은 오염되어 있을 수 있지만, 희귀한 물자가 보입니다.',
+    visualDesc: '노란 방사능 표지판 아래 금속 보급함이 놓여 있습니다...',
+    chapters: [1],
+    options: [
+      {
+        label: '[맨손으로 연다]',
+        description: '체력 -8, [화상] 1장 추가. 무작위 [희귀] 보급품 1개를 획득합니다.',
+        onSelect: () => {
+          const rs = useRunStore.getState();
+          rs.damagePlayer(8);
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { id: _id, ...burnBlueprint } = STATUS_CARDS[0];
+          useDeckStore.getState().addCardToMasterDeck(burnBlueprint as any);
+          const maxSlots = getMaxSupplySlots(rs.relics);
+          if (rs.supplies.length >= maxSlots) return '방사능에 피폭되었지만 보급품을 더 들고 갈 수 없습니다! (체력 -8, [화상] 추가)';
+          const pool = SUPPLIES.filter(s => s.tier === 'RARE');
+          const pick = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)];
+          rs.addSupply(pick.id);
+          return `방사능에 피폭되었지만 귀중한 물자를 손에 넣었습니다! (체력 -8, [화상] 추가) [${pick.name}] 획득!`;
+        }
+      },
+      {
+        label: '[도구로 조심히 연다]',
+        description: '무작위 [일반] 보급품 1개를 안전하게 획득합니다.',
+        onSelect: () => {
+          const rs = useRunStore.getState();
+          const maxSlots = getMaxSupplySlots(rs.relics);
+          if (rs.supplies.length >= maxSlots) return '보급품 소지 한도가 가득 찼습니다.';
+          const pool = SUPPLIES.filter(s => s.tier === 'COMMON');
+          const pick = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)];
+          rs.addSupply(pick.id);
+          return `조심스럽게 오염되지 않은 물건을 골라 챙겼습니다. [${pick.name}] 획득!`;
+        }
+      },
+      {
+        label: '[지나간다]',
+        description: '아무 일도 일어나지 않습니다.',
+        onSelect: () => '위험을 감수할 가치가 없다고 판단했습니다.',
+      }
+    ]
+  },
+  {
+    id: 'evt_underground_stockpile', title: '지하 비축 창고',
+    description: '터널 벽 뒤에 숨겨진 비축 창고를 발견했습니다. 문에는 "비상시에만 개방"이라고 적혀 있습니다.',
+    visualDesc: '먼지 쌓인 철문 너머로 선반에 물자가 가득합니다...',
+    chapters: [2],
+    options: [
+      {
+        label: '[전부 가져간다]',
+        description: '골드 30 + 무작위 보급품 2개를 획득합니다.',
+        onSelect: () => {
+          const rs = useRunStore.getState();
+          rs.addGold(30);
+          const maxSlots = getMaxSupplySlots(rs.relics);
+          const rng = useRngStore.getState().eventRng;
+          const gained: string[] = [];
+          for (let i = 0; i < 2; i++) {
+            if (rs.supplies.length >= maxSlots) break;
+            const tier = rng.next() < 0.6 ? 'COMMON' : 'UNCOMMON';
+            const pool = SUPPLIES.filter(s => s.tier === tier);
+            const pick = pool[Math.floor(rng.next() * pool.length)];
+            rs.addSupply(pick.id);
+            gained.push(pick.name);
+          }
+          const supplyMsg = gained.length > 0 ? ` [${gained.join('], [')}] 획득!` : ' (보급품 소지 한도 초과)';
+          return `창고를 싹쓸이했습니다! (골드 30)${supplyMsg}`;
+        }
+      },
+      {
+        label: '[필요한 것만 챙긴다]',
+        description: '무작위 [고급] 보급품 1개를 획득합니다.',
+        onSelect: () => {
+          const rs = useRunStore.getState();
+          const maxSlots = getMaxSupplySlots(rs.relics);
+          if (rs.supplies.length >= maxSlots) return '보급품 소지 한도가 가득 찼습니다.';
+          const pool = SUPPLIES.filter(s => s.tier === 'UNCOMMON');
+          const pick = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)];
+          rs.addSupply(pick.id);
+          return `가장 쓸만한 물건을 하나 골랐습니다. [${pick.name}] 획득!`;
+        }
+      },
+    ]
+  },
+  {
+    id: 'evt_experimental_dispenser', title: '실험용 자판기',
+    description: '방주 복도에 기업 로고가 새겨진 자판기가 서 있습니다. 화면에 "시제품 무료 배포 중"이라는 문구가 떠 있지만, 부작용 경고도 함께 표시되어 있습니다.',
+    visualDesc: '청결한 흰색 자판기에서 푸른 빛이 새어나옵니다...',
+    chapters: [3],
+    options: [
+      {
+        label: '[시제품을 받는다]',
+        description: '무작위 [희귀] 보급품 1개를 획득합니다. 체력 -5.',
+        onSelect: () => {
+          const rs = useRunStore.getState();
+          rs.damagePlayer(5);
+          const maxSlots = getMaxSupplySlots(rs.relics);
+          if (rs.supplies.length >= maxSlots) return '부작용만 겪고 보급품은 들고 갈 수 없었습니다. (체력 -5)';
+          const pool = SUPPLIES.filter(s => s.tier === 'RARE');
+          const pick = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)];
+          rs.addSupply(pick.id);
+          return `자판기에서 나온 시제품을 주사하자 잠깐 어지러웠지만 곧 회복됩니다. (체력 -5) [${pick.name}] 획득!`;
+        }
+      },
+      {
+        label: '[안정형을 선택한다]',
+        description: '무작위 [일반] 보급품 1개를 안전하게 획득합니다.',
+        onSelect: () => {
+          const rs = useRunStore.getState();
+          const maxSlots = getMaxSupplySlots(rs.relics);
+          if (rs.supplies.length >= maxSlots) return '보급품 소지 한도가 가득 찼습니다.';
+          const pool = SUPPLIES.filter(s => s.tier === 'COMMON');
+          const pick = pool[Math.floor(useRngStore.getState().eventRng.next() * pool.length)];
+          rs.addSupply(pick.id);
+          return `검증된 안정형 제품을 선택했습니다. [${pick.name}] 획득!`;
+        }
+      },
+      {
+        label: '[자판기를 부순다]',
+        description: '골드 50을 획득합니다.',
+        onSelect: () => {
+          useRunStore.getState().addGold(50);
+          return '자판기를 분해하여 부품을 챙겼습니다. (골드 50)';
+        }
+      }
     ]
   },
 ];
