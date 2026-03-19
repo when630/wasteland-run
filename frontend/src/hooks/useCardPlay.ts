@@ -129,6 +129,16 @@ export const useCardPlay = () => {
     const pMaxHp = useRunStore.getState().playerMaxHp;
     const relicDmg = getPassiveDamageBonus(relics, pHp, pMaxHp);
 
+    // 보급품 공격 보너스
+    const bState = useBattleStore.getState();
+    const supplyAtkBonus = bState.supplyAttackBonusTurn || 0;
+    let supplySpecialBonus = 0;
+    if (card.type === 'SPECIAL_ATTACK' && bState.supplyFirstSpecialBonus > 0) {
+      supplySpecialBonus = bState.supplyFirstSpecialBonus;
+      // 첫 특수공격에만 적용하므로 소비
+      useBattleStore.setState({ supplyFirstSpecialBonus: 0 });
+    }
+
     const actions = resolveCardEffects(card, {
       targetEnemyId: targetEnemy?.id || null,
       targetEnemy: targetEnemy || null,
@@ -141,8 +151,8 @@ export const useCardPlay = () => {
       rampageCounts: useBattleStore.getState().rampageCounts,
       nextAttackBonus: useBattleStore.getState().nextAttackBonus,
       powerFrenzyAmount: useBattleStore.getState().powerFrenzyAmount,
-      relicPhysicalBonus: relicDmg.physicalBonus,
-      relicSpecialBonus: relicDmg.specialBonus,
+      relicPhysicalBonus: relicDmg.physicalBonus + supplyAtkBonus,
+      relicSpecialBonus: relicDmg.specialBonus + supplyAtkBonus + supplySpecialBonus,
       relicSingleTargetBonus: relicDmg.singleTargetBonus,
     });
 

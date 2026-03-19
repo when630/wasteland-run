@@ -53,6 +53,18 @@ export interface PlayerSlice {
   nextAttackBonus: number;            // 무기 개조: 다음 공격 피해 보너스
   rampageCounts: Record<string, number>; // 폭주: baseId별 사용 횟수
 
+  // 보급품 턴 효과
+  supplyAttackBonusTurn: number;      // 전투 흥분제/광전사 혈청: 이번 턴 공격 보너스
+  supplyFirstSpecialBonus: number;    // 전술 탄약 벨트: 이번 턴 첫 특수공격 보너스
+  supplyDmgReductionFlat: number;     // 진통제: 이번 턴 피해 고정 감소
+  supplyDmgReductionPercent: number;  // 나노 필드: 피해 % 감소
+  supplyDmgReductionPercentTurns: number;
+  supplyRegenPerTurn: number;         // 수혈 팩: 턴 시작 시 회복
+  supplyRegenTurns: number;
+  supplyBerserkerSelfDmg: number;     // 광전사 혈청: 턴 종료 시 자해
+  supplyExtraTurn: boolean;           // 시간 왜곡기: 추가 턴
+  supplyTempMaxHp: number;            // 생체 강화: 전투 중 임시 최대 HP
+
   consumeAp: (amount: number) => boolean;
   addAmmo: (amount: number) => void;
   addPlayerShield: (amount: number) => void;
@@ -72,6 +84,20 @@ export interface PlayerSlice {
   setPowerPhoenix: (amount: number) => void;
   setNextAttackBonus: (amount: number) => void;
   addRampageCount: (baseId: string) => void;
+
+  // 보급품 효과 세터
+  applySupplyTurnEffects: (effects: {
+    attackBonusTurn?: number;
+    firstSpecialBonus?: number;
+    dmgReductionFlat?: number;
+    dmgReductionPercent?: number;
+    dmgReductionPercentTurns?: number;
+    regenPerTurn?: number;
+    regenTurns?: number;
+    berserkerSelfDmg?: number;
+    extraTurn?: boolean;
+    tempMaxHp?: number;
+  }) => void;
 }
 
 export interface EnemySlice {

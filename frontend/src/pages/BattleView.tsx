@@ -9,6 +9,7 @@ import { CardAnimationLayer } from '../components/ui/CardAnimationLayer';
 import { GameOverModal } from '../components/ui/GameOverModal';
 import { ChapterTransitionModal } from '../components/ui/ChapterTransitionModal';
 import { StatusOverlay } from '../components/ui/StatusOverlay';
+import { SupplyBar } from '../components/ui/SupplyBar';
 import { DebugTestPanel } from '../components/ui/DebugTestPanel';
 import { BossRelicPickModal } from '../components/ui/BossRelicPickModal';
 import { useDeckStore } from '../store/useDeckStore';
@@ -19,9 +20,9 @@ import { useRunStore } from '../store/useRunStore';
 import { onBattleStart, onBattleEnd } from '../logic/relicEffects';
 import { useRngStore } from '../store/useRngStore';
 import { DESIGN_WIDTH, DESIGN_HEIGHT, enemyPos } from '../components/pixi/vfx/battleLayout';
-import battleBg1 from '../assets/images/backgrounds/stage1_battle_backgroung.webp';
-import battleBg2 from '../assets/images/backgrounds/stage2_battle_backgroung.webp';
-import battleBg3 from '../assets/images/backgrounds/stage3_battle_backgroung.webp';
+import battleBg1 from '../assets/images/backgrounds/stage1_battle_background.webp';
+import battleBg2 from '../assets/images/backgrounds/stage2_battle_background.webp';
+import battleBg3 from '../assets/images/backgrounds/stage3_battle_background.webp';
 
 const BATTLE_BGS: Record<number, string> = { 1: battleBg1, 2: battleBg2, 3: battleBg3 };
 
@@ -59,19 +60,20 @@ export const BattleView: React.FC = () => {
       useDeckStore.getState().initDeck();
       useDeckStore.getState().drawCards(5);
 
-      // 씬에 따른 몬스터 소환 (챕터별 필터링)
+      // 씬에 따른 몬스터 소환 (챕터별 필터링 + 변이 보정)
       const battleRng = useRngStore.getState().battleRng;
       const chapter = useRunStore.getState().currentChapter;
+      const mutation = useRunStore.getState().mutationStage;
       if (currentScene === 'BOSS') {
         const bossIds = getEnemyIdsByTier('BOSS', chapter);
-        useBattleStore.getState().spawnEnemies([createEnemy(bossIds[battleRng.nextInt(bossIds.length)], battleRng)]);
+        useBattleStore.getState().spawnEnemies([createEnemy(bossIds[battleRng.nextInt(bossIds.length)], battleRng, mutation)]);
       } else if (currentScene === 'ELITE') {
         const eliteIds = getEnemyIdsByTier('ELITE', chapter);
-        useBattleStore.getState().spawnEnemies([createEnemy(eliteIds[battleRng.nextInt(eliteIds.length)], battleRng)]);
+        useBattleStore.getState().spawnEnemies([createEnemy(eliteIds[battleRng.nextInt(eliteIds.length)], battleRng, mutation)]);
       } else {
         const normalIds = getEnemyIdsByTier('NORMAL', chapter);
         const shuffled = battleRng.shuffle(normalIds);
-        useBattleStore.getState().spawnEnemies(shuffled.slice(0, 2).map(id => createEnemy(id, battleRng)));
+        useBattleStore.getState().spawnEnemies(shuffled.slice(0, 2).map(id => createEnemy(id, battleRng, mutation)));
       }
 
       // 예언의 수정구: 초기 nextIntent 설정
@@ -80,7 +82,7 @@ export const BattleView: React.FC = () => {
         useBattleStore.setState(s => ({
           enemies: s.enemies.map(e => ({
             ...e,
-            nextIntent: determineNextIntent(e.baseId, intentRng),
+            nextIntent: determineNextIntent(e.baseId, intentRng, mutation),
           })),
         }));
       }
@@ -267,6 +269,7 @@ export const BattleView: React.FC = () => {
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 20 }}>
         <div style={{ pointerEvents: 'auto' }}>
           <ResourcePanel />
+          <SupplyBar />
           <Hand />
           <DeckPiles />
         </div>
@@ -299,7 +302,18 @@ export const BattleView: React.FC = () => {
             useBattleStore.getState().spawnEnemies([createEnemy('training_dummy')]);
             useBattleStore.setState({ playerMaxAp: 99, playerActionPoints: 99, playerAmmo: 99 });
           }}
-          onExit={() => useRunStore.getState().setScene('MAIN_MENU')}
+          onExit={() => {
+            // 연습 모드 종료: 백업된 런 상태 복원
+            const backup = (window as any).__practiceBackup;
+            if (backup) {
+              useRunStore.setState(backup.run);
+              useDeckStore.getState().setMasterDeck(backup.deck);
+              useRngStore.getState().initialize(backup.run.runSeed);
+              useRngStore.getState().restoreStates(backup.rng);
+              delete (window as any).__practiceBackup;
+            }
+            useRunStore.getState().setScene('MAIN_MENU');
+          }}
         />
       )}
 

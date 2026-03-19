@@ -50,7 +50,24 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
       powerPhoenixAmount: 0,
       nextAttackBonus: 0,
       rampageCounts: {},
+      // 보급품 턴 효과 리셋
+      supplyAttackBonusTurn: 0,
+      supplyFirstSpecialBonus: 0,
+      supplyDmgReductionFlat: 0,
+      supplyDmgReductionPercent: 0,
+      supplyDmgReductionPercentTurns: 0,
+      supplyRegenPerTurn: 0,
+      supplyRegenTurns: 0,
+      supplyBerserkerSelfDmg: 0,
+      supplyExtraTurn: false,
+      supplyTempMaxHp: 0,
     });
+    // 전투 종료 시 임시 최대HP 복원
+    const tempHp = get().supplyTempMaxHp;
+    if (tempHp > 0) {
+      const run = useRunStore.getState();
+      useRunStore.setState({ playerMaxHp: run.playerMaxHp - tempHp });
+    }
   },
 
   startPlayerTurn: () => {
@@ -63,6 +80,12 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
     const relicsForShuffle = useRunStore.getState().relics;
     if (relicsForShuffle.includes('unstable_teleporter')) {
       useDeckStore.getState().shuffleDrawPile();
+    }
+
+    // 보급품 리젠 효과 (턴 시작 전 적용)
+    const prevState = get();
+    if (prevState.supplyRegenTurns > 0 && prevState.supplyRegenPerTurn > 0) {
+      useRunStore.getState().healPlayer(prevState.supplyRegenPerTurn);
     }
 
     set((state) => {
@@ -111,6 +134,7 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
         }, 100);
       }
 
+
       return {
         currentTurn: 'PLAYER',
         playerActionPoints: startingAp,
@@ -127,6 +151,17 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
         activeEnemyIndex: null,
         bonusApNextTurn: 0,
         // playerDebuffs 유지 — 적이 부여한 디버프가 플레이어 턴 동안 지속
+        // 보급품: 매 턴 리셋되는 효과
+        supplyAttackBonusTurn: 0,
+        supplyFirstSpecialBonus: 0,
+        supplyDmgReductionFlat: 0,
+        supplyBerserkerSelfDmg: 0,
+        supplyExtraTurn: false,
+        // 보급품: 다수 턴 효과 감소
+        supplyDmgReductionPercentTurns: Math.max(0, state.supplyDmgReductionPercentTurns - 1),
+        supplyDmgReductionPercent: state.supplyDmgReductionPercentTurns - 1 > 0 ? state.supplyDmgReductionPercent : 0,
+        supplyRegenTurns: Math.max(0, state.supplyRegenTurns - 1),
+        supplyRegenPerTurn: state.supplyRegenTurns - 1 > 0 ? state.supplyRegenPerTurn : 0,
       };
     });
   },
@@ -162,14 +197,34 @@ export const createBattleFlowSlice: StateCreator<BattleState, [], [], BattleFlow
       setTimeout(() => useDeckStore.getState().drawCards(bonusDraw), 200);
     }
 
+    // 화상 카드: 손패에 있으면 장당 2 데미지
+    const burnCount = hand.filter(c => c.type === 'STATUS_BURN').length;
+    if (burnCount > 0) {
+      useRunStore.getState().damagePlayer(burnCount * 2);
+      useRunStore.getState().setToastMessage(`화상! 손패의 화상 카드 ${burnCount}장으로 ${burnCount * 2} 피해!`);
+    }
+
+    // 보급품: 광전사 혈청 자해
+    if (currentState.supplyBerserkerSelfDmg > 0) {
+      useRunStore.getState().damagePlayer(currentState.supplyBerserkerSelfDmg);
+    }
+
+    // 보급품: 추가 턴 (시간 왜곡기)
+    const hasExtraTurn = currentState.supplyExtraTurn;
+
     // 디버프 1턴 감소
     set((state) => {
       const nextDebuffs: Record<string, number> = {};
       Object.entries(state.playerDebuffs).forEach(([key, val]) => {
         if (val > 1) nextDebuffs[key] = val - 1;
       });
-      return { currentTurn: 'ENEMY' as const, playerDebuffs: nextDebuffs };
+      return { currentTurn: hasExtraTurn ? 'PLAYER' as const : 'ENEMY' as const, playerDebuffs: nextDebuffs };
     });
+
+    // 추가 턴이면 즉시 새 턴 시작
+    if (hasExtraTurn) {
+      setTimeout(() => get().startPlayerTurn(), 100);
+    }
   },
 
   setTargetingCard: (cardId) => set({

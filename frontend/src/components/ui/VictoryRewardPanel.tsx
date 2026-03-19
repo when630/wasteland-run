@@ -7,6 +7,9 @@ import { iconGold, iconGoldReward, iconCardCount, iconRelicReward, iconBossClear
 import type { Card } from '../../types/gameTypes';
 import { ALL_CARDS } from '../../assets/data/cards';
 import { useDeckStore } from '../../store/useDeckStore';
+import { SUPPLIES } from '../../assets/data/supplies';
+import { getMaxSupplySlots } from '../../logic/supplyEffects';
+import { getMutationModifiers } from '../../logic/mutationModifiers';
 
 // ── 골드 이펙트 (Canvas 기반, 렉 없음) ──
 interface CoinData {
@@ -153,6 +156,7 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
   const [goldClaimed, setGoldClaimed] = useState(false);
   const [cardClaimed, setCardClaimed] = useState(false);
   const [relicClaimed, setRelicClaimed] = useState(false);
+  const [supplyClaimed, setSupplyClaimed] = useState(false);
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [isRelicModalOpen, setIsRelicModalOpen] = useState(false);
 
@@ -219,6 +223,39 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
     return 10 + lootRng.nextInt(11); // 10~20
   });
   const showRelic = !isFinalBoss && (currentScene === 'ELITE' || currentScene === 'BOSS');
+
+  // 보급품 보상 드롭 (일반 30% COMMON, 엘리트 50% UNCOMMON, 보스 100% RARE)
+  // 변이 3단계: 드롭률 절반
+  const [rewardSupply] = useState<typeof SUPPLIES[number] | null>(() => {
+    if (isFinalBoss) return null;
+    const mutMod = getMutationModifiers(useRunStore.getState().mutationStage);
+    const dropMult = mutMod.supplyDropHalved ? 0.5 : 1;
+    const lootRng = useRngStore.getState().lootRng;
+    const roll = lootRng.nextInt(100);
+    let tier: string | null = null;
+    if (currentScene === 'BOSS') tier = 'RARE'; // 보스는 항상 드롭
+    else if (currentScene === 'ELITE' && roll < 50 * dropMult) tier = 'UNCOMMON';
+    else if (roll < 30 * dropMult) tier = 'COMMON';
+    if (!tier) return null;
+    const pool = SUPPLIES.filter(s => s.tier === tier);
+    if (pool.length === 0) return null;
+    return pool[lootRng.nextInt(pool.length)];
+  });
+
+  const handleSupplyClaim = useCallback(() => {
+    if (supplyClaimed || !rewardSupply) return;
+    const run = useRunStore.getState();
+    const maxSlots = getMaxSupplySlots(run.relics);
+    if (run.supplies.length >= maxSlots) {
+      useRunStore.getState().setToastMessage('보급품 소지 한도 초과! 비워야 획득할 수 있습니다.');
+      return;
+    }
+    run.addSupply(rewardSupply.id);
+    setSupplyClaimed(true);
+    useRunStore.getState().setToastMessage(`${rewardSupply.name} 획득!`);
+    useRunStore.getState().saveRunData();
+  }, [supplyClaimed, rewardSupply]);
+
   const iconSize = 64;
 
   const handleGoldClaim = useCallback(() => {
@@ -342,6 +379,35 @@ export const VictoryRewardPanel: React.FC<VictoryRewardPanelProps> = ({ onContin
               onMouseLeave={e => { if (!relicClaimed) e.currentTarget.style.transform = 'scale(1)'; }}
             >
               <img src={iconRelicReward} alt="유물" style={{ width: iconSize, height: iconSize, objectFit: 'contain', filter: relicClaimed ? 'grayscale(1)' : 'drop-shadow(0 0 8px rgba(200,100,100,0.5))' }} />
+            </button>
+          )}
+
+          {/* 보급품 */}
+          {rewardSupply && (
+            <button
+              onClick={handleSupplyClaim}
+              disabled={supplyClaimed}
+              style={{
+                background: 'none', border: 'none',
+                cursor: supplyClaimed ? 'default' : 'pointer',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+                opacity: supplyClaimed ? 0.35 : 1,
+                transition: 'transform 0.2s',
+              }}
+              onMouseEnter={e => { if (!supplyClaimed) e.currentTarget.style.transform = 'scale(1.15)'; }}
+              onMouseLeave={e => { if (!supplyClaimed) e.currentTarget.style.transform = 'scale(1)'; }}
+            >
+              <div style={{
+                width: iconSize, height: iconSize,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '36px',
+                filter: supplyClaimed ? 'grayscale(1)' : 'drop-shadow(0 0 8px rgba(100,200,150,0.5))',
+              }}>
+                {rewardSupply.icon}
+              </div>
+              <span style={{ fontSize: '12px', fontWeight: 'bold', color: supplyClaimed ? '#666' : '#8bc888' }}>
+                보급품
+              </span>
             </button>
           )}
         </div>

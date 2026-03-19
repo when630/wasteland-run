@@ -845,7 +845,7 @@ export const STATUS_CARDS: Card[] = [
     tier: 'COMMON',
     costAp: 1,
     costAmmo: 0,
-    description: '[상태이상] 사용할 수 있지만 아무런 효과가 없고 손패와 덱을 막습니다.',
+    description: '[상태이상] 손패에 있으면 턴 종료 시 2 데미지를 받습니다.',
     effects: [],
   },
   {
@@ -854,10 +854,11 @@ export const STATUS_CARDS: Card[] = [
     name: '방사능 오염',
     type: CardType.STATUS_RADIATION,
     tier: 'COMMON',
-    costAp: 1,
+    costAp: 0,
     costAmmo: 0,
-    description: '[상태이상] 사용할 수 있지만 아무런 효과가 없고 손패와 덱을 막습니다.',
+    description: '[상태이상] 사용하면 소멸합니다.',
     effects: [],
+    isExhaust: true,
   }
 ];
 

@@ -20,6 +20,7 @@ export const HUD: React.FC = () => {
   const currentScene = useRunStore(s => s.currentScene);
   const currentChapter = useRunStore(s => s.currentChapter);
   const relics = useRunStore(s => s.relics);
+  const mutationStage = useRunStore(s => s.mutationStage);
 
   const CHAPTER_NAMES: Record<number, string> = {
     1: '오염된 외곽 도시',
@@ -73,6 +74,15 @@ export const HUD: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: UI.color.gold }}>
             {iconImg(iconGold)}<span>{gold}</span>
           </div>
+          {mutationStage > 0 && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '4px',
+              color: mutationStage <= 5 ? '#a8b8a0' : mutationStage <= 10 ? '#d4a854' : mutationStage <= 15 ? '#d48844' : '#cc4444',
+              fontSize: '14px', fontWeight: 'bold',
+            }}>
+              <span>☢️</span><span>{mutationStage}</span>
+            </div>
+          )}
         </div>
 
         <div style={{ flex: 1 }} />

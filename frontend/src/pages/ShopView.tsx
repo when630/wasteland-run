@@ -3,8 +3,12 @@ import { useRunStore } from '../store/useRunStore';
 import { useDeckStore } from '../store/useDeckStore';
 import { ALL_CARDS } from '../assets/data/cards';
 import { RELICS } from '../assets/data/relics';
+import { SUPPLIES } from '../assets/data/supplies';
 import type { Card } from '../types/gameTypes';
 import type { Relic } from '../types/relicTypes';
+import type { Supply } from '../types/supplyTypes';
+import { getMaxSupplySlots } from '../logic/supplyEffects';
+import { getMutationModifiers } from '../logic/mutationModifiers';
 import { customShuffle } from '../utils/rng';
 import { useRngStore } from '../store/useRngStore';
 import { RemoveCardModal } from '../components/ui/RemoveCardModal';
@@ -15,6 +19,7 @@ import { iconGoldReward, iconCardRemove } from '../assets/images/GUI';
 
 interface ShopCard extends Card { price: number; isSoldOut: boolean; }
 interface ShopRelic extends Relic { price: number; isSoldOut: boolean; }
+interface ShopSupply extends Supply { price: number; isSoldOut: boolean; }
 
 export const ShopView: React.FC = () => {
   const gold = useRunStore(s => s.gold);
@@ -27,16 +32,19 @@ export const ShopView: React.FC = () => {
 
   const [shopCards, setShopCards] = useState<ShopCard[]>([]);
   const [shopRelics, setShopRelics] = useState<ShopRelic[]>([]);
+  const [shopSupplies, setShopSupplies] = useState<ShopSupply[]>([]);
   const [removeServiceAvailable, setRemoveServiceAvailable] = useState(true);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const cardRemovalCount = useRunStore(s => s.cardRemovalCount);
   const hasMembership = ownedRelics.includes('merchant_membership');
-  const discount = hasMembership ? 0.5 : 1;
+  const mutMod = getMutationModifiers(useRunStore(s => s.mutationStage));
+  const discount = (hasMembership ? 0.5 : 1) * mutMod.shopPriceMult;
   const REMOVE_PRICE = Math.floor((75 + cardRemovalCount * 25) * discount);
 
   // 프리뷰 상태
   const [previewCardIdx, setPreviewCardIdx] = useState<number | null>(null);
   const [previewRelicIdx, setPreviewRelicIdx] = useState<number | null>(null);
+  const [previewSupplyIdx, setPreviewSupplyIdx] = useState<number | null>(null);
 
   useEffect(() => {
     const lootRng = useRngStore.getState().lootRng;
@@ -103,6 +111,25 @@ export const ShopView: React.FC = () => {
       return { ...relic, price, isSoldOut: false };
     });
     setShopRelics(selectedRelics);
+
+    // 보급품 3종 (COMMON 2 + UNCOMMON/RARE 1)
+    const commonSupplies = SUPPLIES.filter(s => s.tier === 'COMMON');
+    const upperSupplies = SUPPLIES.filter(s => s.tier === 'UNCOMMON' || s.tier === 'RARE');
+    const shuffledCommon = customShuffle(commonSupplies, lootRng);
+    const shuffledUpper = customShuffle(upperSupplies, lootRng);
+    const selectedSupplies: ShopSupply[] = [];
+    for (let i = 0; i < 2 && i < shuffledCommon.length; i++) {
+      const s = shuffledCommon[i];
+      const price = Math.floor((s.shopPrice.min + lootRng.nextInt(s.shopPrice.max - s.shopPrice.min + 1)) * discount);
+      selectedSupplies.push({ ...s, price, isSoldOut: false });
+    }
+    if (shuffledUpper.length > 0) {
+      const s = shuffledUpper[0];
+      const price = Math.floor((s.shopPrice.min + lootRng.nextInt(s.shopPrice.max - s.shopPrice.min + 1)) * discount);
+      selectedSupplies.push({ ...s, price, isSoldOut: false });
+    }
+    setShopSupplies(selectedSupplies);
+
     setRemoveServiceAvailable(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -132,6 +159,21 @@ export const ShopView: React.FC = () => {
     await useRunStore.getState().saveRunData();
   };
 
+  const handleBuySupply = async (idx: number) => {
+    const item = shopSupplies[idx];
+    if (item.isSoldOut) return;
+    if (gold < item.price) { setToastMessage('골드가 부족합니다...'); return; }
+    const maxSlots = getMaxSupplySlots(ownedRelics);
+    const currentSupplies = useRunStore.getState().supplies;
+    if (currentSupplies.length >= maxSlots) { setToastMessage('보급품 소지 한도 초과!'); return; }
+    addGold(-item.price);
+    useRunStore.getState().addSupply(item.id);
+    setToastMessage(`${item.name} 획득!`);
+    const newArr = [...shopSupplies]; newArr[idx].isSoldOut = true; setShopSupplies(newArr);
+    setPreviewSupplyIdx(null);
+    await useRunStore.getState().saveRunData();
+  };
+
   const handleRemoveService = () => {
     if (!removeServiceAvailable) return;
     if (gold < REMOVE_PRICE) { setToastMessage('골드가 부족합니다...'); return; }
@@ -153,6 +195,7 @@ export const ShopView: React.FC = () => {
 
   const previewCard = previewCardIdx !== null ? shopCards[previewCardIdx] : null;
   const previewRelic = previewRelicIdx !== null ? shopRelics[previewRelicIdx] : null;
+  const previewSupply = previewSupplyIdx !== null ? shopSupplies[previewSupplyIdx] : null;
 
   return (
     <div style={{
@@ -326,6 +369,59 @@ export const ShopView: React.FC = () => {
               )}
             </button>
           </div>
+
+          {/* 보급품 진열 */}
+          <div style={{
+            display: 'flex', gap: '16px',
+            justifyContent: 'center', alignItems: 'center',
+            padding: '4px 16px',
+          }}>
+            <span style={{ fontSize: '12px', color: '#7a9a7a', fontWeight: 'bold', marginRight: '4px' }}>보급품</span>
+            {shopSupplies.map((supply, idx) => (
+              <div
+                key={idx}
+                onClick={() => { if (!supply.isSoldOut) setPreviewSupplyIdx(idx); }}
+                style={{
+                  position: 'relative',
+                  cursor: supply.isSoldOut ? 'not-allowed' : 'pointer',
+                  opacity: supply.isSoldOut ? 0.3 : 1,
+                  transition: 'transform 0.2s, filter 0.2s',
+                }}
+                onMouseEnter={e => { if (!supply.isSoldOut) { e.currentTarget.style.transform = 'scale(1.15)'; e.currentTarget.style.filter = 'drop-shadow(0 0 10px rgba(100, 200, 150, 0.4))'; } }}
+                onMouseLeave={e => { if (!supply.isSoldOut) { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.filter = 'none'; } }}
+              >
+                <div style={{
+                  width: 52, height: 52,
+                  backgroundColor: 'rgba(20, 28, 20, 0.9)',
+                  border: '2px solid rgba(80, 140, 80, 0.5)',
+                  borderRadius: '10px',
+                  display: 'flex', justifyContent: 'center', alignItems: 'center',
+                }}>
+                  <span style={{ fontSize: 28 }}>{supply.icon}</span>
+                </div>
+                {!supply.isSoldOut && (
+                  <div style={{
+                    position: 'absolute', bottom: -8, left: '50%', transform: 'translateX(-50%)',
+                    backgroundColor: gold >= supply.price ? 'rgba(80, 55, 15, 0.95)' : 'rgba(80, 20, 15, 0.95)',
+                    color: gold >= supply.price ? '#d4a854' : '#cc6666',
+                    padding: '1px 6px', borderRadius: '8px',
+                    fontWeight: 'bold', fontSize: '11px',
+                    border: `1px solid ${gold >= supply.price ? 'rgba(180, 140, 50, 0.5)' : 'rgba(180, 60, 60, 0.5)'}`,
+                    zIndex: 10, whiteSpace: 'nowrap',
+                  }}>
+                    {supply.price}G
+                  </div>
+                )}
+                {supply.isSoldOut && (
+                  <div style={{
+                    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                    color: '#884444', fontSize: '10px', fontWeight: 'bold',
+                    textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
+                  }}>SOLD</div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* 하단: 떠나기 */}
@@ -481,6 +577,77 @@ export const ShopView: React.FC = () => {
                 }}
                 onMouseEnter={e => { if (gold >= previewRelic.price) { e.currentTarget.style.borderColor = 'rgba(212, 168, 84, 0.8)'; e.currentTarget.style.color = '#e8c878'; } }}
                 onMouseLeave={e => { if (gold >= previewRelic.price) { e.currentTarget.style.borderColor = 'rgba(212, 168, 84, 0.5)'; e.currentTarget.style.color = '#d4a854'; } }}
+              >
+                구입
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 보급품 프리뷰 오버레이 */}
+      {previewSupply && !previewSupply.isSoldOut && (
+        <div
+          onClick={() => setPreviewSupplyIdx(null)}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10000,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: '20px',
+            animation: 'fadeIn 0.15s ease-out',
+          }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px',
+          }}>
+            <div style={{
+              width: 100, height: 100,
+              backgroundColor: 'rgba(20, 28, 20, 0.95)',
+              border: '3px solid rgba(80, 160, 80, 0.6)',
+              borderRadius: '16px',
+              display: 'flex', justifyContent: 'center', alignItems: 'center',
+              filter: 'drop-shadow(0 0 20px rgba(80, 160, 80, 0.3))',
+            }}>
+              <span style={{ fontSize: 56 }}>{previewSupply.icon}</span>
+            </div>
+            <div style={{ textAlign: 'center', maxWidth: '300px' }}>
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '22px', color: '#e0d4bc' }}>{previewSupply.name}</h3>
+              <p style={{ margin: '0 0 4px 0', fontSize: '12px', color: '#7a9a7a' }}>[{previewSupply.tier === 'COMMON' ? '일반' : previewSupply.tier === 'UNCOMMON' ? '고급' : '희귀'}]</p>
+              <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#b8a888', lineHeight: '1.4' }}>{previewSupply.description}</p>
+              <div style={{ fontSize: '18px', color: gold >= previewSupply.price ? '#d4a854' : '#cc6666', fontWeight: 'bold', marginBottom: '12px' }}>
+                {previewSupply.price} G
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '28px' }}>
+              <button
+                onClick={() => setPreviewSupplyIdx(null)}
+                style={{
+                  padding: '10px 24px', fontSize: '16px',
+                  background: 'none', color: '#a09078', border: '1px solid rgba(120, 100, 70, 0.4)',
+                  borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
+                  textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(180, 150, 100, 0.6)'; e.currentTarget.style.color = '#c8b898'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(120, 100, 70, 0.4)'; e.currentTarget.style.color = '#a09078'; }}
+              >
+                닫기
+              </button>
+              <button
+                onClick={() => handleBuySupply(previewSupplyIdx!)}
+                disabled={gold < previewSupply.price}
+                style={{
+                  padding: '10px 30px', fontSize: '18px', fontWeight: 'bold',
+                  background: 'none',
+                  color: gold >= previewSupply.price ? '#d4a854' : '#888',
+                  border: `1px solid ${gold >= previewSupply.price ? 'rgba(212, 168, 84, 0.5)' : 'rgba(100, 100, 100, 0.3)'}`,
+                  borderRadius: '6px',
+                  cursor: gold >= previewSupply.price ? 'pointer' : 'not-allowed',
+                  transition: 'all 0.2s',
+                  textShadow: '1px 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)',
+                }}
+                onMouseEnter={e => { if (gold >= previewSupply.price) { e.currentTarget.style.borderColor = 'rgba(212, 168, 84, 0.8)'; e.currentTarget.style.color = '#e8c878'; } }}
+                onMouseLeave={e => { if (gold >= previewSupply.price) { e.currentTarget.style.borderColor = 'rgba(212, 168, 84, 0.5)'; e.currentTarget.style.color = '#d4a854'; } }}
               >
                 구입
               </button>

@@ -9,6 +9,9 @@ interface RunState {
   currentScene: 'MAIN_MENU' | 'MAP' | 'BATTLE' | 'ELITE' | 'REST' | 'EVENT' | 'SHOP' | 'BOSS' | 'DEBUG_BATTLE' | 'STARTING_EVENT' | 'TREASURE';
   currentChapter: number; // 현재 챕터 (1~3)
   relics: string[];
+  supplies: string[];          // 🌟 보급품 인벤토리 (소모품 ID 배열)
+  mutationStage: number;       // 🌟 변이 단계 (0~20)
+  maxMutationUnlocked: number; // 🌟 해금된 최고 변이 단계
   toastMessage: string | null; // 🌟 전역 알림 메시지 상태
   runStartTime: number;
   runSeed: string; // 🌟 런 시드 (보존용)
@@ -37,6 +40,8 @@ interface RunState {
   setChapter: (chapter: number) => void; // 챕터 전환
   addRelic: (relicId: string) => void; // 🌟 유물 추가 액션
   removeRelic: (relicId: string) => void; // 🌟 유물 제거 액션 (1회용 소모)
+  addSupply: (supplyId: string) => boolean; // 🌟 보급품 추가 (한도 초과 시 false)
+  removeSupply: (supplyId: string) => void; // 🌟 보급품 사용/제거
   setToastMessage: (msg: string | null) => void; // 🌟 토스트 메시지 액션
   setIsActive: (active: boolean) => void;
   setIsLeaderboardOpen: (isOpen: boolean) => void;
@@ -60,6 +65,9 @@ export const useRunStore = create<RunState>((set) => ({
   currentScene: 'MAIN_MENU', // 기본 씬은 메인 메뉴로 시작
   currentChapter: 1,
   relics: [],
+  supplies: [],
+  mutationStage: 0,
+  maxMutationUnlocked: 0,
   toastMessage: null,
   runStartTime: Date.now(), // 런 시작 시간을 현재로 초기화
   runSeed: Math.random().toString(36).substring(2, 10), // 기본 무작위 시드
@@ -113,6 +121,27 @@ export const useRunStore = create<RunState>((set) => ({
   removeRelic: (relicId) => set((state) => ({
     relics: state.relics.filter(id => id !== relicId)
   })),
+
+  addSupply: (supplyId: string) => {
+    const state = useRunStore.getState();
+    // 인라인으로 최대 슬롯 계산 (변이 단계 포함)
+    let maxSlots = 3;
+    if (state.relics.includes('large_backpack')) maxSlots += 1;
+    if (state.relics.includes('supply_officer_armband')) maxSlots += 2;
+    if (state.mutationStage >= 13) maxSlots -= 1;
+    maxSlots = Math.max(1, maxSlots);
+    if (state.supplies.length >= maxSlots) return false;
+    set({ supplies: [...state.supplies, supplyId] });
+    return true;
+  },
+
+  removeSupply: (supplyId: string) => set((state) => {
+    const idx = state.supplies.indexOf(supplyId);
+    if (idx === -1) return {};
+    const next = [...state.supplies];
+    next.splice(idx, 1);
+    return { supplies: next };
+  }),
 
   setToastMessage: (msg) => set({ toastMessage: msg }),
 
@@ -268,6 +297,9 @@ export const useRunStore = create<RunState>((set) => ({
         gold: currentState.gold,
         deckJson: JSON.stringify(currentDeck),
         relicsJson: JSON.stringify(currentState.relics),
+        suppliesJson: JSON.stringify(currentState.supplies),
+        mutationStage: currentState.mutationStage,
+        maxMutationUnlocked: currentState.maxMutationUnlocked,
         runSeed: currentState.runSeed,
         currentScene: currentState.currentScene,
         currentMapNode: currentState.currentMapNode || '',
@@ -302,6 +334,9 @@ export const useRunStore = create<RunState>((set) => ({
           playerMaxHp: data.maxHp,
           gold: data.gold,
           relics: data.relicsJson ? JSON.parse(data.relicsJson) : [],
+          supplies: data.suppliesJson ? JSON.parse(data.suppliesJson) : [],
+          mutationStage: data.mutationStage || 0,
+          maxMutationUnlocked: data.maxMutationUnlocked || 0,
           runSeed: data.runSeed || Math.random().toString(36).substring(2, 10),
           currentScene: 'MAIN_MENU', // 🌟 항상 메인 메뉴에서 시작 → "이어하기" 버튼을 통해 진입
           currentMapNode: data.currentMapNode || null,

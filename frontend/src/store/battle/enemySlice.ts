@@ -320,9 +320,18 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
             bonusApNextTurn += state.playerStatus.apOnSpecialDefend;
           }
 
-          if (dmgResult.totalDamage > 0) {
-            useRunStore.getState().damagePlayer(dmgResult.totalDamage);
-            useRunStore.getState().addDamageTaken(dmgResult.totalDamage);
+          // 보급품 피해 감소 적용
+          let finalPlayerDmg = dmgResult.totalDamage;
+          if (finalPlayerDmg > 0 && state.supplyDmgReductionFlat > 0) {
+            finalPlayerDmg = Math.max(0, finalPlayerDmg - state.supplyDmgReductionFlat);
+          }
+          if (finalPlayerDmg > 0 && state.supplyDmgReductionPercent > 0 && state.supplyDmgReductionPercentTurns > 0) {
+            finalPlayerDmg = Math.floor(finalPlayerDmg * (1 - state.supplyDmgReductionPercent / 100));
+          }
+
+          if (finalPlayerDmg > 0) {
+            useRunStore.getState().damagePlayer(finalPlayerDmg);
+            useRunStore.getState().addDamageTaken(finalPlayerDmg);
 
             if (useRunStore.getState().playerHp <= 0) {
               const fatalResult = onFatalDamage(useRunStore.getState().relics);
@@ -371,10 +380,11 @@ export const createEnemySlice: StateCreator<BattleState, [], [], EnemySlice> = (
 
       // 3. 상태이상 감소 및 다음 의도
       const intentRng = useRngStore.getState().intentRng;
-      const newIntent = determineNextIntent(enemyObj.baseId, intentRng);
+      const mutStage = useRunStore.getState().mutationStage;
+      const newIntent = determineNextIntent(enemyObj.baseId, intentRng, mutStage);
       // 예언의 수정구: 다음 턴 의도도 미리 계산
       const hasOrb = useRunStore.getState().relics.includes('prophecy_orb');
-      const peekIntent = hasOrb ? determineNextIntent(enemyObj.baseId, intentRng) : null;
+      const peekIntent = hasOrb ? determineNextIntent(enemyObj.baseId, intentRng, mutStage) : null;
 
       const updatedEnemy = {
         ...enemyObj,

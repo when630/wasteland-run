@@ -93,7 +93,7 @@ export interface BattleResetEffects {
 const PERMANENT_AP_RELICS = [
   'arc_heart', 'bionic_culture_heart', 'red_eye_surveillance_module',
   'cracked_sunstone_reactor', 'adrenaline_injector', 'quantum_core',
-  'ancient_prosthetic', 'unstable_teleporter',
+  'ancient_prosthetic', 'unstable_teleporter', 'vow_of_abstinence',
 ];
 
 export function onBattleReset(relics: string[]): BattleResetEffects {

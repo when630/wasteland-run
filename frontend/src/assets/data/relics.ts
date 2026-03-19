@@ -470,4 +470,43 @@ export const RELICS: Relic[] = [
     description: '전투 시작 시 탄약 3 획득.',
     image: ImgLargeAmmoCase,
   },
+
+  // ═══════════════════════════════════════
+  // 보급품 연관 유물 — 5종
+  // ═══════════════════════════════════════
+  {
+    id: 'large_backpack',
+    name: '대형 배낭',
+    tier: 'UNCOMMON',
+    description: '보급품 소지 한도 +1.',
+    icon: '🎒',
+  },
+  {
+    id: 'supply_officer_armband',
+    name: '보급 장교 완장',
+    tier: 'RARE',
+    description: '보급품 소지 한도 +2.',
+    icon: '🎖️',
+  },
+  {
+    id: 'first_aid_manual',
+    name: '응급 처치 교범',
+    tier: 'UNCOMMON',
+    description: '보급품 사용 시 HP 3 회복.',
+    icon: '📕',
+  },
+  {
+    id: 'scrap_distiller',
+    name: '폐품 증류기',
+    tier: 'RARE',
+    description: '보급품 사용 시 카드 1장 드로우.',
+    icon: '⚗️',
+  },
+  {
+    id: 'vow_of_abstinence',
+    name: '금욕의 서약',
+    tier: 'BOSS',
+    description: '매 턴 +1 AP. 보급품 사용 불가.',
+    icon: '🚫',
+  },
 ];

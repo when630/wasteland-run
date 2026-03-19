@@ -22,6 +22,18 @@ export const createPlayerSlice: StateCreator<BattleState, [], [], PlayerSlice> =
   nextAttackBonus: 0,
   rampageCounts: {},
 
+  // 보급품 턴 효과 초기값
+  supplyAttackBonusTurn: 0,
+  supplyFirstSpecialBonus: 0,
+  supplyDmgReductionFlat: 0,
+  supplyDmgReductionPercent: 0,
+  supplyDmgReductionPercentTurns: 0,
+  supplyRegenPerTurn: 0,
+  supplyRegenTurns: 0,
+  supplyBerserkerSelfDmg: 0,
+  supplyExtraTurn: false,
+  supplyTempMaxHp: 0,
+
   consumeAp: (amount: number) => {
     const { playerActionPoints } = get();
     if (playerActionPoints >= amount) {
@@ -70,5 +82,18 @@ export const createPlayerSlice: StateCreator<BattleState, [], [], PlayerSlice> =
   setNextAttackBonus: (amount) => set({ nextAttackBonus: amount }),
   addRampageCount: (baseId) => set((state) => ({
     rampageCounts: { ...state.rampageCounts, [baseId]: (state.rampageCounts[baseId] ?? 0) + 1 }
+  })),
+
+  applySupplyTurnEffects: (effects) => set((state) => ({
+    supplyAttackBonusTurn: state.supplyAttackBonusTurn + (effects.attackBonusTurn ?? 0),
+    supplyFirstSpecialBonus: state.supplyFirstSpecialBonus + (effects.firstSpecialBonus ?? 0),
+    supplyDmgReductionFlat: state.supplyDmgReductionFlat + (effects.dmgReductionFlat ?? 0),
+    supplyDmgReductionPercent: effects.dmgReductionPercent ?? state.supplyDmgReductionPercent,
+    supplyDmgReductionPercentTurns: effects.dmgReductionPercentTurns ?? state.supplyDmgReductionPercentTurns,
+    supplyRegenPerTurn: effects.regenPerTurn ?? state.supplyRegenPerTurn,
+    supplyRegenTurns: effects.regenTurns ?? state.supplyRegenTurns,
+    supplyBerserkerSelfDmg: effects.berserkerSelfDmg ?? state.supplyBerserkerSelfDmg,
+    supplyExtraTurn: effects.extraTurn ?? state.supplyExtraTurn,
+    supplyTempMaxHp: state.supplyTempMaxHp + (effects.tempMaxHp ?? 0),
   })),
 });
