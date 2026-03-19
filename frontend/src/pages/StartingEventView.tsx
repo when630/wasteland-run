@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useRunStore } from '../store/useRunStore';
 import { useMapStore } from '../store/useMapStore';
-import { STARTING_EVENTS } from '../assets/data/events';
+import { generateStartingEvent } from '../assets/data/events';
 import type { RandomEvent, EventOption } from '../types/eventTypes';
-import { useRngStore } from '../store/useRngStore';
+
 import eventBg from '../assets/images/backgrounds/event_map_background.webp';
 import { iconEvent } from '../assets/images/GUI';
 
@@ -13,9 +13,7 @@ export const StartingEventView: React.FC = () => {
   const [resultText, setResultText] = useState<string | null>(null);
 
   useEffect(() => {
-    const eventRng = useRngStore.getState().eventRng;
-    const pick = STARTING_EVENTS[eventRng.nextInt(STARTING_EVENTS.length)];
-    setCurrentEvent(pick);
+    setCurrentEvent(generateStartingEvent());
   }, []);
 
   if (!currentEvent) return null;

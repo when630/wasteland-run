@@ -1,5 +1,6 @@
 import type { Enemy, Intent, EnemyTier } from '../../types/enemyTypes';
 import { generateUniqueId, type SeededRNG } from '../../utils/rng';
+import { getMutationModifiers } from '../../logic/mutationModifiers';
 import scarecrowImg from '../images/characters/scarecrow.webp';
 import scarecrowAttackImg from '../images/characters/scarecrow_attack.webp';
 import scarecrowHitImg from '../images/characters/scarecrow_hit.webp';
@@ -606,7 +607,21 @@ export const BASE_ENEMIES: Record<string, BaseEnemy> = {
 /**
  * 몬스터의 baseId에 따라 다음 턴 행동(Intent)을 결정하여 반환하는 함수
  */
-export const determineNextIntent = (baseId: string, rng?: SeededRNG): Intent => {
+export const determineNextIntent = (baseId: string, rng?: SeededRNG, mutationStage: number = 0): Intent => {
+  const intent = _determineBaseIntent(baseId, rng);
+  // 변이 단계 공격력 보정
+  if (mutationStage > 0 && intent.type === 'ATTACK' && intent.amount) {
+    const mut = getMutationModifiers(mutationStage);
+    const tier = BASE_ENEMIES[baseId]?.tier;
+    const bonus = tier === 'BOSS' ? mut.bossAtkBonus
+      : tier === 'ELITE' ? mut.eliteAtkBonus
+      : mut.normalAtkBonus;
+    if (bonus > 0) intent.amount += bonus;
+  }
+  return intent;
+};
+
+const _determineBaseIntent = (baseId: string, rng?: SeededRNG): Intent => {
   const rand = rng ? rng.next() : Math.random();
 
   switch (baseId) {
@@ -1083,17 +1098,25 @@ export const determineNextIntent = (baseId: string, rng?: SeededRNG): Intent => 
 /**
  * 특정 baseId의 적을 생성하여 새 인스턴스화 하는 공용 함수
  */
-export const createEnemy = (baseId: string, rng?: SeededRNG): Enemy => {
+export const createEnemy = (baseId: string, rng?: SeededRNG, mutationStage: number = 0): Enemy => {
   const baseDef = BASE_ENEMIES[baseId];
   if (!baseDef) throw new Error(`Enemy ${baseId} not found`);
+
+  // 변이 단계 보정
+  const mut = getMutationModifiers(mutationStage);
+  const hpMult = baseDef.tier === 'BOSS' ? mut.bossHpMult
+    : baseDef.tier === 'ELITE' ? mut.eliteHpMult
+    : mut.normalHpMult;
+  const scaledMaxHp = Math.floor(baseDef.maxHp * hpMult);
 
   return {
     ...baseDef,
     id: generateUniqueId(),
-    currentHp: baseDef.maxHp,
+    maxHp: scaledMaxHp,
+    currentHp: scaledMaxHp,
     shield: baseDef.initialShield ?? (baseDef.tier === 'BOSS' ? 20 : 0),
     resist: 0,
-    currentIntent: determineNextIntent(baseId, rng) // 초기 랜덤 의도 부여
+    currentIntent: determineNextIntent(baseId, rng, mutationStage),
   };
 };
 

@@ -3,6 +3,7 @@ import { useRunStore } from '../store/useRunStore';
 import { UpgradeCardModal } from '../components/ui/UpgradeCardModal';
 import { RemoveCardModal } from '../components/ui/RemoveCardModal';
 import { onRestOrEventEnter } from '../logic/relicEffects';
+import { getMutationModifiers } from '../logic/mutationModifiers';
 import restBg from '../assets/images/backgrounds/campfire_map_background.webp';
 import { iconCampfire, iconCardUpgrade, iconHeart, iconBurn, iconCardRemove } from '../assets/images/GUI';
 
@@ -39,7 +40,8 @@ export const RestView: React.FC = () => {
   }, []);
 
   const handleHeal = async () => {
-    const baseRate = 0.3 + relicEffects.restHealBonus; // 통조림 식량: +0.3
+    const mutMod = getMutationModifiers(useRunStore.getState().mutationStage);
+    const baseRate = (0.3 + relicEffects.restHealBonus) * (1 - mutMod.restHealReduction);
     const healAmount = Math.ceil(playerMaxHp * baseRate);
     const actualHeal = Math.min(healAmount, playerMaxHp - playerHp);
     healPlayer(healAmount);
